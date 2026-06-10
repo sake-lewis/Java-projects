@@ -44,13 +44,27 @@ Toutes ces variables doivent être ajoutées dans **Vercel → ton projet → Se
 | `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | idem |
 | `NEXT_PUBLIC_FIREBASE_APP_ID` | idem |
 
-### 🖼️ Cloudinary (stockage temporaire des photos)
+### 🖼️ Cloudinary (photos **et** PDF)
+
+> ℹ️ Depuis la migration, **les PDF sont stockés sur Cloudinary** (et non plus sur
+> Firebase Storage, qui exigeait le forfait Blaze). Cloudinary héberge donc à la
+> fois les photos (temporaires) et le PDF final.
+>
+> 🚨 **À activer une seule fois** dans Cloudinary → ⚙️ Settings → **Security** →
+> cocher **« Allow delivery of PDF and ZIP files »**. Sans ça, le téléchargement
+> du PDF renvoie une erreur 401.
 
 | Variable | Où la trouver |
 |---|---|
 | `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | Cloudinary → Dashboard → *Cloud name* |
 | `CLOUDINARY_API_KEY` | Cloudinary → Dashboard → *API Key* (secret) |
 | `CLOUDINARY_API_SECRET` | Cloudinary → Dashboard → *API Secret* (secret) |
+
+### ⚙️ Build
+
+| Variable | Valeur | Rôle |
+|---|---|---|
+| `PUPPETEER_SKIP_DOWNLOAD` | `true` | Empêche `puppeteer` (devDependency) de télécharger Chromium à l'install — inutile car la prod utilise `@sparticuz/chromium`. Évite un build lourd/lent. |
 
 ### 🛒 Chariow + nettoyage
 
@@ -67,11 +81,13 @@ Toutes ces variables doivent être ajoutées dans **Vercel → ton projet → Se
 
 ## 3. Importer le projet sur Vercel
 
-- [ ] Pousser le code sur un dépôt GitHub (le dossier `everbloom/`)
-- [ ] Sur [vercel.com](https://vercel.com) → **Add New → Project** → importer le dépôt
+- [ ] Code déjà poussé sur GitHub : `sake-lewis/Java-projects`, branche `Main`
+- [ ] Sur [vercel.com](https://vercel.com) → **Add New → Project** → importer ce dépôt
 - [ ] Framework détecté : **Next.js** (automatique)
-- [ ] Root Directory : pointer sur le dossier `everbloom` si le repo contient des sous-dossiers
-- [ ] Ajouter **toutes** les variables d'environnement de l'étape 2
+- [ ] 🚨 **Root Directory** : cliquer **Edit** et sélectionner **`APPLICATIONS/New`**
+      (le projet Next.js est dans ce sous-dossier ; sans ça le build échoue)
+- [ ] Ajouter **toutes** les variables d'environnement de l'étape 2 (dont
+      `CHARIOW_WEBHOOK_SECRET` et `PUPPETEER_SKIP_DOWNLOAD=true`)
 - [ ] Cliquer **Deploy**
 
 ---
@@ -159,4 +175,12 @@ CLOUDINARY_API_SECRET
 # Chariow + nettoyage
 NEXT_PUBLIC_CHARIOW_BOUTIQUE_URL
 CRON_SECRET
+CHARIOW_WEBHOOK_SECRET
+
+# Build
+PUPPETEER_SKIP_DOWNLOAD   # = true
 ```
+
+> ℹ️ `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` reste utile pour l'init Firebase mais
+> n'est plus indispensable au stockage PDF (désormais sur Cloudinary). Tu peux la
+> garder telle quelle.
