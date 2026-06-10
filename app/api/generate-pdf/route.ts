@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifierToken, updateSession, marquerPdfPret } from '@/lib/session/manager';
-import { supprimerPhotosSession } from '@/lib/cloudinary/upload';
-import { getAdminStorage } from '@/lib/firebase/admin';
+import { supprimerPhotosSession, uploadPdf } from '@/lib/cloudinary/upload';
 import { launchBrowser } from '@/lib/pdf/browser';
 import Handlebars from 'handlebars';
 import fs from 'fs/promises';
@@ -56,12 +55,13 @@ export async function POST(req: NextRequest) {
     };
 
     if (session.forfait === 'premium' && style_choisi === 4) {
-      const particules = Array.from({ length: 40 }, () => ({
-        x: Math.random() * 794,
-        y: Math.random() * 1123,
-        r: Math.random() * 1 + 1,
-        opacity: Math.random() * 0.5 + 0.2,
-        color: Math.random() > 0.5 ? "#E91E8C" : "#C4956A"
+      // Bokeh festif doré/corail pour le thème Anniversaire (premium).
+      const particules = Array.from({ length: 46 }, () => ({
+        x: Math.round(Math.random() * 794),
+        y: Math.round(Math.random() * 1123),
+        r: Math.round(Math.random() * 16 + 6),
+        opacity: (Math.random() * 0.32 + 0.12).toFixed(2),
+        color: Math.random() > 0.5 ? "#E7C98F" : "#D9795E"
       }));
       templateData.particules = particules;
     }
@@ -84,24 +84,13 @@ export async function POST(req: NextRequest) {
       .update(pdfBuffer)
       .digest('hex');
 
-    const bucket = getAdminStorage().bucket();
-    const fileRef = bucket.file(`catalogues/${token}/catalogue.pdf`);
-    await fileRef.save(pdfBuffer, {
-      contentType: 'application/pdf',
-      metadata: {
-        cacheControl: 'public, max-age=31536000',
-      }
-    });
+    // Stockage du PDF sur Cloudinary (resource_type "raw").
+    const pdfUrl = await uploadPdf(Buffer.from(pdfBuffer), token);
 
-    const [signedUrl] = await fileRef.getSignedUrl({
-      action: 'read',
-      expires: Date.now() + 7 * 24 * 60 * 60 * 1000
-    });
-
-    await marquerPdfPret(token, signedUrl, hash);
+    await marquerPdfPret(token, pdfUrl, hash);
     await supprimerPhotosSession(token);
 
-    return NextResponse.json({ pdf_url: signedUrl }, { status: 200 });
+    return NextResponse.json({ pdf_url: pdfUrl }, { status: 200 });
 
   } catch (error) {
     console.error("Erreur génération PDF:", error);

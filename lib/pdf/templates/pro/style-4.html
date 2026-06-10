@@ -1,196 +1,105 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lato:ital,wght@0,300;0,400;1,400&display=swap" rel="stylesheet">
-    <style>
-        @page {
-            size: A4;
-            margin: 0;
-        }
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #2D1B4E;
-            color: #F0E6D3;
-            font-family: 'Lato', sans-serif;
-        }
-        .page {
-            width: 794px;
-            height: 1123px;
-            position: relative;
-            page-break-after: always;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-        .background-pattern {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
-        .content {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            width: 100%;
-        }
-        .logo-everbloom {
-            font-family: 'Cinzel', serif;
-            font-size: 22px;
-            letter-spacing: 6px;
-            color: #F0E6D3;
-            margin-top: 40px;
-        }
-        .citation {
-            font-style: italic;
-            font-weight: 300;
-            font-size: 16px;
-            line-height: 2;
-            max-width: 520px;
-            margin-bottom: 15px;
-        }
-        .citation-author {
-            font-size: 14px;
-            margin-bottom: 25px;
-            opacity: 0.8;
-            font-family: 'Cinzel', serif;
-        }
-        .title {
-            font-family: 'Cinzel', serif;
-            font-weight: 700;
-            font-size: 42px;
-            margin-bottom: 25px;
-            color: #C4956A;
-            text-shadow: 0 0 15px rgba(196,149,106,0.3);
-        }
-        .description {
-            font-style: italic;
-            font-size: 19px;
-            max-width: 600px;
-            font-weight: 300;
-        }
-        .photo-container {
-            width: 320px;
-            height: 568px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 0 40px rgba(196, 149, 106, 0.25);
-            border: 1.5px solid rgba(196, 149, 106, 0.5);
-            background-color: #3D2B5E;
-            margin-bottom: 20px;
-        }
-        .photo-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .photo-description {
-            font-size: 15px;
-            color: #F0E6D3;
-            margin-top: 5px;
-            max-width: 320px;
-            opacity: 0.9;
-        }
-        .page-number {
-            position: absolute;
-            bottom: 40px;
-            right: 40px;
-            font-family: 'Lato', sans-serif;
-            font-weight: 300;
-            font-size: 12px;
-            color: #C4956A;
-        }
-        .end-note {
-            font-size: 18px;
-            max-width: 500px;
-            line-height: 1.6;
-            margin-bottom: 45px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Lato:wght@300;400&family=Cinzel:wght@400;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <style>
+    @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      --creme: #FCF2E3;
+      --corail: #D2705A;
+      --corail-clair: #F0C6B6;
+      --ambre: #DDA050;
+      --encre: #56382F;
+      color: var(--encre);
+      font-family: 'Cormorant Garamond', serif;
+    }
+    .page {
+      width: 794px; height: 1123px;
+      position: relative; page-break-after: always;
+      background: radial-gradient(120% 85% at 50% 0%, #FFFBF4 0%, var(--creme) 50%, #F6E2CC 100%);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; overflow: hidden;
+    }
+    .decor { position:absolute; inset:0; pointer-events:none; }
+    .frame { position:absolute; inset:40px; border:1px solid rgba(221,160,80,0.55); }
+    .frame::before { content:""; position:absolute; inset:7px; border:1px solid rgba(210,112,90,0.35); }
+    .eyebrow { font-family:'Lato',sans-serif; font-size:12px; letter-spacing:7px; text-transform:uppercase; color:var(--corail); margin-bottom:8px; }
+    .script { font-family:'Pinyon Script',cursive; font-size:80px; color:var(--corail); line-height:1; }
+    .brand { font-family:'Cinzel',serif; font-size:17px; letter-spacing:7px; color:var(--encre); }
+    .orn { display:flex; align-items:center; gap:12px; margin:24px 0; color:var(--ambre); }
+    .orn .line { width:64px; height:1px; background:currentColor; }
+    .orn .star { font-size:16px; }
+    .quote { font-style:italic; font-size:22px; line-height:1.9; max-width:470px; }
+    .title { font-weight:600; font-size:52px; line-height:1.08; max-width:620px; }
+    .desc { font-style:italic; font-size:18px; line-height:1.7; max-width:540px; margin-top:16px; color:rgba(86,56,47,0.82); }
+    .photo { position:relative; width:392px; height:660px; padding:12px; background:#fff; border:1px solid var(--corail-clair);
+      box-shadow:0 10px 32px rgba(86,56,47,0.16); }
+    .photo .inner { width:100%; height:100%; overflow:hidden; border:1px solid var(--ambre); }
+    .photo img { width:100%; height:100%; object-fit:cover; display:block; }
+    .caption { font-style:italic; font-size:18px; max-width:420px; margin-top:22px; display:flex; align-items:center; gap:12px; justify-content:center; }
+    .caption .tick { width:24px; height:1px; background:var(--ambre); }
+    .folio { position:absolute; bottom:50px; left:50%; transform:translateX(-50%); font-family:'Lato',sans-serif; font-weight:300; font-size:11px; letter-spacing:3px; color:var(--corail); }
+    .end { font-style:italic; font-size:20px; line-height:1.7; max-width:480px; }
+  </style>
 </head>
 <body>
-    <svg class="background-pattern" viewBox="0 0 794 1123" xmlns="http://www.w3.org/2000/svg">
-        <g stroke="#C4956A" stroke-opacity="0.15" stroke-width="0.5">
-            <line x1="0" y1="0" x2="200" y2="200" />
-            <line x1="794" y1="0" x2="594" y2="200" />
-            <line x1="0" y1="1123" x2="200" y2="923" />
-            <line x1="794" y1="1123" x2="594" y2="923" />
-            <!-- Burst effect -->
-            <g transform="translate(100, 100)">
-                <line x1="0" y1="0" x2="30" y2="30" />
-                <line x1="0" y1="0" x2="-30" y2="30" />
-                <line x1="0" y1="0" x2="30" y2="-30" />
-                <line x1="0" y1="0" x2="-30" y2="-30" />
-            </g>
-            <g transform="translate(694, 150)">
-                <line x1="0" y1="0" x2="40" y2="0" />
-                <line x1="0" y1="0" x2="-40" y2="0" />
-                <line x1="0" y1="0" x2="0" y2="40" />
-                <line x1="0" y1="0" x2="0" y2="-40" />
-            </g>
-            <g transform="translate(694, 1023)">
-                <line x1="0" y1="0" x2="30" y2="30" />
-                <line x1="0" y1="0" x2="-30" y2="30" />
-                <line x1="0" y1="0" x2="30" y2="-30" />
-                <line x1="0" y1="0" x2="-30" y2="-30" />
-            </g>
-            <g transform="translate(100, 950)">
-                <line x1="0" y1="0" x2="40" y2="0" />
-                <line x1="0" y1="0" x2="-40" y2="0" />
-                <line x1="0" y1="0" x2="0" y2="40" />
-                <line x1="0" y1="0" x2="0" y2="-40" />
-            </g>
-        </g>
-    </svg>
+  <svg style="display:none"><symbol id="party" viewBox="0 0 794 1123">
+    <!-- Ballons -->
+    <g opacity="0.7">
+      <g transform="translate(90,70)"><ellipse cx="0" cy="0" rx="22" ry="28" fill="#D2705A" opacity="0.85"/><path d="M0 28 L0 90" stroke="#DDA050" stroke-width="1"/></g>
+      <g transform="translate(700,90)"><ellipse cx="0" cy="0" rx="20" ry="26" fill="#DDA050" opacity="0.85"/><path d="M0 26 L0 84" stroke="#D2705A" stroke-width="1"/></g>
+      <g transform="translate(150,150)"><ellipse cx="0" cy="0" rx="16" ry="21" fill="#F0C6B6" opacity="0.9"/><path d="M0 21 L0 70" stroke="#DDA050" stroke-width="1"/></g>
+    </g>
+    <!-- Confettis -->
+    <g opacity="0.5">
+      <circle cx="660" cy="560" r="5" fill="#D2705A"/><rect x="110" y="540" width="6" height="6" fill="#DDA050" transform="rotate(30 113 543)"/>
+      <circle cx="150" cy="970" r="5" fill="#DDA050"/><circle cx="660" cy="980" r="4" fill="#D2705A"/>
+      <rect x="500" y="1010" width="7" height="7" fill="#D2705A" transform="rotate(20 503 1013)"/>
+    </g>
+  </symbol></svg>
 
-    <!-- Page 1: Cover -->
-    <div class="page">
-        <div class="content">
-            <p class="citation">"Le temps emporte les jours, les saisons et parfois même les personnes que nous aimons, mais il ne peut effacer les souvenirs qu'elles ont laissés dans nos cœurs. Ces souvenirs deviennent alors une lumière discrète qui nous accompagne, nous inspire et nous rappelle que chaque instant vécu avec sincérité laisse une empreinte éternelle."</p>
-            <p class="citation-author">by Everbloom</p>
-            <div class="logo-everbloom">EVERBLOOM</div>
-        </div>
-    </div>
+  <div class="page">
+    <svg class="decor"><use href="#party"/></svg>
+    <div class="frame"></div>
+    <div class="eyebrow">Célébration &amp; joie</div>
+    <div class="script">Anniversaire</div>
+    <div class="orn"><span class="line"></span><span class="star">&#10038;</span><span class="line"></span></div>
+    <p class="quote">« La vie est une fête : chaque année de plus est une année de souvenirs en plus. »</p>
+    <div class="orn"><span class="line"></span><span class="line"></span></div>
+    <div class="brand">EVERBLOOM</div>
+  </div>
 
-    <!-- Page 2: Intro -->
-    <div class="page">
-        <div class="content">
-            <h1 class="title">{{nom_catalogue}}</h1>
-            <p class="description">{{description}}</p>
-        </div>
-        <div class="page-number">2</div>
-    </div>
+  <div class="page">
+    <svg class="decor"><use href="#party"/></svg>
+    <div class="frame"></div>
+    <div class="eyebrow">Le grand jour</div>
+    <h1 class="title">{{nom_catalogue}}</h1>
+    <div class="orn"><span class="line"></span><span class="star">&#10038;</span><span class="line"></span></div>
+    <p class="desc">{{description}}</p>
+    <div class="folio">2</div>
+  </div>
 
-    <!-- Photos -->
-    {{#each photos}}
-    <div class="page">
-        <div class="content">
-            <div class="photo-container">
-                <img src="{{this.url}}" alt="">
-            </div>
-            <p class="photo-description">{{this.description}}</p>
-        </div>
-        <div class="page-number">{{add @index 3}}</div>
-    </div>
-    {{/each}}
+  {{#each photos}}
+  <div class="page">
+    <svg class="decor"><use href="#party"/></svg>
+    <div class="frame"></div>
+    <div class="photo"><div class="inner"><img src="{{this.url}}" alt=""></div></div>
+    {{#if this.description}}<p class="caption"><span class="tick"></span>{{this.description}}<span class="tick"></span></p>{{/if}}
+    <div class="folio">{{add @index 3}}</div>
+  </div>
+  {{/each}}
 
-    <!-- Last Page -->
-    <div class="page">
-        <div class="content">
-            <p class="end-note">Vous souhaitez créer un nouveau catalogue ? Rendez-vous sur {{boutique_url}}</p>
-            <div class="logo-everbloom">EVERBLOOM</div>
-        </div>
-    </div>
+  <div class="page">
+    <svg class="decor"><use href="#party"/></svg>
+    <div class="frame"></div>
+    <div class="script" style="font-size:56px;">Merci</div>
+    <p class="end">d'avoir célébré ce moment de joie.<br>Composez un nouveau catalogue sur<br>{{boutique_url}}</p>
+    <div class="orn"><span class="line"></span><span class="line"></span></div>
+    <div class="brand">EVERBLOOM</div>
+  </div>
 </body>
 </html>

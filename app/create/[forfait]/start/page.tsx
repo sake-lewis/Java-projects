@@ -1,8 +1,6 @@
 import { redirect } from "next/navigation"
 import { verifierToken } from "@/lib/session/manager"
-import StartStandard from "@/components/pages/StartStandard"
-import StartPro from "@/components/pages/StartPro"
-import StartPremium from "@/components/pages/StartPremium"
+import StartForfait from "@/components/pages/StartForfait"
 
 interface PageProps {
   params: Promise<{ forfait: string }>
@@ -22,7 +20,5 @@ export default async function StartPage({ params, searchParams }: PageProps) {
   if (!session || session.forfait !== forfait) redirect("/error")
   if (session.statut === "expired") redirect("/error")
 
-  if (forfait === "standard") return <StartStandard token={token} />
-  if (forfait === "pro") return <StartPro token={token} />
-  return <StartPremium token={token} />
+  return <StartForfait forfait={forfait} token={token} />
 }

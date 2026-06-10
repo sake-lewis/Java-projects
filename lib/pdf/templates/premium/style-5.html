@@ -1,222 +1,114 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Playfair+Display:ital,wght@1,700&family=Lato:wght@300;400&display=swap" rel="stylesheet">
-    <style>
-        @page {
-            size: A4;
-            margin: 0;
-        }
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #080808;
-            color: #F5E6C8;
-            font-family: 'Cinzel', serif;
-        }
-        .page {
-            width: 794px;
-            height: 1123px;
-            position: relative;
-            page-break-after: always;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            border: 20px solid transparent;
-        }
-        .global-border-outer {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            bottom: 20px;
-            border: 1.5px solid #B8960C;
-            pointer-events: none;
-            z-index: 20;
-        }
-        .global-border-inner {
-            position: absolute;
-            top: 26px;
-            left: 26px;
-            right: 26px;
-            bottom: 26px;
-            border: 0.5px solid #B8960C;
-            pointer-events: none;
-            z-index: 20;
-        }
-        .corner-diamond {
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            background-color: #8B0000;
-            transform: rotate(45deg);
-            z-index: 25;
-        }
-        .corner-tl { top: 12px; left: 12px; }
-        .corner-tr { top: 12px; right: 12px; }
-        .corner-bl { bottom: 12px; left: 12px; }
-        .corner-br { bottom: 12px; right: 12px; }
-
-        .content {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            padding: 60px;
-        }
-        .citation {
-            font-family: 'Cinzel', serif;
-            font-weight: 400;
-            font-size: 12px;
-            line-height: 2.2;
-            max-width: 450px;
-            color: #F5E6C8;
-            letter-spacing: 1px;
-        }
-        .citation-author {
-            font-size: 12px;
-            margin-top: 20px;
-            color: #B8960C;
-            letter-spacing: 2px;
-        }
-        .logo-everbloom {
-            font-family: 'Cinzel', serif;
-            font-size: 20px;
-            letter-spacing: 5px;
-            margin-top: 60px;
-            color: #B8960C;
-        }
-        .title {
-            font-weight: 600;
-            font-size: 32px;
-            margin-bottom: 25px;
-            color: #B8960C;
-            letter-spacing: 4px;
-        }
-        .description {
-            font-family: 'Lato', sans-serif;
-            font-style: italic;
-            font-size: 16px;
-            max-width: 500px;
-            line-height: 1.8;
-            color: #F5E6C8;
-        }
-        .photo-frame-outer {
-            padding: 10px;
-            border: 1px solid #B8960C;
-            position: relative;
-            margin-bottom: 30px;
-        }
-        .photo-frame-inner {
-            padding: 4px;
-            border: 0.5px solid #B8960C;
-        }
-        .photo-container {
-            width: 320px;
-            height: 568px;
-            overflow: hidden;
-            background-color: #1A1A1A;
-        }
-        .photo-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .photo-corner {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background-color: #8B0000;
-            transform: rotate(45deg);
-        }
-        .pc-tl { top: -4px; left: -4px; }
-        .pc-tr { top: -4px; right: -4px; }
-        .pc-bl { bottom: -4px; left: -4px; }
-        .pc-br { bottom: -4px; right: -4px; }
-
-        .photo-description {
-            font-family: 'Lato', sans-serif;
-            font-size: 14px;
-            max-width: 320px;
-            color: #F5E6C8;
-            letter-spacing: 0.5px;
-        }
-        .page-number {
-            position: absolute;
-            bottom: 50px;
-            right: 50px;
-            font-size: 11px;
-            color: #B8960C;
-            z-index: 30;
-        }
-        .end-note {
-            font-size: 16px;
-            max-width: 450px;
-            line-height: 1.8;
-            margin-bottom: 40px;
-            color: #F5E6C8;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lato:wght@300;400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      --nuit: #101D33;
+      --or: #C9A24B;
+      --or-clair: #E7C98F;
+      --creme: #F4EEE0;
+      --gris: rgba(244,238,224,0.66);
+      color: var(--creme);
+      font-family: 'Cormorant Garamond', serif;
+    }
+    .page {
+      width: 794px; height: 1123px;
+      position: relative; page-break-after: always;
+      background: radial-gradient(125% 90% at 50% 6%, #1E3056 0%, #101D33 55%, #0A1322 100%);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; overflow: hidden;
+    }
+    .gold-frame { position:absolute; inset:30px; border:3px solid var(--or);
+      border-image: linear-gradient(135deg, var(--or-clair), var(--or) 35%, #8C6E2E 60%, var(--or-clair)) 1; }
+    .gold-frame::after { content:""; position:absolute; inset:6px; border:1px solid rgba(244,238,224,0.14); }
+    .inner-pad { position:absolute; inset:30px; }
+    .inner-pad::before { content:""; position:absolute; inset:12px; border:1px solid rgba(201,162,75,0.45); }
+    .sparkles { position:absolute; inset:0; pointer-events:none; }
+    .content { position:relative; z-index:5; display:flex; flex-direction:column; align-items:center; }
+    .monogram { width:74px; height:74px; border-radius:50%; border:1px solid var(--or); display:flex; align-items:center; justify-content:center;
+      font-family:'Cinzel',serif; font-size:13px; letter-spacing:3px; color:var(--or); margin-bottom:16px; }
+    .eyebrow { font-family:'Lato',sans-serif; font-size:12px; letter-spacing:8px; text-transform:uppercase; color:var(--or); margin-bottom:8px; }
+    .name { font-family:'Cinzel',serif; font-size:52px; letter-spacing:8px;
+      background:linear-gradient(135deg,#8C6E2E,var(--or) 40%,var(--or-clair) 70%,#8C6E2E);
+      -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .brand { font-family:'Cinzel',serif; font-size:17px; letter-spacing:8px; color:var(--or); }
+    .foil { width:160px; height:2px; margin:26px 0; background:linear-gradient(90deg,transparent,var(--or),var(--or-clair),var(--or),transparent); }
+    .quote { font-style:italic; font-size:23px; line-height:2; max-width:500px; color:var(--creme); }
+    .title { font-family:'Cinzel',serif; font-size:40px; letter-spacing:3px; line-height:1.2; max-width:640px; color:var(--creme); }
+    .desc { font-style:italic; font-size:19px; line-height:1.7; max-width:540px; margin-top:18px; color:var(--gris); }
+    .photo { position:relative; width:412px; height:686px; padding:14px; background-image:linear-gradient(135deg,var(--or-clair),var(--or));
+      box-shadow:0 16px 46px rgba(0,0,0,0.55); }
+    .photo .mat { position:absolute; inset:14px; background:#13223C; }
+    .photo .inner { position:absolute; inset:24px; overflow:hidden; box-shadow:inset 0 0 0 1px var(--or); }
+    .photo img { width:100%; height:100%; object-fit:cover; display:block; }
+    .caption { font-style:italic; font-size:19px; max-width:440px; margin-top:26px; color:var(--gris); }
+    .caption .deco { color:var(--or); margin:0 10px; }
+    .folio { position:absolute; bottom:54px; left:50%; transform:translateX(-50%); font-family:'Cinzel',serif; font-size:12px; letter-spacing:4px; color:var(--or); }
+    .end { font-style:italic; font-size:21px; line-height:1.7; max-width:500px; color:var(--creme); }
+  </style>
 </head>
 <body>
-    <div class="global-border-outer"></div>
-    <div class="global-border-inner"></div>
-    <div class="corner-diamond corner-tl"></div>
-    <div class="corner-diamond corner-tr"></div>
-    <div class="corner-diamond corner-bl"></div>
-    <div class="corner-diamond corner-br"></div>
+  <svg style="display:none"><symbol id="sparkles" viewBox="0 0 794 1123">
+    <g fill="#E7C98F" opacity="0.6" font-family="serif">
+      <text x="120" y="210" font-size="16">&#10038;</text><text x="660" y="180" font-size="11">&#10038;</text>
+      <text x="700" y="580" font-size="14">&#10038;</text><text x="110" y="580" font-size="10">&#10038;</text>
+      <text x="150" y="940" font-size="13">&#10038;</text><text x="650" y="960" font-size="16">&#10038;</text>
+      <text x="400" y="120" font-size="9">&#10038;</text><text x="400" y="1010" font-size="11">&#10038;</text>
+    </g>
+  </symbol></svg>
 
-    <!-- Page 1: Cover -->
-    <div class="page">
-        <div class="content">
-            <p class="citation">"Le temps emporte les jours, les saisons et parfois même les personnes que nous aimons, mais il ne peut effacer les souvenirs qu'elles ont laissés dans nos cœurs. Ces souvenirs deviennent alors une lumière discrète qui nous accompagne, nous inspire et nous rappelle que chaque instant vécu avec sincérité laisse une empreinte éternelle."</p>
-            <p class="citation-author">by Everbloom</p>
-            <div class="logo-everbloom">EVERBLOOM</div>
-        </div>
+  <div class="page">
+    <div class="gold-frame"></div>
+    <svg class="sparkles"><use href="#sparkles"/></svg>
+    <div class="content">
+      <div class="monogram">E&middot;B</div>
+      <div class="eyebrow">Cérémonie &amp; fêtes solennelles</div>
+      <div class="name">SOLENNEL</div>
+      <div class="foil"></div>
+      <p class="quote">« Chaque réussite mérite d'être célébrée et gravée à jamais dans la mémoire. »</p>
+      <div class="foil"></div>
+      <div class="brand">EVERBLOOM</div>
     </div>
+  </div>
 
-    <!-- Page 2: Intro -->
-    <div class="page">
-        <div class="content">
-            <h1 class="title">{{nom_catalogue}}</h1>
-            <p class="description">{{description}}</p>
-        </div>
-        <div class="page-number">2</div>
+  <div class="page">
+    <div class="inner-pad"></div>
+    <svg class="sparkles"><use href="#sparkles"/></svg>
+    <div class="content">
+      <div class="eyebrow">L'événement</div>
+      <h1 class="title">{{nom_catalogue}}</h1>
+      <div class="foil"></div>
+      <p class="desc">{{description}}</p>
     </div>
+    <div class="folio">II</div>
+  </div>
 
-    <!-- Photos -->
-    {{#each photos}}
-    <div class="page">
-        <div class="content">
-            <div class="photo-frame-outer">
-                <div class="photo-corner pc-tl"></div>
-                <div class="photo-corner pc-tr"></div>
-                <div class="photo-corner pc-bl"></div>
-                <div class="photo-corner pc-br"></div>
-                <div class="photo-frame-inner">
-                    <div class="photo-container">
-                        <img src="{{this.url}}" alt="">
-                    </div>
-                </div>
-            </div>
-            <p class="photo-description">{{this.description}}</p>
-        </div>
-        <div class="page-number">{{add @index 3}}</div>
+  {{#each photos}}
+  <div class="page">
+    <div class="inner-pad"></div>
+    <div class="content">
+      <div class="photo"><div class="mat"></div><div class="inner"><img src="{{this.url}}" alt=""></div></div>
+      {{#if this.description}}<p class="caption"><span class="deco">&#10038;</span>{{this.description}}<span class="deco">&#10038;</span></p>{{/if}}
     </div>
-    {{/each}}
+    <div class="folio">{{add @index 3}}</div>
+  </div>
+  {{/each}}
 
-    <!-- Last Page -->
-    <div class="page">
-        <div class="content">
-            <p class="end-note">Vous souhaitez créer un nouveau catalogue ? Rendez-vous sur {{boutique_url}}</p>
-            <div class="logo-everbloom">EVERBLOOM</div>
-        </div>
+  <div class="page">
+    <div class="gold-frame"></div>
+    <svg class="sparkles"><use href="#sparkles"/></svg>
+    <div class="content">
+      <div class="name" style="font-size:38px;">Merci</div>
+      <p class="end">Célébrons aujourd'hui, chérissons à jamais.<br>Composez un nouveau catalogue sur<br>{{boutique_url}}</p>
+      <div class="foil"></div>
+      <div class="monogram">E&middot;B</div>
     </div>
+  </div>
 </body>
 </html>

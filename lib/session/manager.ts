@@ -1,4 +1,5 @@
-import { getAdminDb, getAdminStorage } from "@/lib/firebase/admin"
+import { getAdminDb } from "@/lib/firebase/admin"
+import { supprimerPdf } from "@/lib/cloudinary/upload"
 import { Session, Forfait } from "@/types"
 
 export async function creerSession(forfait: Forfait, token: string, email: string): Promise<Session> {
@@ -74,12 +75,7 @@ export async function expirerSession(token: string): Promise<void> {
   if (!session) return
 
   if (session.pdf_url) {
-    try {
-      const chemin = `catalogues/${token}/catalogue.pdf`
-      await getAdminStorage().bucket().file(chemin).delete()
-    } catch (error) {
-      console.error(`Erreur lors de la suppression du PDF pour le token ${token}:`, error)
-    }
+    await supprimerPdf(token)
   }
 
   await updateSession(token, {

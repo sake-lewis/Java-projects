@@ -82,28 +82,34 @@ export default function CropperModal({ isOpen, imageFile, onConfirm, onCancel }:
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm">
       <div className="w-full max-w-xl overflow-hidden rounded-lg bg-[#1E1E1E] shadow-2xl">
         <div className="p-6">
-          <h2 className="mb-6 text-center text-2xl font-semibold text-[#E8E0D5]" style={{ fontFamily: 'var(--font-cormorant), serif' }}>
+          <h2 className="mb-6 text-center text-2xl font-semibold text-[#E8E0D5]" style={{ fontFamily: 'var(--font-sans)' }}>
             Recadrer la photo
           </h2>
           
           <div className="flex flex-col items-center gap-6">
             <div className="relative max-h-[60vh] overflow-hidden rounded-md border border-white/10 bg-black/20">
-              <ReactCrop
-                crop={crop}
-                onChange={(c) => setCrop(c)}
-                onComplete={(c) => setCompletedCrop(c)}
-                aspect={9 / 16}
-                minWidth={100}
-                className="max-w-full"
-              >
-                <img
-                  ref={imgRef}
-                  src={imgSrc}
-                  alt="Crop me"
-                  onLoad={onImageLoad}
-                  style={{ transform: `scale(${zoom})`, transition: 'transform 0.1s ease-out' }}
-                />
-              </ReactCrop>
+              {imgSrc ? (
+                <ReactCrop
+                  crop={crop}
+                  onChange={(c) => setCrop(c)}
+                  onComplete={(c) => setCompletedCrop(c)}
+                  aspect={9 / 16}
+                  minWidth={100}
+                  className="max-w-full"
+                >
+                  <img
+                    ref={imgRef}
+                    src={imgSrc}
+                    alt="Crop me"
+                    onLoad={onImageLoad}
+                    style={{ transform: `scale(${zoom})`, transition: 'transform 0.1s ease-out' }}
+                  />
+                </ReactCrop>
+              ) : (
+                <div className="flex h-48 w-full items-center justify-center">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#C4956A] border-t-transparent"></div>
+                </div>
+              )}
             </div>
 
             <div className="w-full space-y-2 px-4">

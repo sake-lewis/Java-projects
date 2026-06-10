@@ -1,177 +1,81 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Lato:wght@300;400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        @page {
-            size: A4;
-            margin: 0;
-        }
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #F5EFE6;
-            color: #1E4D3A;
-            font-family: 'Cormorant Garamond', serif;
-        }
-        .page {
-            width: 794px;
-            height: 1123px;
-            position: relative;
-            page-break-after: always;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-        .background-pattern {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.15;
-        }
-        .content {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-        .logo-everbloom {
-            font-family: 'Cinzel', serif;
-            font-size: 20px;
-            letter-spacing: 5px;
-            color: #1E4D3A;
-            margin-top: 40px;
-        }
-        .citation {
-            font-style: italic;
-            font-weight: 400;
-            font-size: 15px;
-            line-height: 2;
-            max-width: 500px;
-            margin-bottom: 20px;
-        }
-        .citation-author {
-            font-size: 14px;
-            margin-top: 10px;
-        }
-        .title {
-            font-weight: 600;
-            font-size: 36px;
-            margin-bottom: 20px;
-        }
-        .divider {
-            width: 60px;
-            height: 1px;
-            background-color: #C4956A;
-            margin-bottom: 20px;
-        }
-        .description {
-            font-style: italic;
-            font-size: 15px;
-            color: #7B5EA7;
-            max-width: 600px;
-        }
-        .photo-container {
-            width: 320px;
-            height: 568px;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 24px rgba(196, 149, 106, 0.18);
-            background-color: #E8E0D5; /* No white background */
-            margin-bottom: 20px;
-        }
-        .photo-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .photo-description {
-            font-size: 14px;
-            max-width: 320px;
-            color: #1E4D3A;
-        }
-        .page-number {
-            position: absolute;
-            bottom: 40px;
-            right: 40px;
-            font-family: 'Lato', sans-serif;
-            font-weight: 300;
-            font-size: 11px;
-            color: #C4956A;
-        }
-        .end-note {
-            font-size: 16px;
-            max-width: 500px;
-            line-height: 1.6;
-            margin-bottom: 40px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Lato:wght@300;400&family=Cinzel:wght@400;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <style>
+    @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      --creme: #FBF5EC;
+      --tan: #D9B98C;
+      --tan-clair: #EAD9BF;
+      --brun: #8A6A4F;
+      --encre: #5A463A;
+      color: var(--encre);
+      font-family: 'Cormorant Garamond', serif;
+    }
+    .page {
+      width: 794px; height: 1123px;
+      position: relative; page-break-after: always;
+      background: var(--creme);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; overflow: hidden;
+    }
+    .frame { position: absolute; inset: 34px; border: 1px solid var(--tan-clair); border-radius: 22px; }
+    .frame::after { content:""; position:absolute; inset:6px; border:1px solid rgba(138,106,79,0.22); border-radius:18px; }
+    .eyebrow { font-family:'Lato',sans-serif; font-size:12px; letter-spacing:6px; text-transform:uppercase; color:var(--brun); margin-bottom:14px; }
+    .script { font-family:'Pinyon Script',cursive; font-size:72px; color:var(--brun); line-height:1; }
+    .brand { font-family:'Cinzel',serif; font-size:18px; letter-spacing:6px; color:var(--encre); }
+    .rule { width:54px; height:1px; background:var(--tan); margin:22px auto; }
+    .heart { color:var(--tan); font-size:15px; margin:12px 0; }
+    .quote { font-style:italic; font-size:20px; line-height:1.9; max-width:440px; }
+    .title { font-weight:600; font-size:46px; line-height:1.1; max-width:600px; }
+    .desc { font-style:italic; font-size:17px; line-height:1.7; max-width:520px; margin-top:18px; color:rgba(90,70,58,0.82); }
+    .photo { width:360px; height:640px; overflow:hidden; border:1px solid var(--tan); border-radius:18px;
+      box-shadow:0 6px 24px rgba(90,70,58,0.14); background:var(--tan-clair); }
+    .photo img { width:100%; height:100%; object-fit:cover; display:block; }
+    .caption { font-family:'Lato',sans-serif; font-weight:300; font-size:14px; max-width:360px; margin-top:18px; }
+    .folio { position:absolute; bottom:46px; right:50px; font-family:'Lato',sans-serif; font-weight:300; font-size:11px; letter-spacing:2px; color:var(--brun); }
+    .end { font-style:italic; font-size:18px; line-height:1.7; max-width:440px; }
+  </style>
 </head>
 <body>
-    <svg class="background-pattern" viewBox="0 0 794 1123">
-        <text x="100" y="150" font-size="14" fill="#C4956A">★</text>
-        <text x="250" y="80" font-size="10" fill="#C4956A">★</text>
-        <text x="600" y="200" font-size="12" fill="#C4956A">★</text>
-        <text x="700" y="450" font-size="8" fill="#C4956A">★</text>
-        <text x="150" y="600" font-size="14" fill="#C4956A">★</text>
-        <text x="500" y="550" font-size="6" fill="#C4956A">★</text>
-        <text x="50" y="850" font-size="12" fill="#C4956A">★</text>
-        <text x="300" y="1000" font-size="10" fill="#C4956A">★</text>
-        <text x="650" y="900" font-size="14" fill="#C4956A">★</text>
-        <text x="450" y="300" font-size="8" fill="#C4956A">★</text>
-        <text x="200" y="400" font-size="10" fill="#C4956A">★</text>
-        <text x="550" y="750" font-size="12" fill="#C4956A">★</text>
-        <text x="750" y="1050" font-size="9" fill="#C4956A">★</text>
-    </svg>
+  <div class="page">
+    <div class="frame"></div>
+    <div class="eyebrow">Naissance &amp; croissance</div>
+    <div class="script">Enfance</div>
+    <div class="rule"></div>
+    <p class="quote">« L'enfance, c'est le temps où l'on a des rêves plein les yeux et le cœur plein d'amour. »</p>
+    <div class="heart">&#10084;</div>
+  </div>
 
-    <!-- Page 1: Cover -->
-    <div class="page">
-        <div class="content">
-            <p class="citation">"Le temps emporte les jours, les saisons et parfois même les personnes que nous aimons, mais il ne peut effacer les souvenirs qu'elles ont laissés dans nos cœurs. Ces souvenirs deviennent alors une lumière discrète qui nous accompagne, nous inspire et nous rappelle que chaque instant vécu avec sincérité laisse une empreinte éternelle."</p>
-            <p class="citation-author">by Everbloom</p>
-            <div class="logo-everbloom">EVERBLOOM</div>
-        </div>
-    </div>
+  <div class="page">
+    <div class="frame"></div>
+    <div class="eyebrow">Premiers souvenirs</div>
+    <h1 class="title">{{nom_catalogue}}</h1>
+    <div class="rule"></div>
+    <p class="desc">{{description}}</p>
+    <div class="folio">2</div>
+  </div>
 
-    <!-- Page 2: Intro -->
-    <div class="page">
-        <div class="content">
-            <h1 class="title">{{nom_catalogue}}</h1>
-            <div class="divider"></div>
-            <p class="description">{{description}}</p>
-        </div>
-        <div class="page-number">2</div>
-    </div>
+  {{#each photos}}
+  <div class="page">
+    <div class="frame"></div>
+    <div class="photo"><img src="{{this.url}}" alt=""></div>
+    {{#if this.description}}<p class="caption">{{this.description}}</p>{{/if}}
+    <div class="folio">{{add @index 3}}</div>
+  </div>
+  {{/each}}
 
-    <!-- Photos -->
-    {{#each photos}}
-    <div class="page">
-        <div class="content">
-            <div class="photo-container">
-                <img src="{{this.url}}" alt="">
-            </div>
-            <p class="photo-description">{{this.description}}</p>
-        </div>
-        <div class="page-number">{{add @index 3}}</div>
-    </div>
-    {{/each}}
-
-    <!-- Last Page -->
-    <div class="page">
-        <div class="content">
-            <p class="end-note">Vous souhaitez créer un nouveau catalogue ? Rendez-vous sur {{boutique_url}}</p>
-            <div class="logo-everbloom">EVERBLOOM</div>
-        </div>
-    </div>
+  <div class="page">
+    <div class="frame"></div>
+    <div class="heart">&#10084;</div>
+    <p class="end">Chaque instant grandit avec lui.<br>Créez un nouveau catalogue sur<br>{{boutique_url}}</p>
+    <div class="rule"></div>
+    <div class="brand">EVERBLOOM</div>
+  </div>
 </body>
 </html>

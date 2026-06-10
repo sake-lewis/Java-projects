@@ -39,3 +39,35 @@ export async function supprimerPhotosSession(token: string): Promise<void> {
     console.error(`Erreur lors de la suppression des photos Cloudinary pour le token ${token}:`, error);
   }
 }
+
+// public_id du PDF dans Cloudinary (resource_type "raw", hors du dossier photos
+// pour ne pas être supprimé avec elles après génération).
+function pdfPublicId(token: string): string {
+  return `everbloom-pdf/${token}.pdf`;
+}
+
+/**
+ * Stocke le PDF généré sur Cloudinary en "raw" (fichier livré tel quel, non
+ * soumis à la restriction de livraison des PDF "image" de Cloudinary).
+ * Renvoie une URL de téléchargement (avec nom de fichier via fl_attachment).
+ */
+export async function uploadPdf(buffer: Buffer, token: string): Promise<string> {
+  const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { resource_type: 'raw', public_id: pdfPublicId(token), overwrite: true },
+      (error, res) => (error || !res ? reject(error) : resolve(res as { secure_url: string }))
+    );
+    stream.end(buffer);
+  });
+
+  return result.secure_url;
+}
+
+/** Supprime le PDF Cloudinary d'une session (appelé à l'expiration). */
+export async function supprimerPdf(token: string): Promise<void> {
+  try {
+    await cloudinary.uploader.destroy(pdfPublicId(token), { resource_type: 'raw' });
+  } catch (error) {
+    console.error(`Erreur lors de la suppression du PDF Cloudinary pour le token ${token}:`, error);
+  }
+}

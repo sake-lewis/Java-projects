@@ -1,174 +1,96 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Lato:wght@300;400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        @page {
-            size: A4;
-            margin: 0;
-        }
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #E8E0D5;
-            color: #1E4D3A;
-            font-family: 'Cormorant Garamond', serif;
-        }
-        .page {
-            width: 794px;
-            height: 1123px;
-            position: relative;
-            page-break-after: always;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-        .confetti-pattern {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.18;
-        }
-        .content {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-        .logo-everbloom {
-            font-family: 'Cinzel', serif;
-            font-size: 20px;
-            letter-spacing: 5px;
-            color: #1E4D3A;
-            margin-top: 40px;
-        }
-        .citation {
-            font-style: italic;
-            font-weight: 400;
-            font-size: 16px;
-            line-height: 1.8;
-            max-width: 500px;
-            margin-bottom: 20px;
-        }
-        .citation-author {
-            font-size: 14px;
-            margin-top: 10px;
-        }
-        .title {
-            font-weight: 600;
-            font-size: 38px;
-            margin-bottom: 20px;
-            color: #7B5EA7;
-        }
-        .description {
-            font-style: italic;
-            font-size: 16px;
-            max-width: 600px;
-            line-height: 1.6;
-        }
-        .photo-container {
-            width: 320px;
-            height: 568px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(123, 94, 167, 0.15);
-            background-color: #D6CEC3;
-            margin-bottom: 20px;
-        }
-        .photo-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .photo-description {
-            font-size: 14px;
-            max-width: 320px;
-            color: #1E4D3A;
-            font-family: 'Lato', sans-serif;
-            font-weight: 300;
-        }
-        .page-number {
-            position: absolute;
-            bottom: 40px;
-            right: 40px;
-            font-family: 'Lato', sans-serif;
-            font-weight: 300;
-            font-size: 11px;
-            color: #C4956A;
-        }
-        .end-note {
-            font-size: 16px;
-            max-width: 500px;
-            line-height: 1.6;
-            margin-bottom: 40px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Lato:wght@300;400&family=Cinzel:wght@400;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <style>
+    @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      --creme: #FCF4E8;
+      --corail: #D9795E;
+      --corail-clair: #F0CBBC;
+      --ambre: #E0A85A;
+      --encre: #5A3B33;
+      color: var(--encre);
+      font-family: 'Cormorant Garamond', serif;
+    }
+    .page {
+      width: 794px; height: 1123px;
+      position: relative; page-break-after: always;
+      background: var(--creme);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; overflow: hidden;
+    }
+    .confetti { position:absolute; inset:0; pointer-events:none; }
+    .frame { position:absolute; inset:34px; border:1px solid var(--corail-clair); }
+    .frame::after { content:""; position:absolute; inset:6px; border:1px solid rgba(224,168,90,0.3); }
+    .eyebrow { font-family:'Lato',sans-serif; font-size:12px; letter-spacing:6px; text-transform:uppercase; color:var(--corail); margin-bottom:12px; }
+    .script { font-family:'Pinyon Script',cursive; font-size:74px; color:var(--corail); line-height:1; }
+    .brand { font-family:'Cinzel',serif; font-size:18px; letter-spacing:6px; color:var(--encre); }
+    .rule { width:54px; height:1px; background:var(--ambre); margin:22px auto; }
+    .heart { color:var(--corail); font-size:15px; margin:12px 0; }
+    .quote { font-style:italic; font-size:20px; line-height:1.9; max-width:460px; }
+    .title { font-weight:600; font-size:46px; line-height:1.1; max-width:600px; }
+    .desc { font-style:italic; font-size:17px; line-height:1.7; max-width:520px; margin-top:18px; color:rgba(90,59,51,0.82); }
+    .photo { width:360px; height:640px; overflow:hidden; border:1px solid var(--ambre);
+      box-shadow:0 6px 24px rgba(90,59,51,0.14); background:var(--corail-clair); }
+    .photo img { width:100%; height:100%; object-fit:cover; display:block; }
+    .caption { font-family:'Lato',sans-serif; font-weight:300; font-size:14px; max-width:360px; margin-top:18px; }
+    .folio { position:absolute; bottom:46px; right:50px; font-family:'Lato',sans-serif; font-weight:300; font-size:11px; letter-spacing:2px; color:var(--corail); }
+    .end { font-style:italic; font-size:18px; line-height:1.7; max-width:460px; }
+  </style>
 </head>
 <body>
-    <svg class="confetti-pattern" viewBox="0 0 794 1123">
-        <!-- Confetti shapes -->
-        <rect x="50" y="100" width="10" height="10" fill="#7B5EA7" transform="rotate(15 50 100)"/>
-        <circle cx="150" cy="80" r="5" fill="#C4956A"/>
-        <rect x="600" y="200" width="8" height="12" fill="#7B5EA7" transform="rotate(45 600 200)"/>
-        <rect x="700" y="450" width="10" height="10" fill="#C4956A" transform="rotate(30 700 450)"/>
-        <circle cx="150" cy="600" r="6" fill="#7B5EA7"/>
-        <rect x="500" y="550" width="12" height="6" fill="#C4956A" transform="rotate(10 500 550)"/>
-        <circle cx="50" cy="850" r="4" fill="#7B5EA7"/>
-        <rect x="300" y="1000" width="10" height="10" fill="#C4956A" transform="rotate(20 300 1000)"/>
-        <circle cx="650" cy="900" r="7" fill="#7B5EA7"/>
-        <rect x="450" y="300" width="8" height="8" fill="#C4956A" transform="rotate(60 450 300)"/>
-        <rect x="200" y="400" width="10" height="10" fill="#7B5EA7" transform="rotate(-15 200 400)"/>
-        <circle cx="550" cy="750" r="5" fill="#C4956A"/>
-        <rect x="750" y="1050" width="8" height="12" fill="#7B5EA7" transform="rotate(75 750 1050)"/>
-    </svg>
+  <svg style="display:none"><symbol id="confetti" viewBox="0 0 794 1123">
+    <g opacity="0.5">
+      <circle cx="120" cy="150" r="5" fill="#D9795E"/><circle cx="680" cy="120" r="4" fill="#E0A85A"/>
+      <rect x="250" y="90" width="7" height="7" fill="#E0A85A" transform="rotate(20 253 93)"/>
+      <circle cx="700" cy="560" r="5" fill="#D9795E"/><rect x="90" y="520" width="6" height="6" fill="#D9795E" transform="rotate(40 93 523)"/>
+      <circle cx="640" cy="980" r="4" fill="#E0A85A"/><circle cx="150" cy="950" r="5" fill="#D9795E"/>
+      <rect x="500" y="1010" width="7" height="7" fill="#E0A85A" transform="rotate(15 503 1013)"/>
+    </g>
+  </symbol></svg>
 
-    <!-- Page 1: Cover -->
-    <div class="page">
-        <div class="content">
-            <p class="citation">"Le temps emporte les jours, les saisons et parfois même les personnes que nous aimons, mais il ne peut effacer les souvenirs qu'elles ont laissés dans nos cœurs. Ces souvenirs deviennent alors une lumière discrète qui nous accompagne, nous inspire et nous rappelle que chaque instant vécu avec sincérité laisse une empreinte éternelle."</p>
-            <p class="citation-author">by Everbloom</p>
-            <div class="logo-everbloom">EVERBLOOM</div>
-        </div>
-    </div>
+  <div class="page">
+    <svg class="confetti"><use href="#confetti"/></svg>
+    <div class="frame"></div>
+    <div class="eyebrow">Célébration &amp; joie</div>
+    <div class="script">Anniversaire</div>
+    <div class="rule"></div>
+    <p class="quote">« La vie est une fête : chaque année de plus est une année de souvenirs en plus. »</p>
+    <div class="heart">&#10084;</div>
+  </div>
 
-    <!-- Page 2: Intro -->
-    <div class="page">
-        <div class="content">
-            <h1 class="title">{{nom_catalogue}}</h1>
-            <p class="description">{{description}}</p>
-        </div>
-        <div class="page-number">2</div>
-    </div>
+  <div class="page">
+    <svg class="confetti"><use href="#confetti"/></svg>
+    <div class="frame"></div>
+    <div class="eyebrow">Le grand jour</div>
+    <h1 class="title">{{nom_catalogue}}</h1>
+    <div class="rule"></div>
+    <p class="desc">{{description}}</p>
+    <div class="folio">2</div>
+  </div>
 
-    <!-- Photos -->
-    {{#each photos}}
-    <div class="page">
-        <div class="content">
-            <div class="photo-container">
-                <img src="{{this.url}}" alt="">
-            </div>
-            <p class="photo-description">{{this.description}}</p>
-        </div>
-        <div class="page-number">{{add @index 3}}</div>
-    </div>
-    {{/each}}
+  {{#each photos}}
+  <div class="page">
+    <svg class="confetti"><use href="#confetti"/></svg>
+    <div class="frame"></div>
+    <div class="photo"><img src="{{this.url}}" alt=""></div>
+    {{#if this.description}}<p class="caption">{{this.description}}</p>{{/if}}
+    <div class="folio">{{add @index 3}}</div>
+  </div>
+  {{/each}}
 
-    <!-- Last Page -->
-    <div class="page">
-        <div class="content">
-            <p class="end-note">Vous souhaitez créer un nouveau catalogue ? Rendez-vous sur {{boutique_url}}</p>
-            <div class="logo-everbloom">EVERBLOOM</div>
-        </div>
-    </div>
+  <div class="page">
+    <svg class="confetti"><use href="#confetti"/></svg>
+    <div class="frame"></div>
+    <div class="heart">&#10084;</div>
+    <p class="end">Que la fête continue, encore et encore.<br>Créez un nouveau catalogue sur<br>{{boutique_url}}</p>
+    <div class="rule"></div>
+    <div class="brand">EVERBLOOM</div>
+  </div>
 </body>
 </html>

@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Pile « SF Pro » : vrai SF Pro sur Apple, Inter en repli ailleurs.
+   Définie ici pour que tous les utilitaires `font-sans` de Tailwind l'utilisent. */
+@theme {
+  --font-sans: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont,
+    var(--font-inter), system-ui, "Segoe UI", Roboto, sans-serif;
+}
+
 :root {
   /* Couleurs EVERBLOOM */
   --color-beige: #E8E0D5;
@@ -14,16 +21,15 @@
   --font-playfair: var(--font-playfair);
 }
 
-/* Reset global */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* Note : pas de reset universel margin/padding ici.
+   Le preflight de Tailwind gere deja le reset. Un reset hors-layer ecraserait
+   les utilitaires d'espacement de Tailwind, car le CSS hors-layer prime sur le
+   CSS place en @layer. */
 
 body {
   background-color: var(--color-beige);
-  font-family: var(--font-lato);
+  font-family: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont,
+    var(--font-inter), system-ui, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 

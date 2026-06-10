@@ -1,177 +1,107 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Playfair+Display:ital,wght@1,700&family=Lato:wght@300;400&display=swap" rel="stylesheet">
-    <style>
-        @page {
-            size: A4;
-            margin: 0;
-        }
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #0D0D0D;
-            color: #F0F0F0;
-            font-family: 'Lato', sans-serif;
-        }
-        .page {
-            width: 794px;
-            height: 1123px;
-            position: relative;
-            page-break-after: always;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-        .background-pattern {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
-        .content {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-        .citation {
-            font-family: 'Playfair Display', serif;
-            font-style: italic;
-            font-weight: 700;
-            font-size: 14px;
-            line-height: 2.2;
-            max-width: 500px;
-            color: #F0F0F0;
-        }
-        .gradient-line {
-            width: 300px;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #E91E8C, #C4956A, transparent);
-            margin: 25px 0;
-        }
-        .citation-author {
-            font-family: 'Playfair Display', serif;
-            font-style: italic;
-            font-weight: 700;
-            font-size: 14px;
-            color: #C4956A;
-        }
-        .logo-everbloom {
-            font-family: 'Cinzel', serif;
-            font-size: 20px;
-            letter-spacing: 5px;
-            margin-top: 50px;
-            color: #E91E8C;
-            text-shadow: 0 0 10px rgba(233, 30, 140, 0.5);
-        }
-        .title {
-            font-family: 'Playfair Display', serif;
-            font-weight: 700;
-            font-style: italic;
-            font-size: 42px;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #E91E8C, #C4956A);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .description {
-            font-style: italic;
-            font-size: 18px;
-            max-width: 500px;
-            line-height: 1.6;
-            color: #CCCCCC;
-        }
-        .photo-container {
-            width: 320px;
-            height: 568px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 0 60px rgba(233, 30, 140, 0.25), 0 0 20px rgba(196, 149, 106, 0.2);
-            background-color: #1A1A1A;
-            margin-bottom: 30px;
-        }
-        .photo-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .photo-description {
-            font-size: 14px;
-            max-width: 320px;
-            color: #C4956A;
-        }
-        .page-number {
-            position: absolute;
-            bottom: 40px;
-            right: 40px;
-            font-size: 11px;
-            color: #E91E8C;
-            opacity: 0.6;
-        }
-        .end-note {
-            font-size: 18px;
-            max-width: 450px;
-            line-height: 1.8;
-            margin-bottom: 40px;
-            color: #F0F0F0;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lato:wght@300;400&family=Cinzel:wght@400;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+  <style>
+    @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      --creme: #FCF3E4;
+      --corail: #CE6A54;
+      --corail-clair: #F0C6B6;
+      --or: #C19A5B;
+      --or-clair: #E7C98F;
+      --encre: #4F3429;
+      color: var(--encre);
+      font-family: 'Cormorant Garamond', serif;
+    }
+    .page {
+      width: 794px; height: 1123px;
+      position: relative; page-break-after: always;
+      background: radial-gradient(120% 85% at 50% 0%, #FFFBF3 0%, var(--creme) 45%, #F4DEC2 100%);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; overflow: hidden;
+    }
+    .bokeh { position:absolute; inset:0; pointer-events:none; z-index:0; }
+    .bokeh span { position:absolute; border-radius:50%; filter:blur(2px); transform:translate(-50%,-50%); }
+    .gold-frame { position:absolute; inset:30px; border:3px solid var(--or); z-index:2;
+      border-image: linear-gradient(135deg, var(--or-clair), var(--or) 35%, #9C7637 60%, var(--or-clair)) 1; }
+    .inner-pad { position:absolute; inset:30px; z-index:2; }
+    .inner-pad::before { content:""; position:absolute; inset:12px; border:1px solid rgba(206,106,84,0.4); }
+    .content { position:relative; z-index:5; display:flex; flex-direction:column; align-items:center; }
+    .monogram { width:74px; height:74px; border-radius:50%; border:1px solid var(--or); display:flex; align-items:center; justify-content:center;
+      font-family:'Cinzel',serif; font-size:13px; letter-spacing:3px; color:var(--or); margin-bottom:16px; }
+    .eyebrow { font-family:'Lato',sans-serif; font-size:12px; letter-spacing:8px; text-transform:uppercase; color:var(--corail); margin-bottom:6px; }
+    .script { font-family:'Pinyon Script',cursive; font-size:88px; line-height:1;
+      background:linear-gradient(135deg,#9C7637,var(--or) 40%,var(--or-clair) 70%,#9C7637);
+      -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .brand { font-family:'Cinzel',serif; font-size:18px; letter-spacing:8px; color:var(--encre); }
+    .foil { width:150px; height:2px; margin:24px 0; background:linear-gradient(90deg,transparent,var(--or),var(--or-clair),var(--or),transparent); }
+    .quote { font-style:italic; font-size:23px; line-height:1.95; max-width:490px; }
+    .title { font-weight:600; font-size:56px; line-height:1.05; max-width:640px; }
+    .desc { font-style:italic; font-size:19px; line-height:1.7; max-width:540px; margin-top:18px; color:rgba(79,52,41,0.85); }
+    .photo { position:relative; width:412px; height:686px; padding:14px; background-image:linear-gradient(135deg,var(--or-clair),var(--or));
+      box-shadow:0 16px 42px rgba(79,52,41,0.24); }
+    .photo .mat { position:absolute; inset:14px; background:#fff; }
+    .photo .inner { position:absolute; inset:24px; overflow:hidden; box-shadow:inset 0 0 0 1px var(--or); }
+    .photo img { width:100%; height:100%; object-fit:cover; display:block; }
+    .caption { font-style:italic; font-size:19px; max-width:440px; margin-top:26px; }
+    .caption .deco { color:var(--or); margin:0 10px; }
+    .folio { position:absolute; bottom:54px; left:50%; transform:translateX(-50%); z-index:5; font-family:'Cinzel',serif; font-size:12px; letter-spacing:4px; color:var(--or); }
+    .end { font-style:italic; font-size:21px; line-height:1.7; max-width:500px; }
+  </style>
 </head>
 <body>
-    <svg class="background-pattern" viewBox="0 0 794 1123" xmlns="http://www.w3.org/2000/svg">
-        {{#each particules}}
-        <circle cx="{{this.x}}" cy="{{this.y}}" r="{{this.r}}" fill="{{this.color}}" opacity="{{this.opacity}}" />
-        {{/each}}
-    </svg>
-
-    <!-- Page 1: Cover -->
-    <div class="page">
-        <div class="content">
-            <p class="citation">"Le temps emporte les jours, les saisons et parfois même les personnes que nous aimons, mais il ne peut effacer les souvenirs qu'elles ont laissés dans nos cœurs. Ces souvenirs deviennent alors une lumière discrète qui nous accompagne, nous inspire et nous rappelle que chaque instant vécu avec sincérité laisse une empreinte éternelle."</p>
-            <div class="gradient-line"></div>
-            <p class="citation-author">by Everbloom</p>
-            <div class="logo-everbloom">EVERBLOOM</div>
-        </div>
+  <div class="page">
+    <div class="bokeh">{{#each particules}}<span style="left:{{this.x}}px;top:{{this.y}}px;width:{{this.r}}px;height:{{this.r}}px;background:{{this.color}};opacity:{{this.opacity}};"></span>{{/each}}</div>
+    <div class="gold-frame"></div>
+    <div class="content">
+      <div class="monogram">E&middot;B</div>
+      <div class="eyebrow">Célébration &amp; joie</div>
+      <div class="script">Anniversaire</div>
+      <div class="foil"></div>
+      <p class="quote">« La vie est une fête : chaque année de plus est une année de souvenirs en plus. »</p>
+      <div class="foil"></div>
+      <div class="brand">EVERBLOOM</div>
     </div>
+  </div>
 
-    <!-- Page 2: Intro -->
-    <div class="page">
-        <div class="content">
-            <h1 class="title">{{nom_catalogue}}</h1>
-            <p class="description">{{description}}</p>
-        </div>
-        <div class="page-number">2</div>
+  <div class="page">
+    <div class="bokeh">{{#each particules}}<span style="left:{{this.x}}px;top:{{this.y}}px;width:{{this.r}}px;height:{{this.r}}px;background:{{this.color}};opacity:{{this.opacity}};"></span>{{/each}}</div>
+    <div class="inner-pad"></div>
+    <div class="content">
+      <div class="eyebrow">Le grand jour</div>
+      <h1 class="title">{{nom_catalogue}}</h1>
+      <div class="foil"></div>
+      <p class="desc">{{description}}</p>
     </div>
+    <div class="folio">II</div>
+  </div>
 
-    <!-- Photos -->
-    {{#each photos}}
-    <div class="page">
-        <div class="content">
-            <div class="photo-container">
-                <img src="{{this.url}}" alt="">
-            </div>
-            <p class="photo-description">{{this.description}}</p>
-        </div>
-        <div class="page-number">{{add @index 3}}</div>
+  {{#each photos}}
+  <div class="page">
+    <div class="bokeh">{{#each @root.particules}}<span style="left:{{this.x}}px;top:{{this.y}}px;width:{{this.r}}px;height:{{this.r}}px;background:{{this.color}};opacity:{{this.opacity}};"></span>{{/each}}</div>
+    <div class="inner-pad"></div>
+    <div class="content">
+      <div class="photo"><div class="mat"></div><div class="inner"><img src="{{this.url}}" alt=""></div></div>
+      {{#if this.description}}<p class="caption"><span class="deco">&#10038;</span>{{this.description}}<span class="deco">&#10038;</span></p>{{/if}}
     </div>
-    {{/each}}
+    <div class="folio">{{add @index 3}}</div>
+  </div>
+  {{/each}}
 
-    <!-- Last Page -->
-    <div class="page">
-        <div class="content">
-            <p class="end-note">Vous souhaitez créer un nouveau catalogue ? Rendez-vous sur {{boutique_url}}</p>
-            <div class="logo-everbloom">EVERBLOOM</div>
-        </div>
+  <div class="page">
+    <div class="bokeh">{{#each particules}}<span style="left:{{this.x}}px;top:{{this.y}}px;width:{{this.r}}px;height:{{this.r}}px;background:{{this.color}};opacity:{{this.opacity}};"></span>{{/each}}</div>
+    <div class="gold-frame"></div>
+    <div class="content">
+      <div class="script" style="font-size:60px;">Merci</div>
+      <p class="end">d'avoir célébré ce moment d'exception.<br>Composez un nouveau catalogue sur<br>{{boutique_url}}</p>
+      <div class="foil"></div>
+      <div class="monogram">E&middot;B</div>
     </div>
+  </div>
 </body>
 </html>

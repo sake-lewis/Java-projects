@@ -17,7 +17,7 @@ export default function PhotoGrid({ photos, maxPhotos, onAddDescription, onDelet
         <span 
           className="text-xs font-light uppercase tracking-widest"
           style={{ 
-            fontFamily: 'var(--font-lato), sans-serif',
+            fontFamily: 'var(--font-sans)',
             color: photos.length === maxPhotos ? '#C4956A' : '#1E4D3A'
           }}
         >
@@ -44,7 +44,7 @@ export default function PhotoGrid({ photos, maxPhotos, onAddDescription, onDelet
           </svg>
           <p 
             className="text-lg italic"
-            style={{ fontFamily: 'var(--font-cormorant), serif' }}
+            style={{ fontFamily: 'var(--font-sans)' }}
           >
             Aucune photo ajoutée
           </p>
@@ -79,7 +79,7 @@ export default function PhotoGrid({ photos, maxPhotos, onAddDescription, onDelet
                 placeholder="Description (optionnelle)"
                 onChange={(e) => onAddDescription(index, e.target.value)}
                 className="w-full rounded border-none bg-[#E8E0D5] px-3 py-2 text-[13px] font-light text-[#1E4D3A] placeholder:text-[#1E4D3A]/40 focus:ring-1 focus:ring-[#1E4D3A]/20"
-                style={{ fontFamily: 'var(--font-lato), sans-serif' }}
+                style={{ fontFamily: 'var(--font-sans)' }}
               />
             </div>
           ))}
