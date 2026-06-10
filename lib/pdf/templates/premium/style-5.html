@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Playfair+Display:ital,wght@1,700&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #080808;
+            color: #F5E6C8;
+            font-family: 'Cinzel', serif;
+        }
+        .page {
+            width: 794px;
+            height: 1123px;
+            position: relative;
+            page-break-after: always;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 20px solid transparent;
+        }
+        .global-border-outer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            border: 1.5px solid #B8960C;
+            pointer-events: none;
+            z-index: 20;
+        }
+        .global-border-inner {
+            position: absolute;
+            top: 26px;
+            left: 26px;
+            right: 26px;
+            bottom: 26px;
+            border: 0.5px solid #B8960C;
+            pointer-events: none;
+            z-index: 20;
+        }
+        .corner-diamond {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background-color: #8B0000;
+            transform: rotate(45deg);
+            z-index: 25;
+        }
+        .corner-tl { top: 12px; left: 12px; }
+        .corner-tr { top: 12px; right: 12px; }
+        .corner-bl { bottom: 12px; left: 12px; }
+        .corner-br { bottom: 12px; right: 12px; }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 60px;
+        }
+        .citation {
+            font-family: 'Cinzel', serif;
+            font-weight: 400;
+            font-size: 12px;
+            line-height: 2.2;
+            max-width: 450px;
+            color: #F5E6C8;
+            letter-spacing: 1px;
+        }
+        .citation-author {
+            font-size: 12px;
+            margin-top: 20px;
+            color: #B8960C;
+            letter-spacing: 2px;
+        }
+        .logo-everbloom {
+            font-family: 'Cinzel', serif;
+            font-size: 20px;
+            letter-spacing: 5px;
+            margin-top: 60px;
+            color: #B8960C;
+        }
+        .title {
+            font-weight: 600;
+            font-size: 32px;
+            margin-bottom: 25px;
+            color: #B8960C;
+            letter-spacing: 4px;
+        }
+        .description {
+            font-family: 'Lato', sans-serif;
+            font-style: italic;
+            font-size: 16px;
+            max-width: 500px;
+            line-height: 1.8;
+            color: #F5E6C8;
+        }
+        .photo-frame-outer {
+            padding: 10px;
+            border: 1px solid #B8960C;
+            position: relative;
+            margin-bottom: 30px;
+        }
+        .photo-frame-inner {
+            padding: 4px;
+            border: 0.5px solid #B8960C;
+        }
+        .photo-container {
+            width: 320px;
+            height: 568px;
+            overflow: hidden;
+            background-color: #1A1A1A;
+        }
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .photo-corner {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #8B0000;
+            transform: rotate(45deg);
+        }
+        .pc-tl { top: -4px; left: -4px; }
+        .pc-tr { top: -4px; right: -4px; }
+        .pc-bl { bottom: -4px; left: -4px; }
+        .pc-br { bottom: -4px; right: -4px; }
+
+        .photo-description {
+            font-family: 'Lato', sans-serif;
+            font-size: 14px;
+            max-width: 320px;
+            color: #F5E6C8;
+            letter-spacing: 0.5px;
+        }
+        .page-number {
+            position: absolute;
+            bottom: 50px;
+            right: 50px;
+            font-size: 11px;
+            color: #B8960C;
+            z-index: 30;
+        }
+        .end-note {
+            font-size: 16px;
+            max-width: 450px;
+            line-height: 1.8;
+            margin-bottom: 40px;
+            color: #F5E6C8;
+        }
+    </style>
+</head>
+<body>
+    <div class="global-border-outer"></div>
+    <div class="global-border-inner"></div>
+    <div class="corner-diamond corner-tl"></div>
+    <div class="corner-diamond corner-tr"></div>
+    <div class="corner-diamond corner-bl"></div>
+    <div class="corner-diamond corner-br"></div>
+
+    <!-- Page 1: Cover -->
+    <div class="page">
+        <div class="content">
+            <p class="citation">"Le temps emporte les jours, les saisons et parfois même les personnes que nous aimons, mais il ne peut effacer les souvenirs qu'elles ont laissés dans nos cœurs. Ces souvenirs deviennent alors une lumière discrète qui nous accompagne, nous inspire et nous rappelle que chaque instant vécu avec sincérité laisse une empreinte éternelle."</p>
+            <p class="citation-author">by Everbloom</p>
+            <div class="logo-everbloom">EVERBLOOM</div>
+        </div>
+    </div>
+
+    <!-- Page 2: Intro -->
+    <div class="page">
+        <div class="content">
+            <h1 class="title">{{nom_catalogue}}</h1>
+            <p class="description">{{description}}</p>
+        </div>
+        <div class="page-number">2</div>
+    </div>
+
+    <!-- Photos -->
+    {{#each photos}}
+    <div class="page">
+        <div class="content">
+            <div class="photo-frame-outer">
+                <div class="photo-corner pc-tl"></div>
+                <div class="photo-corner pc-tr"></div>
+                <div class="photo-corner pc-bl"></div>
+                <div class="photo-corner pc-br"></div>
+                <div class="photo-frame-inner">
+                    <div class="photo-container">
+                        <img src="{{this.url}}" alt="">
+                    </div>
+                </div>
+            </div>
+            <p class="photo-description">{{this.description}}</p>
+        </div>
+        <div class="page-number">{{add @index 3}}</div>
+    </div>
+    {{/each}}
+
+    <!-- Last Page -->
+    <div class="page">
+        <div class="content">
+            <p class="end-note">Vous souhaitez créer un nouveau catalogue ? Rendez-vous sur {{boutique_url}}</p>
+            <div class="logo-everbloom">EVERBLOOM</div>
+        </div>
+    </div>
+</body>
+</html>

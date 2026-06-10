@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lato:ital,wght@0,300;0,400;1,400&display=swap" rel="stylesheet">
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #2D1B4E;
+            color: #F0E6D3;
+            font-family: 'Lato', sans-serif;
+        }
+        .page {
+            width: 794px;
+            height: 1123px;
+            position: relative;
+            page-break-after: always;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .background-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+        }
+        .logo-everbloom {
+            font-family: 'Cinzel', serif;
+            font-size: 22px;
+            letter-spacing: 6px;
+            color: #F0E6D3;
+            margin-top: 40px;
+        }
+        .citation {
+            font-style: italic;
+            font-weight: 300;
+            font-size: 16px;
+            line-height: 2;
+            max-width: 520px;
+            margin-bottom: 15px;
+        }
+        .citation-author {
+            font-size: 14px;
+            margin-bottom: 25px;
+            opacity: 0.8;
+            font-family: 'Cinzel', serif;
+        }
+        .title {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 42px;
+            margin-bottom: 25px;
+            color: #C4956A;
+            text-shadow: 0 0 15px rgba(196,149,106,0.3);
+        }
+        .description {
+            font-style: italic;
+            font-size: 19px;
+            max-width: 600px;
+            font-weight: 300;
+        }
+        .photo-container {
+            width: 320px;
+            height: 568px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(196, 149, 106, 0.25);
+            border: 1.5px solid rgba(196, 149, 106, 0.5);
+            background-color: #3D2B5E;
+            margin-bottom: 20px;
+        }
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .photo-description {
+            font-size: 15px;
+            color: #F0E6D3;
+            margin-top: 5px;
+            max-width: 320px;
+            opacity: 0.9;
+        }
+        .page-number {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            font-family: 'Lato', sans-serif;
+            font-weight: 300;
+            font-size: 12px;
+            color: #C4956A;
+        }
+        .end-note {
+            font-size: 18px;
+            max-width: 500px;
+            line-height: 1.6;
+            margin-bottom: 45px;
+        }
+    </style>
+</head>
+<body>
+    <svg class="background-pattern" viewBox="0 0 794 1123" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="#C4956A" stroke-opacity="0.15" stroke-width="0.5">
+            <line x1="0" y1="0" x2="200" y2="200" />
+            <line x1="794" y1="0" x2="594" y2="200" />
+            <line x1="0" y1="1123" x2="200" y2="923" />
+            <line x1="794" y1="1123" x2="594" y2="923" />
+            <!-- Burst effect -->
+            <g transform="translate(100, 100)">
+                <line x1="0" y1="0" x2="30" y2="30" />
+                <line x1="0" y1="0" x2="-30" y2="30" />
+                <line x1="0" y1="0" x2="30" y2="-30" />
+                <line x1="0" y1="0" x2="-30" y2="-30" />
+            </g>
+            <g transform="translate(694, 150)">
+                <line x1="0" y1="0" x2="40" y2="0" />
+                <line x1="0" y1="0" x2="-40" y2="0" />
+                <line x1="0" y1="0" x2="0" y2="40" />
+                <line x1="0" y1="0" x2="0" y2="-40" />
+            </g>
+            <g transform="translate(694, 1023)">
+                <line x1="0" y1="0" x2="30" y2="30" />
+                <line x1="0" y1="0" x2="-30" y2="30" />
+                <line x1="0" y1="0" x2="30" y2="-30" />
+                <line x1="0" y1="0" x2="-30" y2="-30" />
+            </g>
+            <g transform="translate(100, 950)">
+                <line x1="0" y1="0" x2="40" y2="0" />
+                <line x1="0" y1="0" x2="-40" y2="0" />
+                <line x1="0" y1="0" x2="0" y2="40" />
+                <line x1="0" y1="0" x2="0" y2="-40" />
+            </g>
+        </g>
+    </svg>
+
+    <!-- Page 1: Cover -->
+    <div class="page">
+        <div class="content">
+            <p class="citation">"Le temps emporte les jours, les saisons et parfois même les personnes que nous aimons, mais il ne peut effacer les souvenirs qu'elles ont laissés dans nos cœurs. Ces souvenirs deviennent alors une lumière discrète qui nous accompagne, nous inspire et nous rappelle que chaque instant vécu avec sincérité laisse une empreinte éternelle."</p>
+            <p class="citation-author">by Everbloom</p>
+            <div class="logo-everbloom">EVERBLOOM</div>
+        </div>
+    </div>
+
+    <!-- Page 2: Intro -->
+    <div class="page">
+        <div class="content">
+            <h1 class="title">{{nom_catalogue}}</h1>
+            <p class="description">{{description}}</p>
+        </div>
+        <div class="page-number">2</div>
+    </div>
+
+    <!-- Photos -->
+    {{#each photos}}
+    <div class="page">
+        <div class="content">
+            <div class="photo-container">
+                <img src="{{this.url}}" alt="">
+            </div>
+            <p class="photo-description">{{this.description}}</p>
+        </div>
+        <div class="page-number">{{add @index 3}}</div>
+    </div>
+    {{/each}}
+
+    <!-- Last Page -->
+    <div class="page">
+        <div class="content">
+            <p class="end-note">Vous souhaitez créer un nouveau catalogue ? Rendez-vous sur {{boutique_url}}</p>
+            <div class="logo-everbloom">EVERBLOOM</div>
+        </div>
+    </div>
+</body>
+</html>

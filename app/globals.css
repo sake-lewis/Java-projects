@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+:root {
+  /* Couleurs EVERBLOOM */
+  --color-beige: #E8E0D5;
+  --color-vert: #1E4D3A;
+  --color-lavande: #7B5EA7;
+  --color-or: #C4956A;
+
+  /* Fonts */
+  --font-cormorant: var(--font-cormorant);
+  --font-lato: var(--font-lato);
+  --font-cinzel: var(--font-cinzel);
+  --font-playfair: var(--font-playfair);
+}
+
+/* Reset global */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-beige);
+  font-family: var(--font-lato);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar personnalisée */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-beige);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-or);
+  border-radius: 3px;
+}
+
+/* Classes utilitaires EVERBLOOM */
+.font-cormorant { font-family: var(--font-cormorant); }
+.font-lato      { font-family: var(--font-lato); }
+.font-cinzel    { font-family: var(--font-cinzel); }
+.font-playfair  { font-family: var(--font-playfair); }
+
+.text-vert    { color: var(--color-vert); }
+.text-or      { color: var(--color-or); }
+.text-lavande { color: var(--color-lavande); }
+.bg-beige     { background-color: var(--color-beige); }
+.bg-vert      { background-color: var(--color-vert); }

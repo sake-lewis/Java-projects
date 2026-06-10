@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Cinzel:wght@400;600&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #F7F0E8;
+            color: #1E4D3A;
+            font-family: 'Playfair Display', serif;
+        }
+        .page {
+            width: 794px;
+            height: 1123px;
+            position: relative;
+            page-break-after: always;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .background-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+        }
+        .logo-everbloom {
+            font-family: 'Cinzel', serif;
+            font-size: 20px;
+            letter-spacing: 5px;
+            color: #1E4D3A;
+            margin-top: 40px;
+        }
+        .citation {
+            font-style: italic;
+            font-weight: 400;
+            font-size: 15px;
+            line-height: 2.1;
+            max-width: 500px;
+            margin-bottom: 10px;
+        }
+        .citation-author {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .title {
+            font-weight: 600;
+            font-size: 36px;
+            margin-bottom: 20px;
+            font-family: 'Cinzel', serif;
+        }
+        .description {
+            font-style: italic;
+            font-size: 18px;
+            max-width: 600px;
+            color: #C4956A;
+        }
+        .photo-wrapper {
+            position: relative;
+            width: 320px;
+            height: 568px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(196, 149, 106, 0.2);
+            background-color: #E8E0D5;
+            margin-bottom: 20px;
+        }
+        .photo-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .photo-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 56px;
+            background: linear-gradient(to top, rgba(247, 240, 232, 0.8), transparent);
+        }
+        .photo-description {
+            font-size: 14px;
+            color: #1E4D3A;
+            margin-top: 5px;
+            max-width: 320px;
+        }
+        .page-number {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            font-family: 'Lato', sans-serif;
+            font-weight: 300;
+            font-size: 11px;
+            color: #C4956A;
+        }
+        .end-note {
+            font-size: 16px;
+            max-width: 500px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            color: #1E4D3A;
+        }
+    </style>
+</head>
+<body>
+    <svg class="background-pattern" viewBox="0 0 794 1123" xmlns="http://www.w3.org/2000/svg">
+        <!-- Nuages (haut) -->
+        <g fill="#C4956A" fill-opacity="0.12">
+            <path d="M100,100 Q120,80 140,100 T180,100 T220,100 T240,120 Q240,140 220,140 L120,140 Q100,140 100,120 Z" />
+            <path d="M500,150 Q530,120 560,150 T620,150 T680,150 T710,180 Q710,210 680,210 L530,210 Q500,210 500,180 Z" />
+            <path d="M300,50 Q320,30 340,50 T380,50 T420,50 T440,70 Q440,90 420,90 L320,90 Q300,90 300,70 Z" />
+        </g>
+        <!-- Lunes (bas) -->
+        <g fill="#7B5EA7" fill-opacity="0.12">
+            <path d="M150,1000 A40,40 0 1,1 150,1080 A30,30 0 1,0 150,1000 Z" />
+            <path d="M400,950 A35,35 0 1,1 400,1020 A25,25 0 1,0 400,950 Z" />
+            <path d="M650,1020 A45,45 0 1,1 650,1110 A35,35 0 1,0 650,1020 Z" />
+        </g>
+    </svg>
+
+    <!-- Page 1: Cover -->
+    <div class="page">
+        <div class="content">
+            <p class="citation">"Le temps emporte les jours, les saisons et parfois même les personnes que nous aimons, mais il ne peut effacer les souvenirs qu'elles ont laissés dans nos cœurs. Ces souvenirs deviennent alors une lumière discrète qui nous accompagne, nous inspire et nous rappelle que chaque instant vécu avec sincérité laisse une empreinte éternelle."</p>
+            <p class="citation-author">by Everbloom</p>
+            <div class="logo-everbloom">EVERBLOOM</div>
+        </div>
+    </div>
+
+    <!-- Page 2: Intro -->
+    <div class="page">
+        <div class="content">
+            <h1 class="title">{{nom_catalogue}}</h1>
+            <p class="description">{{description}}</p>
+        </div>
+        <div class="page-number">2</div>
+    </div>
+
+    <!-- Photos -->
+    {{#each photos}}
+    <div class="page">
+        <div class="content">
+            <div class="photo-wrapper">
+                <img src="{{this.url}}" alt="">
+                <div class="photo-overlay"></div>
+            </div>
+            <p class="photo-description">{{this.description}}</p>
+        </div>
+        <div class="page-number">{{add @index 3}}</div>
+    </div>
+    {{/each}}
+
+    <!-- Last Page -->
+    <div class="page">
+        <div class="content">
+            <p class="end-note">Vous souhaitez créer un nouveau catalogue ? Rendez-vous sur {{boutique_url}}</p>
+            <div class="logo-everbloom">EVERBLOOM</div>
+        </div>
+    </div>
+</body>
+</html>

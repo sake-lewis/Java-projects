@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Playfair+Display:ital,wght@1,700&family=Lato:wght@300;400&family=Cormorant+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #F0E8D8;
+            color: #4A4A4A;
+            font-family: 'Cormorant Garamond', serif;
+        }
+        .page {
+            width: 794px;
+            height: 1123px;
+            position: relative;
+            page-break-after: always;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .background-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .citation-border {
+            padding: 40px;
+            border: 1.5px solid #D4AF37; /* External Gold */
+            position: relative;
+            max-width: 500px;
+        }
+        .citation-border::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            bottom: 4px;
+            border: 0.5px solid #8B0000; /* Middle Bordeaux */
+        }
+        .citation-border::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            border: 0.5px solid #D4AF37; /* Internal Gold */
+        }
+        .citation {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-weight: 700;
+            font-size: 14px;
+            line-height: 2;
+            color: #4A4A4A;
+            margin: 0;
+            position: relative;
+            z-index: 5;
+        }
+        .citation-author {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-weight: 700;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        .logo-everbloom {
+            font-family: 'Cinzel', serif;
+            font-size: 20px;
+            letter-spacing: 5px;
+            margin-top: 60px;
+            color: #8B0000;
+        }
+        .title {
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            font-size: 32px;
+            color: #8B0000;
+            margin-bottom: 20px;
+        }
+        .description {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 18px;
+            max-width: 550px;
+            line-height: 1.6;
+            color: #4A4A4A;
+        }
+        .photo-wrapper {
+            padding: 12px;
+            border: 1px solid #D4AF37;
+            position: relative;
+            margin-bottom: 30px;
+        }
+        .photo-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            bottom: 4px;
+            border: 1px solid #D4AF37;
+            pointer-events: none;
+        }
+        .photo-container {
+            width: 320px;
+            height: 568px;
+            border-radius: 4px;
+            overflow: hidden;
+            background-color: #E6DCC8;
+        }
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .photo-description {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 15px;
+            max-width: 320px;
+            color: #4A4A4A;
+        }
+        .page-number {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            font-family: 'Lato', sans-serif;
+            font-size: 11px;
+            color: #D4AF37;
+        }
+        .end-note {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18px;
+            max-width: 450px;
+            line-height: 1.8;
+            margin-bottom: 40px;
+            color: #4A4A4A;
+        }
+    </style>
+</head>
+<body>
+    <svg class="background-pattern" viewBox="0 0 794 1123" xmlns="http://www.w3.org/2000/svg">
+        <g opacity="0.2" fill="none" stroke="#C4956A" stroke-width="0.5">
+            <!-- Top Left Corner -->
+            <path d="M0,0 L150,0 M0,0 L0,150 M0,50 Q50,50 50,0 M0,100 Q100,100 100,0 M20,20 L80,80" />
+            <!-- Top Right Corner -->
+            <path d="M794,0 L644,0 M794,0 L794,150 M794,50 Q744,50 744,0 M794,100 Q694,100 694,0 M774,20 L714,80" />
+            <!-- Bottom Left Corner -->
+            <path d="M0,1123 L150,1123 M0,1123 L0,973 M0,1073 Q50,1073 50,1123 M0,1023 Q100,1023 100,1123 M20,1103 L80,1043" />
+            <!-- Bottom Right Corner -->
+            <path d="M794,1123 L644,1123 M794,1123 L794,973 M794,1073 Q744,1073 744,1123 M794,1023 Q694,1023 694,1123 M774,1103 L714,1043" />
+        </g>
+    </svg>
+
+    <!-- Page 1: Cover -->
+    <div class="page">
+        <div class="content">
+            <div class="citation-border">
+                <p class="citation">"Le temps emporte les jours, les saisons et parfois même les personnes que nous aimons, mais il ne peut effacer les souvenirs qu'elles ont laissés dans nos cœurs. Ces souvenirs deviennent alors une lumière discrète qui nous accompagne, nous inspire et nous rappelle que chaque instant vécu avec sincérité laisse une empreinte éternelle."</p>
+                <p class="citation-author">by Everbloom</p>
+            </div>
+            <div class="logo-everbloom">EVERBLOOM</div>
+        </div>
+    </div>
+
+    <!-- Page 2: Intro -->
+    <div class="page">
+        <div class="content">
+            <h1 class="title">{{nom_catalogue}}</h1>
+            <p class="description">{{description}}</p>
+        </div>
+        <div class="page-number">2</div>
+    </div>
+
+    <!-- Photos -->
+    {{#each photos}}
+    <div class="page">
+        <div class="content">
+            <div class="photo-wrapper">
+                <div class="photo-container">
+                    <img src="{{this.url}}" alt="">
+                </div>
+            </div>
+            <p class="photo-description">{{this.description}}</p>
+        </div>
+        <div class="page-number">{{add @index 3}}</div>
+    </div>
+    {{/each}}
+
+    <!-- Last Page -->
+    <div class="page">
+        <div class="content">
+            <p class="end-note">Vous souhaitez créer un nouveau catalogue ? Rendez-vous sur {{boutique_url}}</p>
+            <div class="logo-everbloom">EVERBLOOM</div>
+        </div>
+    </div>
+</body>
+</html>

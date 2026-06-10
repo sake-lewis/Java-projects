@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Playfair+Display:ital,wght@1,700&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #F9EEF2;
+            color: #7B5EA7;
+            font-family: 'Lato', sans-serif;
+        }
+        .page {
+            width: 794px;
+            height: 1123px;
+            position: relative;
+            page-break-after: always;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .background-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.1;
+        }
+        .content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .citation-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 600px;
+            height: 600px;
+        }
+        .citation-circle {
+            position: absolute;
+            z-index: -1;
+        }
+        .citation {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-weight: 700;
+            font-size: 14px;
+            line-height: 2.2;
+            max-width: 400px;
+            color: #7B5EA7;
+        }
+        .citation-author {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-weight: 700;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        .logo-everbloom {
+            font-family: 'Cinzel', serif;
+            font-size: 20px;
+            letter-spacing: 5px;
+            margin-top: 40px;
+            color: #7B5EA7;
+        }
+        .title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-style: italic;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        .description {
+            font-style: italic;
+            font-size: 16px;
+            max-width: 500px;
+            line-height: 1.6;
+        }
+        .photo-container {
+            width: 320px;
+            height: 568px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(123, 94, 167, 0.2), 0 8px 32px rgba(196, 149, 106, 0.15);
+            background-color: #F0E6EA;
+            margin-bottom: 25px;
+        }
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .photo-description {
+            font-size: 14px;
+            max-width: 320px;
+            color: #7B5EA7;
+        }
+        .page-number {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            font-size: 11px;
+            opacity: 0.5;
+        }
+        .end-note {
+            font-size: 16px;
+            max-width: 450px;
+            line-height: 1.8;
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+    <svg class="background-pattern" viewBox="0 0 794 1123" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <g id="flake">
+                <line x1="0" y1="-10" x2="0" y2="10" stroke="#7B5EA7" stroke-width="1" />
+                <line x1="-8.66" y1="-5" x2="8.66" y2="5" stroke="#7B5EA7" stroke-width="1" />
+                <line x1="-8.66" y1="5" x2="8.66" y2="-5" stroke="#7B5EA7" stroke-width="1" />
+            </g>
+        </defs>
+        <use href="#flake" x="100" y="100" transform="scale(1.5)" />
+        <use href="#flake" x="700" y="150" transform="rotate(15) scale(1.2)" />
+        <use href="#flake" x="400" y="50" transform="rotate(30)" />
+        <use href="#flake" x="150" y="500" transform="scale(2)" />
+        <use href="#flake" x="650" y="450" transform="rotate(45) scale(1.3)" />
+        <use href="#flake" x="50" y="900" transform="rotate(10) scale(1.8)" />
+        <use href="#flake" x="750" y="1000" transform="scale(1.4)" />
+        <use href="#flake" x="400" y="1050" transform="rotate(60)" />
+        <use href="#flake" x="300" y="300" transform="scale(0.8)" />
+        <use href="#flake" x="500" y="800" transform="rotate(25) scale(1.1)" />
+    </svg>
+
+    <!-- Page 1: Cover -->
+    <div class="page">
+        <div class="content">
+            <div class="citation-container">
+                <svg class="citation-circle" width="600" height="600" viewBox="0 0 600 600">
+                    <circle cx="300" cy="300" r="180" fill="none" stroke="#C4956A" stroke-width="1" opacity="0.15" />
+                </svg>
+                <div class="content">
+                    <p class="citation">"Le temps emporte les jours, les saisons et parfois même les personnes que nous aimons, mais il ne peut effacer les souvenirs qu'elles ont laissés dans nos cœurs. Ces souvenirs deviennent alors une lumière discrète qui nous accompagne, nous inspire et nous rappelle que chaque instant vécu avec sincérité laisse une empreinte éternelle."</p>
+                    <p class="citation-author">by Everbloom</p>
+                </div>
+            </div>
+            <div class="logo-everbloom">EVERBLOOM</div>
+        </div>
+    </div>
+
+    <!-- Page 2: Intro -->
+    <div class="page">
+        <div class="content">
+            <h1 class="title">{{nom_catalogue}}</h1>
+            <p class="description">{{description}}</p>
+        </div>
+        <div class="page-number">2</div>
+    </div>
+
+    <!-- Photos -->
+    {{#each photos}}
+    <div class="page">
+        <div class="content">
+            <div class="photo-container">
+                <img src="{{this.url}}" alt="">
+            </div>
+            <p class="photo-description">{{this.description}}</p>
+        </div>
+        <div class="page-number">{{add @index 3}}</div>
+    </div>
+    {{/each}}
+
+    <!-- Last Page -->
+    <div class="page">
+        <div class="content">
+            <p class="end-note">Vous souhaitez créer un nouveau catalogue ? Rendez-vous sur {{boutique_url}}</p>
+            <div class="logo-everbloom">EVERBLOOM</div>
+        </div>
+    </div>
+</body>
+</html>
