@@ -136,6 +136,9 @@ function EditorContent() {
       setPdfUrl(data.pdf_url)
     } catch (err: any) {
       setError(err.message)
+    } finally {
+      // Toujours sortir de l'état "génération en cours" : succès comme échec,
+      // sinon le spinner masque le bouton de téléchargement après réussite.
       setIsGenerating(false)
     }
   }
