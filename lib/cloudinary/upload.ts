@@ -60,7 +60,10 @@ export async function uploadPdf(buffer: Buffer, token: string): Promise<string> 
     stream.end(buffer);
   });
 
-  return result.secure_url;
+  // Ajoute fl_attachment:catalogue → Cloudinary sert le PDF avec
+  // Content-Disposition: attachment;filename=catalogue.pdf
+  // ⇒ le navigateur DÉCLENCHE le téléchargement au lieu d'ouvrir le fichier.
+  return result.secure_url.replace('/raw/upload/', '/raw/upload/fl_attachment:catalogue/');
 }
 
 /** Supprime le PDF Cloudinary d'une session (appelé à l'expiration). */
