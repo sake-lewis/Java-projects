@@ -23,8 +23,13 @@ export async function POST(req: NextRequest) {
     // Authentification du webhook : seul Chariow (qui connaît le secret) peut
     // créer des sessions. Sans cela, n'importe qui pourrait générer des
     // catalogues gratuitement en appelant cet endpoint.
-    const webhookSecret = process.env.CHARIOW_WEBHOOK_SECRET;
-    if (!webhookSecret) {
+    //
+    // Bascule de secret sans downtime : on accepte CHARIOW_WEBHOOK_SECRET
+    // (nouveau) et CHARIOW_WEBHOOK_SECRET_LEGACY (ancien, optionnel) le temps
+    // que Vercel et Chariow soient mis à jour. Retirer LEGACY ensuite.
+    const secretActuel = process.env.CHARIOW_WEBHOOK_SECRET;
+    const secretLegacy = process.env.CHARIOW_WEBHOOK_SECRET_LEGACY;
+    if (!secretActuel) {
       console.error("CHARIOW_WEBHOOK_SECRET non configuré : webhook refusé.");
       return NextResponse.json({ error: "Configuration manquante" }, { status: 500 });
     }
@@ -34,7 +39,10 @@ export async function POST(req: NextRequest) {
       req.headers.get('x-webhook-secret') ??
       new URL(req.url).searchParams.get('secret');
 
-    if (!secretValide(fourni, webhookSecret)) {
+    const valide =
+      secretValide(fourni, secretActuel) ||
+      (secretLegacy ? secretValide(fourni, secretLegacy) : false);
+    if (!valide) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 

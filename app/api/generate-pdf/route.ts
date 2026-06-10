@@ -15,6 +15,24 @@ Handlebars.registerHelper('add', function(value, addition) {
   return value + addition;
 });
 
+/**
+ * Vérifie que toutes les photos pointent vers le compte Cloudinary configuré.
+ *
+ * Sans cette validation, un client (avec un token valide) pourrait envoyer
+ * n'importe quelle URL — Puppeteer la chargerait au moment du rendu, ce qui
+ * ouvrirait un SSRF vers le réseau interne Vercel, les metadata AWS, ou des
+ * fichiers locaux via file://. On bloque tout ce qui ne sort pas de Cloudinary.
+ */
+function photosValides(photos: unknown): photos is { url: string; description?: string }[] {
+  if (!Array.isArray(photos)) return false;
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  if (!cloudName) return false;
+  const prefixeAttendu = `https://res.cloudinary.com/${cloudName}/`;
+  return photos.every(
+    p => p && typeof p.url === 'string' && p.url.startsWith(prefixeAttendu)
+  );
+}
+
 export async function POST(req: NextRequest) {
   let currentToken: string | null = null;
 
@@ -31,6 +49,13 @@ export async function POST(req: NextRequest) {
     // ou "paid" (ancien flux test) ou "generating" (réessai après échec).
     if (!["paid", "claimed", "generating"].includes(session.statut)) {
       return NextResponse.json({ error: "Action non autorisée" }, { status: 403 });
+    }
+
+    // Garde anti-SSRF : refuser tout PDF qui contiendrait des URLs externes.
+    // Le client uploade ses photos via /api/upload-photo (qui les place sur
+    // Cloudinary), elles doivent donc TOUTES en provenir.
+    if (!photosValides(photos)) {
+      return NextResponse.json({ error: "Photos invalides" }, { status: 400 });
     }
 
     await updateSession(token, {

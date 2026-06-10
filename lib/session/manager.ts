@@ -113,10 +113,14 @@ export async function expirerSession(token: string): Promise<void> {
  */
 export async function reclamerSessionRecente(
   forfait: Forfait,
-  fenetreMinutes = 2
+  // Fenêtre serrée (90s) : Chariow envoie le webhook quelques secondes après
+  // le paiement, /merci sonde dans la foulée. Au-delà, on considère qu'un
+  // client légitime ne pourrait plus tomber sur sa session — réduit l'angle
+  // d'attaque pour un script qui essaierait de capter une session payée.
+  fenetreSecondes = 90
 ): Promise<{ token: string; forfait: Forfait } | null> {
   const db = getAdminDb()
-  const seuil = Date.now() - fenetreMinutes * 60 * 1000
+  const seuil = Date.now() - fenetreSecondes * 1000
 
   // 1. Sélection des candidates (hors transaction — filtres + tri en mémoire
   //    pour éviter d'avoir à créer un index composite Firestore).
