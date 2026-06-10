@@ -9,11 +9,11 @@ interface StyleSelectorProps {
 }
 
 const themes: Record<number, { label: string; image: string; description: string }> = {
-  1: { label: "Enfance", image: "/themes/enfance.png", description: "Naissance & croissance" },
-  2: { label: "Mariage", image: "/themes/mariage.png", description: "Union & cérémonie" },
-  3: { label: "Deuil", image: "/themes/deuil.png", description: "Hommage & souvenir" },
-  4: { label: "Anniversaire", image: "/themes/anniversaire.png", description: "Célébration & joie" },
-  5: { label: "Solennel", image: "/themes/solennel.png", description: "Diplôme & fêtes solennelles" },
+  1: { label: "Enfance", image: "/themes/enfance.webp", description: "Naissance & croissance" },
+  2: { label: "Mariage", image: "/themes/mariage.webp", description: "Union & cérémonie" },
+  3: { label: "Deuil", image: "/themes/deuil.webp", description: "Hommage & souvenir" },
+  4: { label: "Anniversaire", image: "/themes/anniversaire.webp", description: "Célébration & joie" },
+  5: { label: "Solennel", image: "/themes/solennel.webp", description: "Diplôme & fêtes solennelles" },
 }
 
 export default function StyleSelector({ selectedStyle, onSelect }: StyleSelectorProps) {
