@@ -87,7 +87,8 @@ export async function POST(req: NextRequest) {
       .digest('hex');
 
     // Stockage du PDF sur Cloudinary (resource_type "raw").
-    const pdfUrl = await uploadPdf(Buffer.from(pdfBuffer), token);
+    // Le nom du catalogue saisi par le client devient le nom du fichier téléchargé.
+    const pdfUrl = await uploadPdf(Buffer.from(pdfBuffer), token, nom_catalogue);
 
     await marquerPdfPret(token, pdfUrl, hash);
     await supprimerPhotosSession(token);

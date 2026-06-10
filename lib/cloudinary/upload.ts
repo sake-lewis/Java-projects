@@ -47,11 +47,38 @@ function pdfPublicId(token: string): string {
 }
 
 /**
+ * Assainit le nom de catalogue pour servir de nom de fichier sur tous les OS.
+ * - Retire les caractères interdits sur Windows/macOS (< > : " / \ | ? *)
+ * - Remplace les espaces et caractères non ASCII sûrs par "-"
+ * - Tronque à 80 caractères pour éviter les limites de système de fichiers
+ * - Fallback "catalogue" si le résultat est vide
+ *
+ * Note : on garde les lettres/chiffres ASCII, le tiret et l'underscore. Les
+ * accents sont retirés (NFD) pour éviter les problèmes d'encodage HTTP dans
+ * l'URL Cloudinary.
+ */
+function assainirNomFichier(nom: string): string {
+  const sansAccents = nom.normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const propre = sansAccents
+    .replace(/[<>:"/\\|?*\x00-\x1F]/g, '')   // caractères interdits
+    .replace(/[^A-Za-z0-9._-]+/g, '-')        // tout le reste → tiret
+    .replace(/-+/g, '-')                      // tirets multiples
+    .replace(/^[-.]+|[-.]+$/g, '')            // tirets/points en début/fin
+    .slice(0, 80);
+  return propre || 'catalogue';
+}
+
+/**
  * Stocke le PDF généré sur Cloudinary en "raw" (fichier livré tel quel, non
  * soumis à la restriction de livraison des PDF "image" de Cloudinary).
- * Renvoie une URL de téléchargement (avec nom de fichier via fl_attachment).
+ * Renvoie une URL de téléchargement direct (fl_attachment), avec un nom de
+ * fichier dérivé du nom du catalogue choisi par le client.
  */
-export async function uploadPdf(buffer: Buffer, token: string): Promise<string> {
+export async function uploadPdf(
+  buffer: Buffer,
+  token: string,
+  nomCatalogue: string
+): Promise<string> {
   const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       { resource_type: 'raw', public_id: pdfPublicId(token), overwrite: true },
@@ -60,10 +87,11 @@ export async function uploadPdf(buffer: Buffer, token: string): Promise<string> 
     stream.end(buffer);
   });
 
-  // Ajoute fl_attachment:catalogue → Cloudinary sert le PDF avec
-  // Content-Disposition: attachment;filename=catalogue.pdf
-  // ⇒ le navigateur DÉCLENCHE le téléchargement au lieu d'ouvrir le fichier.
-  return result.secure_url.replace('/raw/upload/', '/raw/upload/fl_attachment:catalogue/');
+  // fl_attachment:<nom> → Cloudinary sert le PDF avec
+  // Content-Disposition: attachment;filename=<nom>.pdf
+  // → le téléchargement reçoit directement le nom du catalogue.
+  const nomFichier = assainirNomFichier(nomCatalogue);
+  return result.secure_url.replace('/raw/upload/', `/raw/upload/fl_attachment:${nomFichier}/`);
 }
 
 /** Supprime le PDF Cloudinary d'une session (appelé à l'expiration). */

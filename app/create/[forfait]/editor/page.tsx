@@ -269,7 +269,7 @@ function EditorContent() {
               <div className="flex gap-3">
                 <a
                   href={pdfUrl}
-                  download="catalogue.pdf"
+                  download={`${nomCatalogue || 'catalogue'}.pdf`}
                   rel="noopener noreferrer"
                   className={`flex flex-1 items-center justify-center gap-2 rounded-md bg-[#1E4D3A] py-4 text-base font-semibold text-[#E8E0D5] shadow-xl transition-all hover:bg-[#1E4D3A]/90 ${focusRing}`}
                   style={{ fontFamily: 'var(--font-sans)' }}
