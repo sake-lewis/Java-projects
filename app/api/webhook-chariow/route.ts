@@ -5,6 +5,7 @@ import { creerSession } from '@/lib/session/manager';
 import { Forfait } from '@/types';
 
 export const runtime = 'nodejs';
+export const maxDuration = 10;
 
 /**
  * Compare deux chaînes en temps constant pour éviter les attaques temporelles.

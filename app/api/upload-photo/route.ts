@@ -4,6 +4,7 @@ import { uploadPhoto } from "@/lib/cloudinary/upload"
 import { v2 as cloudinary } from 'cloudinary'
 
 export const runtime = 'nodejs'
+export const maxDuration = 30
 
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,

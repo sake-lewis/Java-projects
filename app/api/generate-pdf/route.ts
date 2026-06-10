@@ -8,6 +8,8 @@ import path from 'path';
 import crypto from 'crypto';
 
 export const runtime = 'nodejs';
+// Generation PDF Puppeteer : 120s de timeout (max Vercel Pro), 1024 Mo de RAM
+export const maxDuration = 120;
 
 Handlebars.registerHelper('add', function(value, addition) {
   return value + addition;
