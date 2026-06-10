@@ -29,11 +29,15 @@ export default async function CreatePage({ params, searchParams }: PageProps) {
     redirect("/error")
   }
 
-  // 5. Redirection selon le statut
+  // 5. Redirection selon le statut.
+  // "paid"     = ancien flux test sans /merci
+  // "claimed"  = réclamée sur /merci (nouveau flux Chariow) → on entre direct dans l'éditeur
+  // "generating" = relance après échec PDF
   switch (session.statut) {
     case "paid":
-    case "generating":
       redirect(`/create/${forfait}/start?token=${token}`)
+    case "claimed":
+    case "generating":
     case "ready":
     case "downloaded":
       redirect(`/create/${forfait}/editor?token=${token}`)
