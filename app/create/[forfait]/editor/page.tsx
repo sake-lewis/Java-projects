@@ -171,6 +171,18 @@ function EditorContent() {
           <BloomMark className="h-9 w-9 text-[#C4956A]" />
           <h1 className="text-2xl font-semibold tracking-[0.28em] text-[#1E4D3A]">EVERBLOOM</h1>
           <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#C4956A]">Éditeur de catalogue</p>
+
+          {/* Rappel du forfait : rassure le client sur ce qu'il a acheté.
+              Mini-pastille discrète sous le sous-titre, à la charte EVERBLOOM. */}
+          <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-[#1E4D3A]/15 bg-[#1E4D3A]/[0.04] px-4 py-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#C4956A]" />
+            <span className="text-[12px] font-semibold tracking-wide text-[#1E4D3A]">
+              Forfait {FORFAIT_CONFIG[forfait]?.label}
+            </span>
+            <span className="text-[11px] font-light text-[#1E4D3A]/55">
+              · jusqu&apos;à {maxPhotos} photos
+            </span>
+          </div>
         </header>
 
         {/* Étape 1 — nom : numérotée pour donner une hiérarchie et un sens de progression */}
