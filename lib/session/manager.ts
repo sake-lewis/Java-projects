@@ -84,6 +84,40 @@ export async function expirerSession(token: string): Promise<void> {
   })
 }
 
+/**
+ * Trouve la session la plus récente créée pour cet email + forfait, dans la
+ * fenêtre de minutes donnée, et **non encore consommée** (statut `paid`).
+ *
+ * Sert au flux "page merci après paiement" : Chariow ne connaît pas le token
+ * (il est créé par le webhook côté serveur), il redirige donc le client vers
+ * `/merci?email=...&forfait=...` qui résout le token via cette fonction.
+ *
+ * La fenêtre courte (10 min par défaut) + l'exigence `statut = paid` rendent
+ * difficile le vol de session par un tiers qui devinerait l'email.
+ */
+export async function trouverSessionRecente(
+  email: string,
+  forfait: Forfait,
+  fenetreMinutes = 10
+): Promise<{ token: string; forfait: Forfait } | null> {
+  const seuil = Date.now() - fenetreMinutes * 60 * 1000
+
+  // Pas de tri/inégalité côté Firestore pour éviter l'index composite : on
+  // filtre par email seul (index automatique), puis on affine en mémoire.
+  const snap = await getAdminDb()
+    .collection("sessions")
+    .where("email", "==", email)
+    .get()
+
+  const candidates = snap.docs
+    .map(d => d.data() as Session)
+    .filter(s => s.forfait === forfait && s.statut === "paid" && s.created_at >= seuil)
+    .sort((a, b) => b.created_at - a.created_at)
+
+  if (candidates.length === 0) return null
+  return { token: candidates[0].token, forfait: candidates[0].forfait }
+}
+
 export async function nettoyerSessionsExpirees(): Promise<number> {
   const maintenant = Date.now()
   const snapshot = await getAdminDb().collection("sessions")
