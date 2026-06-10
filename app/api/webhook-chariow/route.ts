@@ -44,15 +44,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Event ignored" }, { status: 200 });
     }
 
-    const { customer, metadata } = body;
-    const forfait = metadata?.forfait as Forfait;
+    // Format Chariow Pulse : { event, sale: { id, custom_metadata }, customer }
+    // Compatibilité ancienne forme { metadata } gardée par tolérance.
+    const sale = body.sale ?? {};
+    const customer = body.customer ?? {};
+    const forfait = (sale.custom_metadata?.forfait ?? body.metadata?.forfait) as Forfait;
 
     if (!forfait || !['standard', 'pro', 'premium'].includes(forfait)) {
       return NextResponse.json({ error: "Forfait non reconnu ou manquant dans les métadonnées" }, { status: 400 });
     }
 
     const token = uuidv4();
-    await creerSession(forfait, token, customer.email);
+    await creerSession({
+      forfait,
+      token,
+      // Tous optionnels — Mobile Money n'a souvent pas d'email.
+      email: customer.email ?? null,
+      phone: customer.phone ?? null,
+      chariow_ref: sale.id ?? null,
+    });
 
     return NextResponse.json({ token }, { status: 200 });
   } catch (error) {

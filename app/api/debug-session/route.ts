@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     }
 
     const token = uuidv4();
-    await creerSession(forfait, token, "test@everbloom.fr");
+    await creerSession({ forfait, token, email: "test@everbloom.fr" });
 
     // Rediriger vers la page de création avec le nouveau token
     return NextResponse.redirect(new URL(`/create/${forfait}?token=${token}`, req.url));

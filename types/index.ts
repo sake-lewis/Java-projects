@@ -1,7 +1,8 @@
 export type Forfait = "standard" | "pro" | "premium"
 
 export type StatutSession =
-  | "paid"
+  | "paid"        // Payée, non encore réclamée par un client sur /merci
+  | "claimed"     // Réclamée par un client sur /merci (verrouillée pour lui)
   | "generating"
   | "ready"
   | "downloaded"
@@ -15,8 +16,16 @@ export interface Photo {
 export interface Session {
   token: string
   forfait: Forfait
-  email: string
+  // Identifiants client : tous optionnels — selon ce que Chariow transmet
+  // (Mobile Money peut n'avoir ni email ni téléphone).
+  email?: string | null
+  phone?: string | null
+  // Référence unique de la vente côté Chariow (sale.id). Toujours présent
+  // depuis la migration vers le flux Pulse Chariow.
+  chariow_ref?: string | null
   statut: StatutSession
+  // Marqueur d'unicité du verrouillage à l'arrivée sur /merci.
+  claimed_at?: number | null
   nom_catalogue: string
   description: string
   style_choisi: 1 | 2 | 3 | 4 | 5

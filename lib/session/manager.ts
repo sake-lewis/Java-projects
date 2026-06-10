@@ -2,12 +2,23 @@ import { getAdminDb } from "@/lib/firebase/admin"
 import { supprimerPdf } from "@/lib/cloudinary/upload"
 import { Session, Forfait } from "@/types"
 
-export async function creerSession(forfait: Forfait, token: string, email: string): Promise<Session> {
+interface CreerSessionParams {
+  forfait: Forfait
+  token: string
+  email?: string | null
+  phone?: string | null
+  chariow_ref?: string | null
+}
+
+export async function creerSession(params: CreerSessionParams): Promise<Session> {
   const session: Session = {
-    token,
-    forfait,
-    email,
+    token: params.token,
+    forfait: params.forfait,
+    email: params.email ?? null,
+    phone: params.phone ?? null,
+    chariow_ref: params.chariow_ref ?? null,
     statut: "paid",
+    claimed_at: null,
     nom_catalogue: "",
     description: "",
     style_choisi: 1,
@@ -19,7 +30,7 @@ export async function creerSession(forfait: Forfait, token: string, email: strin
     pdf_expires_at: null,
     session_expires_at: null,
   }
-  await getAdminDb().collection("sessions").doc(token).set(session)
+  await getAdminDb().collection("sessions").doc(params.token).set(session)
   return session
 }
 
@@ -85,37 +96,59 @@ export async function expirerSession(token: string): Promise<void> {
 }
 
 /**
- * Trouve la session la plus récente créée pour cet email + forfait, dans la
- * fenêtre de minutes donnée, et **non encore consommée** (statut `paid`).
+ * Trouve et **verrouille** la session la plus récente pour ce forfait, dans la
+ * fenêtre courte donnée, **non encore réclamée** (statut `paid`).
  *
- * Sert au flux "page merci après paiement" : Chariow ne connaît pas le token
- * (il est créé par le webhook côté serveur), il redirige donc le client vers
- * `/merci?email=...&forfait=...` qui résout le token via cette fonction.
+ * Sert au flux Chariow Pulse : le dashboard Chariow ne sait pas insérer de
+ * variable dynamique (`{sale_id}`) dans l'URL de redirection, on identifie donc
+ * la session par forfait + temporalité. La transaction Firestore atomique
+ * empêche deux clients qui paieraient en simultané pour le même forfait de
+ * récupérer la même session : le second tour de sondage trouvera SA session
+ * (créée juste après).
  *
- * La fenêtre courte (10 min par défaut) + l'exigence `statut = paid` rendent
- * difficile le vol de session par un tiers qui devinerait l'email.
+ * Pourquoi un verrou plutôt qu'une simple lecture : `paid → claimed` est
+ * définitif et atomique, donc même si /merci est rechargée plusieurs fois ou
+ * si plusieurs onglets sont ouverts en parallèle, la même session ne peut être
+ * réclamée qu'une fois.
  */
-export async function trouverSessionRecente(
-  email: string,
+export async function reclamerSessionRecente(
   forfait: Forfait,
-  fenetreMinutes = 10
+  fenetreMinutes = 2
 ): Promise<{ token: string; forfait: Forfait } | null> {
+  const db = getAdminDb()
   const seuil = Date.now() - fenetreMinutes * 60 * 1000
 
-  // Pas de tri/inégalité côté Firestore pour éviter l'index composite : on
-  // filtre par email seul (index automatique), puis on affine en mémoire.
-  const snap = await getAdminDb()
+  // 1. Sélection des candidates (hors transaction — filtres + tri en mémoire
+  //    pour éviter d'avoir à créer un index composite Firestore).
+  const snap = await db
     .collection("sessions")
-    .where("email", "==", email)
+    .where("forfait", "==", forfait)
+    .where("statut", "==", "paid")
     .get()
 
   const candidates = snap.docs
     .map(d => d.data() as Session)
-    .filter(s => s.forfait === forfait && s.statut === "paid" && s.created_at >= seuil)
+    .filter(s => s.created_at >= seuil)
     .sort((a, b) => b.created_at - a.created_at)
 
-  if (candidates.length === 0) return null
-  return { token: candidates[0].token, forfait: candidates[0].forfait }
+  // 2. Pour chaque candidate (la plus récente d'abord), tenter le verrou
+  //    atomique. Si une autre requête l'a réclamée entre-temps, on essaye la
+  //    suivante. C'est la garantie anti-collision même en concurrence.
+  for (const candidate of candidates) {
+    const ref = db.collection("sessions").doc(candidate.token)
+    const reussi = await db.runTransaction(async tx => {
+      const doc = await tx.get(ref)
+      if (!doc.exists) return false
+      const s = doc.data() as Session
+      if (s.statut !== "paid") return false
+      tx.update(ref, { statut: "claimed", claimed_at: Date.now() })
+      return true
+    })
+    if (reussi) {
+      return { token: candidate.token, forfait: candidate.forfait }
+    }
+  }
+  return null
 }
 
 export async function nettoyerSessionsExpirees(): Promise<number> {

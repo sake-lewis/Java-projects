@@ -16,14 +16,13 @@ import BloomMark from '@/components/ui/BloomMark'
 function MerciContent() {
   const router = useRouter()
   const params = useSearchParams()
-  const email = params.get('email')
   const forfait = params.get('forfait')
 
   const [status, setStatus] = useState<'searching' | 'failed'>('searching')
   const [secondes, setSecondes] = useState(0)
 
   useEffect(() => {
-    if (!email || !forfait) {
+    if (!forfait) {
       router.replace('/error?reason=invalid')
       return
     }
@@ -35,9 +34,10 @@ function MerciContent() {
     async function sonder() {
       while (!annule) {
         try {
+          // POST : la réclamation est atomique (verrou Firestore).
           const res = await fetch(
-            `/api/recent-session?email=${encodeURIComponent(email!)}&forfait=${encodeURIComponent(forfait!)}`,
-            { cache: 'no-store' }
+            `/api/recent-session?forfait=${encodeURIComponent(forfait!)}`,
+            { method: 'POST', cache: 'no-store' }
           )
           if (res.ok) {
             const data = await res.json()
@@ -47,7 +47,7 @@ function MerciContent() {
             }
           }
         } catch {
-          // Réessaye au tour suivant — pas de log côté client pour rester discret
+          // Réessaye au tour suivant — silencieux côté client.
         }
 
         const ecoule = Date.now() - debut
@@ -62,7 +62,7 @@ function MerciContent() {
 
     sonder()
     return () => { annule = true }
-  }, [email, forfait, router])
+  }, [forfait, router])
 
   // Quand la sonde épuise son temps : Chariow n'a sans doute pas notifié, on
   // bascule sur la page d'erreur dédiée pour proposer de relancer.
