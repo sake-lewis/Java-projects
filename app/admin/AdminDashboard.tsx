@@ -408,7 +408,7 @@ export default function AdminDashboard() {
                       <span aria-hidden>·</span>
                       <span>{config.photos_max} photos</span>
                       <span aria-hidden>·</span>
-                      <span>{config.styles_disponibles.length}/10 styles</span>
+                      <span>{config.styles_disponibles.length}/20 styles</span>
                     </div>
                   </div>
 

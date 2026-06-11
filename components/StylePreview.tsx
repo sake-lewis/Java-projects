@@ -1,287 +1,135 @@
 "use client"
 
 import React from "react"
-import { StyleDef } from "@/lib/styles/catalog"
-
-interface Props {
-  style: StyleDef
-  className?: string
-}
+import { StyleDef, Theme } from "@/lib/styles/catalog"
 
 /**
- * Mini-aperçu visuel d'un style — palette + motif + typo dominante.
- *
- * Rendu en CSS/SVG inline, sans image bitmap : l'aperçu est représentatif du
- * style appliqué au PDF (pas une photo générique de l'occasion). C'est un
- * "moodboard" qui aide le client à reconnaître l'ambiance de son catalogue
- * avant génération.
+ * Aperçu d'un style : mini-couverture d'album pilotée par la palette.
+ * Un seul composant pour les 20 styles — le motif varie par thème,
+ * les couleurs et l'esprit viennent de la palette du catalogue.
  */
-export default function StylePreview({ style, className = "" }: Props) {
-  const { palette, motif, fontFamily, label, occasionLabel } = style
-  const isFonce = motif === "lys" || motif === "sceau" || motif === "monogramme-foil"
+export default function StylePreview({ style }: { style: StyleDef }) {
+  const { bg, surface, accent, encre } = style.palette
 
   return (
     <div
-      className={`relative aspect-[3/4] w-full overflow-hidden ${className}`}
-      style={{
-        background: `linear-gradient(160deg, ${palette.bg} 0%, ${palette.surface} 100%)`,
-        color: palette.encre,
-      }}
+      className="relative aspect-[3/4] w-full overflow-hidden"
+      style={{ background: bg }}
+      aria-hidden="true"
     >
-      <MotifLayer motif={motif} palette={palette} />
+      {/* Voile de surface en pied de page */}
+      <div
+        className="absolute inset-x-0 bottom-0 h-1/3"
+        style={{
+          background: `linear-gradient(180deg, transparent, ${surface})`,
+        }}
+      />
 
-      {/* Contenu textuel centré — calligraphie de l'occasion + mini-libellé */}
-      <div className="relative z-10 flex h-full flex-col items-center justify-center px-3 text-center">
+      {/* Double cadre fin */}
+      <div
+        className="absolute inset-[7px] border"
+        style={{ borderColor: accent, opacity: 0.55 }}
+      />
+      <div
+        className="absolute inset-[11px] border"
+        style={{ borderColor: accent, opacity: 0.3 }}
+      />
+
+      {/* Motif du thème */}
+      <div className="absolute inset-x-0 top-[16%] flex justify-center">
+        <MotifTheme theme={style.theme} accent={accent} />
+      </div>
+
+      {/* Titre — la typographie du style */}
+      <div className="absolute inset-x-0 top-[44%] px-4 text-center">
         <div
-          className="text-[9px] font-semibold uppercase tracking-[0.3em]"
-          style={{ color: palette.accent, opacity: 0.95 }}
+          className="text-[15px] leading-tight"
+          style={{ color: encre, fontFamily: style.fontDisplay }}
         >
-          {occasionLabel}
+          {style.label}
         </div>
-
         <div
-          className="mt-2 leading-none"
+          className="mx-auto mt-2 h-px w-10"
           style={{
-            fontFamily,
-            fontSize: motif === "monogramme-foil" || motif === "sceau" ? 28 : 32,
-            background: `linear-gradient(135deg, ${palette.accent}, ${palette.encre})`,
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            color: "transparent",
-            fontWeight: 600,
+            background: `linear-gradient(90deg, transparent, ${accent}, transparent)`,
           }}
-        >
-          {label}
-        </div>
-
-        <div
-          className="mt-3 h-px w-8"
-          style={{ background: palette.accent, opacity: 0.6 }}
         />
+      </div>
 
-        <div
-          className="mt-2 text-[8px] font-medium uppercase tracking-[0.18em]"
-          style={{ color: isFonce ? palette.encre : palette.encre, opacity: 0.55 }}
-        >
-          Catalogue
-        </div>
+      {/* Pastilles de palette */}
+      <div className="absolute inset-x-0 bottom-[10%] flex justify-center gap-1.5">
+        {[surface, accent, encre].map((c, i) => (
+          <span
+            key={i}
+            className="h-2 w-2 rounded-full"
+            style={{ background: c, boxShadow: `0 0 0 1px ${bg}` }}
+          />
+        ))}
       </div>
     </div>
   )
 }
 
-/**
- * Couches décoratives par motif. Toutes dessinées en SVG inline pour rester
- * légères et théméables. Aucune ne contient de texte (déjà géré par le parent).
- */
-function MotifLayer({
-  motif,
-  palette,
-}: {
-  motif: StyleDef["motif"]
-  palette: StyleDef["palette"]
-}) {
-  switch (motif) {
-    case "guirlande":
+/** Glyphe signature par thème, en trait fin couleur accent. */
+function MotifTheme({ theme, accent }: { theme: Theme; accent: string }) {
+  const common = {
+    width: 64,
+    height: 28,
+    viewBox: "0 0 64 28",
+    fill: "none",
+    stroke: accent,
+    strokeWidth: 1.1,
+    strokeLinecap: "round" as const,
+  }
+
+  switch (theme) {
+    case "nature":
+      // Branche feuillée
       return (
-        <svg
-          aria-hidden
-          className="absolute inset-0 h-full w-full"
-          viewBox="0 0 120 160"
-          preserveAspectRatio="xMidYMid slice"
-        >
-          {/* Cadre or fin */}
-          <rect x="6" y="6" width="108" height="148" fill="none" stroke={palette.accent} strokeWidth="0.5" opacity="0.6" />
-          {/* Guirlande haute */}
-          <path d="M 30 22 Q 60 14 90 22" fill="none" stroke={palette.accent} strokeWidth="0.6" opacity="0.7" />
-          {[35, 45, 55, 65, 75, 85].map(x => (
-            <circle key={`th-${x}`} cx={x} cy={18 + Math.sin(x * 0.5) * 1.5} r="1.4" fill={palette.accent} opacity="0.85" />
-          ))}
-          {/* Guirlande basse */}
-          <path d="M 30 138 Q 60 146 90 138" fill="none" stroke={palette.accent} strokeWidth="0.6" opacity="0.7" />
-          {[35, 45, 55, 65, 75, 85].map(x => (
-            <circle key={`tb-${x}`} cx={x} cy={142 + Math.sin(x * 0.5) * 1.5} r="1.4" fill={palette.accent} opacity="0.85" />
-          ))}
+        <svg {...common}>
+          <path d="M6 22 Q 32 6 58 22" />
+          <path d="M20 16 q -3 -6 2 -9 q 4 4 -2 9" fill={accent} opacity="0.7" stroke="none" />
+          <path d="M32 13 q -3 -6 2 -9 q 4 4 -2 9" fill={accent} opacity="0.85" stroke="none" />
+          <path d="M44 16 q -3 -6 2 -9 q 4 4 -2 9" fill={accent} opacity="0.7" stroke="none" />
         </svg>
       )
-    case "geometrique":
+    case "elegance":
+      // Filet Art déco + diamant
       return (
-        <svg
-          aria-hidden
-          className="absolute inset-0 h-full w-full"
-          viewBox="0 0 120 160"
-          preserveAspectRatio="xMidYMid slice"
-        >
-          <rect x="10" y="10" width="100" height="140" fill="none" stroke={palette.accent} strokeWidth="0.8" />
-          <line x1="60" y1="10" x2="60" y2="40" stroke={palette.accent} strokeWidth="0.4" opacity="0.5" />
-          <line x1="60" y1="120" x2="60" y2="150" stroke={palette.accent} strokeWidth="0.4" opacity="0.5" />
-          <circle cx="60" cy="80" r="40" fill="none" stroke={palette.accent} strokeWidth="0.4" opacity="0.25" />
+        <svg {...common}>
+          <line x1="4" y1="14" x2="24" y2="14" />
+          <line x1="40" y1="14" x2="60" y2="14" />
+          <path d="M32 6 L 40 14 L 32 22 L 24 14 Z" />
+          <path d="M32 10 L 36 14 L 32 18 L 28 14 Z" opacity="0.6" />
         </svg>
       )
-    case "coeurs":
+    case "vif":
+      // Confettis
       return (
-        <svg
-          aria-hidden
-          className="absolute inset-0 h-full w-full"
-          viewBox="0 0 120 160"
-          preserveAspectRatio="xMidYMid slice"
-        >
-          {[
-            [20, 30], [100, 32], [15, 130], [105, 128],
-            [40, 18], [80, 18], [40, 142], [80, 142],
-          ].map(([x, y], i) => (
-            <path
-              key={i}
-              d={`M ${x} ${y} c -2 -2.5 -5 -1.5 -5 1 c 0 2 2 4 5 6 c 3 -2 5 -4 5 -6 c 0 -2.5 -3 -3.5 -5 -1`}
-              fill={palette.accent}
-              opacity={0.55}
-            />
-          ))}
+        <svg {...common}>
+          <circle cx="12" cy="14" r="2.4" fill={accent} stroke="none" />
+          <circle cx="24" cy="8" r="1.6" fill={accent} opacity="0.7" stroke="none" />
+          <circle cx="32" cy="18" r="3" fill={accent} stroke="none" />
+          <circle cx="42" cy="7" r="1.8" fill={accent} opacity="0.7" stroke="none" />
+          <circle cx="52" cy="14" r="2.4" fill={accent} stroke="none" />
         </svg>
       )
-    case "aquarelle":
+    case "moderne":
+      // Ligne + cercle minimal
       return (
-        <svg
-          aria-hidden
-          className="absolute inset-0 h-full w-full"
-          viewBox="0 0 120 160"
-          preserveAspectRatio="xMidYMid slice"
-        >
-          <defs>
-            <radialGradient id="aq1">
-              <stop offset="0%" stopColor={palette.accent} stopOpacity="0.6" />
-              <stop offset="100%" stopColor={palette.accent} stopOpacity="0" />
-            </radialGradient>
-          </defs>
-          <circle cx="25" cy="30" r="22" fill="url(#aq1)" />
-          <circle cx="95" cy="40" r="18" fill="url(#aq1)" opacity="0.7" />
-          <circle cx="30" cy="130" r="20" fill="url(#aq1)" opacity="0.5" />
-          <circle cx="100" cy="125" r="24" fill="url(#aq1)" opacity="0.6" />
+        <svg {...common}>
+          <line x1="8" y1="14" x2="56" y2="14" />
+          <circle cx="32" cy="14" r="6" />
         </svg>
       )
-    case "lys":
+    case "heritage":
+      // Frise de losanges tissés
       return (
-        <svg
-          aria-hidden
-          className="absolute inset-0 h-full w-full"
-          viewBox="0 0 120 160"
-          preserveAspectRatio="xMidYMid slice"
-        >
-          <rect x="8" y="8" width="104" height="144" fill="none" stroke={palette.accent} strokeWidth="0.5" opacity="0.4" />
-          {/* Lys central très épuré */}
-          <g transform="translate(60 22)" fill="none" stroke={palette.accent} strokeWidth="0.7" opacity="0.7">
-            <path d="M 0 0 C -6 -3 -10 2 -7 6 C -2 4 0 0 0 0 Z" />
-            <path d="M 0 0 C 6 -3 10 2 7 6 C 2 4 0 0 0 0 Z" />
-            <path d="M 0 0 C 0 -6 0 -10 0 -12" />
-          </g>
-          <g transform="translate(60 138) rotate(180)" fill="none" stroke={palette.accent} strokeWidth="0.7" opacity="0.7">
-            <path d="M 0 0 C -6 -3 -10 2 -7 6 C -2 4 0 0 0 0 Z" />
-            <path d="M 0 0 C 6 -3 10 2 7 6 C 2 4 0 0 0 0 Z" />
-          </g>
+        <svg {...common}>
+          <path d="M12 14 L 18 8 L 24 14 L 18 20 Z" />
+          <path d="M26 14 L 32 8 L 38 14 L 32 20 Z" />
+          <path d="M40 14 L 46 8 L 52 14 L 46 20 Z" />
         </svg>
       )
-    case "sepia":
-      return (
-        <svg
-          aria-hidden
-          className="absolute inset-0 h-full w-full"
-          viewBox="0 0 120 160"
-          preserveAspectRatio="xMidYMid slice"
-        >
-          {/* Cadres polaroïd décalés */}
-          <g opacity="0.45">
-            <rect x="18" y="20" width="36" height="44" fill={palette.bg} stroke={palette.accent} strokeWidth="0.4" transform="rotate(-6 36 42)" />
-            <rect x="66" y="28" width="36" height="44" fill={palette.bg} stroke={palette.accent} strokeWidth="0.4" transform="rotate(4 84 50)" />
-            <rect x="22" y="98" width="36" height="44" fill={palette.bg} stroke={palette.accent} strokeWidth="0.4" transform="rotate(5 40 120)" />
-            <rect x="66" y="102" width="36" height="44" fill={palette.bg} stroke={palette.accent} strokeWidth="0.4" transform="rotate(-4 84 124)" />
-          </g>
-        </svg>
-      )
-    case "bokeh":
-      return (
-        <svg
-          aria-hidden
-          className="absolute inset-0 h-full w-full"
-          viewBox="0 0 120 160"
-          preserveAspectRatio="xMidYMid slice"
-        >
-          <defs>
-            <radialGradient id="b1">
-              <stop offset="0%" stopColor={palette.accent} stopOpacity="0.6" />
-              <stop offset="60%" stopColor={palette.accent} stopOpacity="0.15" />
-              <stop offset="100%" stopColor={palette.accent} stopOpacity="0" />
-            </radialGradient>
-          </defs>
-          {[
-            [20, 24, 10], [95, 30, 7], [40, 50, 5], [102, 70, 12],
-            [15, 90, 8], [55, 110, 6], [88, 120, 10], [25, 140, 7],
-          ].map(([cx, cy, r], i) => (
-            <circle key={i} cx={cx} cy={cy} r={r} fill="url(#b1)" />
-          ))}
-        </svg>
-      )
-    case "ruban":
-      return (
-        <svg
-          aria-hidden
-          className="absolute inset-0 h-full w-full"
-          viewBox="0 0 120 160"
-          preserveAspectRatio="xMidYMid slice"
-        >
-          <rect x="6" y="6" width="108" height="148" fill="none" stroke={palette.accent} strokeWidth="0.4" opacity="0.5" />
-          {/* Ruban diagonal */}
-          <g opacity="0.65">
-            <path d="M 0 70 L 120 50 L 120 64 L 0 84 Z" fill={palette.accent} opacity="0.4" />
-            <path d="M 0 90 L 120 70 L 120 78 L 0 98 Z" fill={palette.accent} opacity="0.25" />
-          </g>
-        </svg>
-      )
-    case "sceau":
-      return (
-        <svg
-          aria-hidden
-          className="absolute inset-0 h-full w-full"
-          viewBox="0 0 120 160"
-          preserveAspectRatio="xMidYMid slice"
-        >
-          <rect x="6" y="6" width="108" height="148" fill="none" stroke={palette.accent} strokeWidth="0.5" opacity="0.4" />
-          <circle cx="60" cy="22" r="9" fill="none" stroke={palette.accent} strokeWidth="0.6" opacity="0.7" />
-          <circle cx="60" cy="22" r="6" fill="none" stroke={palette.accent} strokeWidth="0.4" opacity="0.5" />
-          <circle cx="60" cy="138" r="9" fill="none" stroke={palette.accent} strokeWidth="0.6" opacity="0.7" />
-          <circle cx="60" cy="138" r="6" fill="none" stroke={palette.accent} strokeWidth="0.4" opacity="0.5" />
-          <line x1="20" y1="80" x2="100" y2="80" stroke={palette.accent} strokeWidth="0.3" opacity="0.3" />
-        </svg>
-      )
-    case "monogramme-foil":
-      return (
-        <svg
-          aria-hidden
-          className="absolute inset-0 h-full w-full"
-          viewBox="0 0 120 160"
-          preserveAspectRatio="xMidYMid slice"
-        >
-          <defs>
-            <linearGradient id="foil1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor={palette.accent} stopOpacity="0.9" />
-              <stop offset="50%" stopColor="#FFFFFF" stopOpacity="0.6" />
-              <stop offset="100%" stopColor={palette.accent} stopOpacity="0.9" />
-            </linearGradient>
-          </defs>
-          {/* Monogramme circulaire en filigrane */}
-          <circle cx="60" cy="80" r="34" fill="none" stroke="url(#foil1)" strokeWidth="0.6" opacity="0.7" />
-          <circle cx="60" cy="80" r="28" fill="none" stroke={palette.accent} strokeWidth="0.3" opacity="0.4" />
-          <text
-            x="60" y="86"
-            fontSize="22"
-            fontFamily="serif"
-            textAnchor="middle"
-            fill="url(#foil1)"
-            opacity="0.8"
-          >EB</text>
-        </svg>
-      )
-    default:
-      return null
   }
 }

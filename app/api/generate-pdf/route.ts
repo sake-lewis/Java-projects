@@ -17,13 +17,14 @@ Handlebars.registerHelper('add', function (value: number, addition: number) {
   return value + addition;
 });
 
-Handlebars.registerHelper('ifVariation', function (
+// Bloc conditionnel d'égalité (sert à sélectionner l'ornement du thème).
+Handlebars.registerHelper('ifEgal', function (
   this: any,
-  variation: string,
+  valeur: string,
   attendue: string,
   options: any
 ) {
-  return variation === attendue ? options.fn(this) : options.inverse(this);
+  return valeur === attendue ? options.fn(this) : options.inverse(this);
 });
 
 /**
@@ -55,7 +56,10 @@ function appliquerEffet(url: string, effet: EffetPhoto | undefined): string {
   return url.replace('/image/upload/', `/image/upload/${transformation}/`);
 }
 
-const STYLES_VALIDES: StyleId[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const STYLES_VALIDES: StyleId[] = [
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+  11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+];
 
 /**
  * Numéro d'édition unique pour les forfaits Premium.
@@ -170,10 +174,11 @@ export async function POST(req: NextRequest) {
         ? photosRendues[couvertureIndexValide]
         : null;
 
+    // Un seul template maître : les 20 styles sont des données (palette,
+    // typographies, thème, mode clair/sombre) injectées dans master.html.
     const templatePath = path.join(
       process.cwd(),
-      'lib/pdf/templates/v2',
-      `${style.occasion}.html`
+      'lib/pdf/templates/v3/master.html'
     );
     const templateContent = await fs.readFile(templatePath, 'utf-8');
     const template = Handlebars.compile(templateContent);
@@ -184,10 +189,13 @@ export async function POST(req: NextRequest) {
       photos: photosRendues,
       total_photos: photosRendues.length,
       boutique_url: process.env.NEXT_PUBLIC_CHARIOW_BOUTIQUE_URL,
-      variation: style.variation,
-      occasion: style.occasion,
+      theme: style.theme,
+      theme_label: style.themeLabel,
       style_label: style.label,
-      occasion_label: style.occasionLabel,
+      mode: style.mode,
+      font_display: style.fontDisplay,
+      font_script: style.fontScript === 'none' ? style.fontDisplay : style.fontScript,
+      script_present: style.fontScript !== 'none',
       palette: style.palette,
       // Phase 3
       dedicace: dedicaceNormalisee,
