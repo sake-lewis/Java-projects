@@ -88,11 +88,53 @@
   .cloture-boutique { margin-top:10px; font-family:'Lato',sans-serif; font-size:11px; letter-spacing:2.5px; color:var(--accent); opacity:0.7; text-decoration:none; }
 
   .bloom-watermark { position:absolute; right:32px; bottom:32px; width:22px; height:22px; opacity:0.22; color:var(--accent); }
+
+  /* === COUVERTURE PHOTO (Premium) === */
+  .cover.cover-photo { background: var(--bg); padding: 0; }
+  .cover-photo .cover-bg { position: absolute; inset: 0; background-size: cover; background-position: center; filter: brightness(0.9); }
+  .cover-photo .cover-veil { position: absolute; inset: 0;
+    background: linear-gradient(180deg,
+      color-mix(in srgb, #000 45%, transparent) 0%,
+      color-mix(in srgb, #000 70%, transparent) 65%,
+      color-mix(in srgb, #000 85%, transparent) 100%); }
+  .cover-photo .frame { border-color: var(--accent); opacity: 0.9; }
+  .cover-photo .frame::after { border-color: rgba(255,255,255,0.45); }
+  .cover-photo .monogramme { border-color: var(--accent); color: var(--accent);
+    box-shadow: inset 0 0 0 6px rgba(255,255,255,0.05), 0 0 0 14px rgba(255,255,255,0.05); }
+  .cover-photo .eyebrow { color: var(--accent); }
+  .cover-photo .cover-title { color: #fff; -webkit-background-clip: initial; -webkit-text-fill-color: #fff; background: none; }
+  .cover-photo .cover-divider { background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+  .cover-photo .cover-sign { color: var(--accent); }
+  .cover-photo .cover-year { color: rgba(255,255,255,0.75); }
+
+  /* === DÉDICACE (Pro + Premium) === */
+  .dedicace { display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 0 120px; background: var(--bg); }
+  .dedicace .frame { position: absolute; inset: 56px; border: 1.5px solid var(--accent); opacity: 0.4; }
+  .dedicace .frame::after { content:""; position:absolute; inset: 8px; border: 1px solid var(--accent); opacity: 0.4; }
+  .dedicace .eyebrow { margin-bottom: 24px; }
+  .dedicace-script-sym { font-family: 'Cinzel', serif; font-size: 22px; color: var(--accent); opacity: 0.85; margin-bottom: 24px; letter-spacing: 8px; }
+  body.contemporain .dedicace-script-sym { display: none; }
+  .dedicace-text { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 24px; line-height: 1.9;
+    color: var(--encre); max-width: 540px; white-space: pre-wrap; }
+  body.contemporain .dedicace-text { font-style: normal; font-weight: 400; }
+  .dedicace-foil { width: 100px; height: 1px; margin: 36px 0 0; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+
+  /* === ÉDITION UNIQUE (Premium) === */
+  .edition-numero { margin-top: 48px; padding: 14px 24px;
+    border-top: 1px solid var(--accent); border-bottom: 1px solid var(--accent); }
+  .edition-numero .label { font-family: 'Lato', sans-serif; font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--accent); opacity: 0.9; }
+  .edition-numero .numero { margin-top: 6px; font-family: 'Cinzel', serif; font-size: 15px; letter-spacing: 4px; color: var(--encre); }
+  .edition-numero .date { margin-top: 4px; font-family: 'Lato', sans-serif; font-size: 10px; color: var(--encre); opacity: 0.65; }
 </style>
 </head>
 <body class="{{variation}}">
 
-  <section class="page cover">
+  <section class="page cover{{#if photo_couverture}} cover-photo{{/if}}">
+    {{#if photo_couverture}}
+    <div class="cover-bg" style="background-image: url({{photo_couverture.url}});"></div>
+    <div class="cover-veil"></div>
+    {{/if}}
     <div class="frame"></div>
     {{#ifVariation variation "classique"}}
     {{!-- Sceau armorié : cercle + lignes radiales (style blason) --}}
@@ -146,6 +188,16 @@
     <div class="intro-sign">{{occasion_label}} · {{style_label}}</div>
   </section>
 
+  {{#if dedicace_presente}}
+  <section class="page dedicace">
+    <div class="frame"></div>
+    <div class="eyebrow">Dédicace</div>
+    <div class="dedicace-script-sym">— PAR HONNEUR —</div>
+    <p class="dedicace-text">{{dedicace}}</p>
+    <div class="dedicace-foil"></div>
+  </section>
+  {{/if}}
+
   {{#each photos}}
   <section class="page photo-page">
     <div class="photo-frame">
@@ -167,6 +219,13 @@
     <p class="cloture-text">D&apos;avoir choisi EVERBLOOM pour graver cette cérémonie. Que ces pages portent l&apos;empreinte du moment avec la dignité qu&apos;il mérite.</p>
     <div class="cloture-brand">EVERBLOOM</div>
     <a class="cloture-boutique" href="{{boutique_url}}">{{boutique_url}}</a>
+    {{#if edition_unique}}
+    <div class="edition-numero">
+      <div class="label">Édition unique</div>
+      <div class="numero">N° {{edition_unique}}</div>
+      <div class="date">Composée le {{date_composition}}</div>
+    </div>
+    {{/if}}
   </section>
 </body>
 </html>

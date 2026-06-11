@@ -72,11 +72,51 @@
   .cloture-boutique { margin-top:10px; font-family:'Lato',sans-serif; font-size:11px; letter-spacing:2.5px; color:var(--accent); opacity:0.7; text-decoration:none; }
 
   .bloom-watermark { position:absolute; right:32px; bottom:32px; width:22px; height:22px; opacity:0.25; color:var(--accent); }
+
+  /* === COUVERTURE PHOTO (Premium) === */
+  .cover.cover-photo { background: var(--bg); padding: 0; }
+  .cover-photo .cover-bg { position: absolute; inset: 0; background-size: cover; background-position: center; filter: brightness(0.85); }
+  .cover-photo .cover-veil { position: absolute; inset: 0;
+    background: linear-gradient(180deg,
+      color-mix(in srgb, #000 50%, transparent) 0%,
+      color-mix(in srgb, #000 75%, transparent) 65%,
+      color-mix(in srgb, #000 90%, transparent) 100%); }
+  .cover-photo .frame { border-color: var(--accent); opacity: 0.85; }
+  .cover-photo .frame::after { border-color: rgba(255,255,255,0.4); }
+  .cover-photo .monogramme { border-color: var(--accent); color: var(--accent); }
+  .cover-photo .eyebrow { color: var(--accent); }
+  .cover-photo .cover-title { color: #fff; }
+  .cover-photo .cover-divider { background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+  .cover-photo .cover-sign { color: var(--accent); }
+  .cover-photo .cover-year { color: rgba(255,255,255,0.75); }
+
+  /* === DÉDICACE (Pro + Premium) === */
+  .dedicace { display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 0 120px; background: var(--bg); }
+  .dedicace .frame { position: absolute; inset: 56px; border: 1px solid var(--accent); opacity: 0.35; }
+  .dedicace .eyebrow { margin-bottom: 24px; }
+  .dedicace-script-sym { font-family: 'Cinzel', serif; font-size: 28px; color: var(--accent); opacity: 0.8; margin-bottom: 20px; letter-spacing: 6px; }
+  body.contemporain .dedicace-script-sym { display: none; }
+  .dedicace-text { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 24px; line-height: 1.9;
+    color: var(--encre); max-width: 540px; white-space: pre-wrap; }
+  body.contemporain .dedicace-text { font-style: normal; font-weight: 400; }
+  .dedicace-foil { width: 100px; height: 1px; margin: 36px 0 0; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+
+  /* === ÉDITION UNIQUE (Premium) === */
+  .edition-numero { margin-top: 48px; padding: 14px 24px;
+    border-top: 1px solid var(--accent); border-bottom: 1px solid var(--accent); }
+  .edition-numero .label { font-family: 'Lato', sans-serif; font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--accent); opacity: 0.85; }
+  .edition-numero .numero { margin-top: 6px; font-family: 'Cinzel', serif; font-size: 15px; letter-spacing: 4px; color: var(--encre); }
+  .edition-numero .date { margin-top: 4px; font-family: 'Lato', sans-serif; font-size: 10px; color: var(--encre); opacity: 0.65; }
 </style>
 </head>
 <body class="{{variation}}">
 
-  <section class="page cover">
+  <section class="page cover{{#if photo_couverture}} cover-photo{{/if}}">
+    {{#if photo_couverture}}
+    <div class="cover-bg" style="background-image: url({{photo_couverture.url}});"></div>
+    <div class="cover-veil"></div>
+    {{/if}}
     <div class="frame"></div>
     {{#ifVariation variation "classique"}}
     {{!-- Lys stylisé épuré (haut & bas, miroir) --}}
@@ -121,6 +161,16 @@
     <div class="intro-sign">{{occasion_label}} · {{style_label}}</div>
   </section>
 
+  {{#if dedicace_presente}}
+  <section class="page dedicace">
+    <div class="frame"></div>
+    <div class="eyebrow">Dédicace</div>
+    <div class="dedicace-script-sym">— EN MÉMOIRE —</div>
+    <p class="dedicace-text">{{dedicace}}</p>
+    <div class="dedicace-foil"></div>
+  </section>
+  {{/if}}
+
   {{#each photos}}
   <section class="page photo-page">
     <div class="photo-frame">
@@ -142,6 +192,13 @@
     <p class="cloture-text">Que ces pages traversent les années, et avec elles ce que rien d&apos;autre ne peut traverser.</p>
     <div class="cloture-brand">EVERBLOOM</div>
     <a class="cloture-boutique" href="{{boutique_url}}">{{boutique_url}}</a>
+    {{#if edition_unique}}
+    <div class="edition-numero">
+      <div class="label">Édition unique</div>
+      <div class="numero">N° {{edition_unique}}</div>
+      <div class="date">Composée le {{date_composition}}</div>
+    </div>
+    {{/if}}
   </section>
 </body>
 </html>

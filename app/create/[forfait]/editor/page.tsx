@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
-import { Session, Photo, FORFAIT_CONFIG, Forfait, StyleId } from '@/types'
+import { Session, Photo, FORFAIT_CONFIG, Forfait, StyleId, EffetPhoto } from '@/types'
 import FormulaireCreation from '@/components/FormulaireCreation'
 import StyleSelector from '@/components/StyleSelector'
 import PhotoGrid from '@/components/PhotoGrid'
@@ -16,11 +16,15 @@ function EditorContent() {
   const forfait = params.forfait as Forfait
   const token = searchParams.get('token')
 
+  const config = FORFAIT_CONFIG[forfait]
+
   const [session, setSession] = useState<Session | null>(null)
   const [nomCatalogue, setNomCatalogue] = useState("")
   const [description, setDescription] = useState("")
   const [styleChoisi, setStyleChoisi] = useState<StyleId>(1)
   const [photos, setPhotos] = useState<Photo[]>([])
+  const [dedicace, setDedicace] = useState("")
+  const [couvertureIndex, setCouvertureIndex] = useState<number | null>(null)
   const [cropFile, setCropFile] = useState<File | null>(null)
   const [cropOpen, setCropOpen] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -29,11 +33,17 @@ function EditorContent() {
   const [isLoading, setIsLoading] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Le nombre max de photos = pages_max - 3 (couverture + intro + clôture).
-  const pagesMax = FORFAIT_CONFIG[forfait]?.pages_max ?? 40
-  const PAGES_FIXES = 3
-  const maxPhotos = pagesMax - PAGES_FIXES
-  const pagesActuelles = photos.length + PAGES_FIXES
+  // Capacités du forfait (Phase 3).
+  const dedicaceMax = config?.dedicace_max ?? 0
+  const dedicaceActive = dedicaceMax > 0
+  const effetsActives = config?.effets_photo ?? false
+  const couvertureActive = config?.photo_couverture ?? false
+
+  // Compteur de pages : couverture + intro + (dédicace ?) + N photos + clôture.
+  const pagesMax = config?.pages_max ?? 40
+  const pagesFixes = 3 + (dedicaceActive && dedicace.trim().length > 0 ? 1 : 0)
+  const maxPhotos = pagesMax - pagesFixes
+  const pagesActuelles = photos.length + pagesFixes
   const ratioPages = pagesActuelles / pagesMax
   const presquePlein = ratioPages >= 0.85 && ratioPages < 1
   const plein = pagesActuelles >= pagesMax
@@ -53,6 +63,10 @@ function EditorContent() {
         setDescription(data.description || "")
         setStyleChoisi(data.style_choisi || 1)
         setPhotos(data.photos || [])
+        setDedicace(data.dedicace || "")
+        setCouvertureIndex(
+          typeof data.photo_couverture_index === "number" ? data.photo_couverture_index : null
+        )
         setPdfUrl(data.pdf_url || null)
       } catch (err) {
         console.error(err)
@@ -88,7 +102,7 @@ function EditorContent() {
       })
       if (!res.ok) throw new Error("Échec de l'upload")
       const { url } = await res.json()
-      setPhotos(prev => [...prev, { url, description: "" }])
+      setPhotos(prev => [...prev, { url, description: "", effet: "couleur" }])
       setError(null)
     } catch (err) {
       setError("Erreur lors de l'envoi de la photo")
@@ -99,6 +113,13 @@ function EditorContent() {
     const photoToDelete = photos[index]
     try {
       setPhotos(prev => prev.filter((_, i) => i !== index))
+      // Si on supprime la couverture ou un index avant la couverture, on ajuste.
+      setCouvertureIndex(prev => {
+        if (prev === null) return prev
+        if (prev === index) return null
+        if (prev > index) return prev - 1
+        return prev
+      })
       await fetch('/api/upload-photo', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
@@ -111,6 +132,14 @@ function EditorContent() {
 
   const handleAddDescription = (index: number, desc: string) => {
     setPhotos(prev => prev.map((p, i) => i === index ? { ...p, description: desc } : p))
+  }
+
+  const handleChangeEffet = (index: number, effet: EffetPhoto) => {
+    setPhotos(prev => prev.map((p, i) => i === index ? { ...p, effet } : p))
+  }
+
+  const handleSetCouverture = (index: number | null) => {
+    setCouvertureIndex(index)
   }
 
   const handleGenerate = async () => {
@@ -135,7 +164,9 @@ function EditorContent() {
           nom_catalogue: nomCatalogue,
           description,
           style_choisi: styleChoisi,
-          photos
+          photos,
+          dedicace: dedicaceActive ? dedicace.slice(0, dedicaceMax) : "",
+          photo_couverture_index: couvertureActive ? couvertureIndex : null,
         })
       })
       const data = await res.json()
@@ -144,8 +175,7 @@ function EditorContent() {
     } catch (err: any) {
       setError(err.message)
     } finally {
-      // Toujours sortir de l'état "génération en cours" : succès comme échec,
-      // sinon le spinner masque le bouton de téléchargement après réussite.
+      // Toujours sortir de l'état "génération en cours" : succès comme échec.
       setIsGenerating(false)
     }
   }
@@ -162,13 +192,15 @@ function EditorContent() {
   const focusRing =
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E4D3A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E8E0D5]"
 
-  // Raison du blocage de la génération, affichée au lieu de griser sans explication.
   const blocage =
     nomCatalogue.length < 3
       ? "Donnez un nom d'au moins 3 caractères pour générer."
       : photos.length === 0
         ? "Ajoutez au moins une photo pour générer."
         : null
+
+  const dedicaceLongueur = dedicace.length
+  const dedicaceTropLongue = dedicaceLongueur > dedicaceMax
 
   return (
     <div className="min-h-screen bg-[#E8E0D5] pb-28">
@@ -179,12 +211,10 @@ function EditorContent() {
           <h1 className="text-2xl font-semibold tracking-[0.28em] text-[#1E4D3A]">EVERBLOOM</h1>
           <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#C4956A]">Éditeur de catalogue</p>
 
-          {/* Rappel du forfait : rassure le client sur ce qu'il a acheté.
-              Mini-pastille discrète sous le sous-titre, à la charte EVERBLOOM. */}
           <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-[#1E4D3A]/15 bg-[#1E4D3A]/[0.04] px-4 py-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-[#C4956A]" />
             <span className="text-[12px] font-semibold tracking-wide text-[#1E4D3A]">
-              Forfait {FORFAIT_CONFIG[forfait]?.label}
+              Forfait {config?.label}
             </span>
             <span className="text-[11px] font-light text-[#1E4D3A]/55">
               · {pagesMax} pages max
@@ -192,7 +222,7 @@ function EditorContent() {
           </div>
         </header>
 
-        {/* Étape 1 — nom : numérotée pour donner une hiérarchie et un sens de progression */}
+        {/* Étape 1 — nom */}
         <section className="space-y-6">
           <StepHeader numero={1} titre="Nommez votre catalogue" />
           <FormulaireCreation
@@ -213,7 +243,7 @@ function EditorContent() {
           />
         </section>
 
-        {/* Étape 3 — photos. */}
+        {/* Étape 3 — photos */}
         <section className="space-y-6">
           <div className="flex items-center justify-between gap-4">
             <StepHeader numero={3} titre="Ajoutez vos photos" />
@@ -237,8 +267,7 @@ function EditorContent() {
             />
           </div>
 
-          {/* Compteur de pages live — affiche la projection du PDF en temps réel.
-              Couverture (1) + intro (1) + N photos + clôture (1). */}
+          {/* Compteur de pages live */}
           <div
             className={`rounded-lg border px-4 py-3 transition-colors ${
               plein
@@ -266,19 +295,14 @@ function EditorContent() {
                 {photos.length} photo{photos.length > 1 ? "s" : ""}
                 <br />
                 <span className="text-[#1E4D3A]/35">
-                  + couverture, intro, clôture
+                  + couverture, intro{dedicaceActive && dedicace.trim().length > 0 ? ", dédicace" : ""}, clôture
                 </span>
               </div>
             </div>
-            {/* Jauge */}
             <div className="mt-2 h-1 overflow-hidden rounded-full bg-[#1E4D3A]/8">
               <div
                 className={`h-full rounded-full transition-all duration-300 ${
-                  plein
-                    ? "bg-[#C4956A]"
-                    : presquePlein
-                    ? "bg-[#C4956A]/80"
-                    : "bg-[#1E4D3A]/60"
+                  plein ? "bg-[#C4956A]" : presquePlein ? "bg-[#C4956A]/80" : "bg-[#1E4D3A]/60"
                 }`}
                 style={{ width: `${Math.min(100, Math.round(ratioPages * 100))}%` }}
               />
@@ -299,14 +323,53 @@ function EditorContent() {
           <PhotoGrid
             photos={photos}
             maxPhotos={maxPhotos}
+            effetsActives={effetsActives}
+            couvertureActive={couvertureActive}
+            couvertureIndex={couvertureIndex}
             onAddDescription={handleAddDescription}
             onDeletePhoto={handleDeletePhoto}
+            onChangeEffet={handleChangeEffet}
+            onSetCouverture={handleSetCouverture}
           />
         </section>
+
+        {/* Étape 4 — dédicace (Pro + Premium) */}
+        {dedicaceActive && (
+          <section className="space-y-6">
+            <StepHeader numero={4} titre="Ajoutez une dédicace" />
+            <div className="space-y-2">
+              <label className="flex items-baseline justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-[#1E4D3A]/60">
+                <span>Mot personnel · optionnel</span>
+                <span
+                  className={`text-[10px] ${
+                    dedicaceTropLongue ? "text-[#C53030]" : "text-[#1E4D3A]/40"
+                  }`}
+                >
+                  {dedicaceLongueur} / {dedicaceMax}
+                </span>
+              </label>
+              <textarea
+                value={dedicace}
+                onChange={e => setDedicace(e.target.value)}
+                maxLength={dedicaceMax + 50}
+                placeholder="Quelques mots pour ouvrir votre catalogue…"
+                rows={4}
+                className={`w-full rounded-lg border bg-white px-4 py-3 text-[15px] leading-relaxed text-[#1E4D3A] placeholder:text-[#1E4D3A]/30 focus:outline-none focus:ring-2 focus:ring-[#1E4D3A]/15 ${
+                  dedicaceTropLongue
+                    ? "border-[#C53030]/40"
+                    : "border-[#1E4D3A]/15 focus:border-[#1E4D3A]/40"
+                }`}
+                style={{ fontFamily: "var(--font-sans)" }}
+              />
+              <p className="text-[11px] text-[#1E4D3A]/45">
+                Apparaîtra sur une page dédiée, juste après l&apos;intro.
+              </p>
+            </div>
+          </section>
+        )}
       </div>
 
-      {/* Barre d'action collante : action primaire unique, toujours à portée de pouce.
-          Porte les états génération / succès pour que le client n'ait jamais à chercher l'étape suivante. */}
+      {/* Barre d'action collante */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#C4956A]/30 bg-[#E8E0D5]/95 backdrop-blur-sm">
         <div className="mx-auto max-w-[560px] px-6 py-4 space-y-3">
           {error && (
@@ -319,7 +382,7 @@ function EditorContent() {
             <>
               <button
                 onClick={handleGenerate}
-                disabled={!!blocage}
+                disabled={!!blocage || dedicaceTropLongue}
                 className={`w-full rounded-md bg-[#1E4D3A] py-4 text-lg font-semibold text-[#E8E0D5] shadow-xl transition-all hover:bg-[#1E4D3A]/90 disabled:opacity-40 disabled:cursor-not-allowed ${focusRing}`}
                 style={{ fontFamily: 'var(--font-sans)' }}
               >
@@ -328,6 +391,11 @@ function EditorContent() {
               {blocage && (
                 <p className="text-center text-[12px] font-light text-[#1E4D3A]/60" style={{ fontFamily: 'var(--font-sans)' }}>
                   {blocage}
+                </p>
+              )}
+              {dedicaceTropLongue && !blocage && (
+                <p className="text-center text-[12px] text-[#C53030]">
+                  Dédicace trop longue ({dedicaceMax} caractères max pour ce forfait).
                 </p>
               )}
             </>

@@ -35,10 +35,21 @@ export default function CropperModal({ isOpen, imageFile, onConfirm, onCancel }:
   }
 
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
-    const { width, height } = e.currentTarget
+    const { width, height, naturalWidth, naturalHeight } = e.currentTarget
     setBaseWidth(width)
+    // Pour un cadre 9:16 (vertical), on veut le rectangle de crop le plus grand
+    // possible. Sur une photo paysage (naturalWidth > naturalHeight), partir
+    // d'une largeur de 90% laisse un crop minuscule ; on contraint par la
+    // hauteur à la place. Inversement, sur une photo portrait, contraindre par
+    // la largeur donne le bon cadre.
+    const paysage = naturalWidth > naturalHeight
     const initial = centerCrop(
-      makeAspectCrop({ unit: '%', width: 90 }, 9 / 16, width, height),
+      makeAspectCrop(
+        paysage ? { unit: '%', height: 90 } : { unit: '%', width: 90 },
+        9 / 16,
+        width,
+        height
+      ),
       width,
       height
     )
