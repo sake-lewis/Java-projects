@@ -1,9 +1,13 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import BloomMark from "@/components/ui/BloomMark"
 import { Forfait, FORFAIT_CONFIG, StatutSession } from "@/types"
+
+// Déconnexion automatique après 15 min d'inactivité, avertissement 1 min avant.
+const INACTIVITE_LOGOUT_MS = 15 * 60 * 1000
+const INACTIVITE_AVERTISSEMENT_MS = 60 * 1000
 
 interface SessionResume {
   token: string
@@ -86,6 +90,9 @@ export default function AdminDashboard() {
   const [generation, setGeneration] = useState<Forfait | null>(null)
   const [copie, setCopie] = useState(false)
   const [erreur, setErreur] = useState<string | null>(null)
+  const [avertissementInactif, setAvertissementInactif] = useState(false)
+  const [secondesRestantes, setSecondesRestantes] = useState(INACTIVITE_AVERTISSEMENT_MS / 1000)
+  const lastActivityRef = useRef<number>(Date.now())
 
   async function chargerSessions() {
     try {
@@ -155,6 +162,57 @@ export default function AdminDashboard() {
     router.refresh()
   }
 
+  // Détecteur d'inactivité : les events utilisateur réinitialisent un horloge,
+  // un intervalle d'1 s vérifie si on dépasse les seuils. L'avertissement est
+  // ignoré par les events (seul "Rester connecté" reprend la session) pour
+  // éviter qu'un mouvement de souris involontaire le ferme.
+  useEffect(() => {
+    if (avertissementInactif) return
+    const events = ["mousedown", "mousemove", "keydown", "touchstart", "scroll", "click"] as const
+    const onActivity = () => {
+      lastActivityRef.current = Date.now()
+    }
+    for (const e of events) window.addEventListener(e, onActivity, { passive: true })
+    return () => {
+      for (const e of events) window.removeEventListener(e, onActivity)
+    }
+  }, [avertissementInactif])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const ecoule = Date.now() - lastActivityRef.current
+      const restant = INACTIVITE_LOGOUT_MS - ecoule
+      if (restant <= 0) {
+        // Déconnexion en silence : le serveur ignore déjà le cookie expiré, mais
+        // on appelle logout explicitement pour effacer le cookie côté navigateur.
+        fetch("/api/admin/logout", { method: "POST" }).finally(() => {
+          router.refresh()
+        })
+      } else if (restant <= INACTIVITE_AVERTISSEMENT_MS) {
+        setAvertissementInactif(true)
+        setSecondesRestantes(Math.max(0, Math.ceil(restant / 1000)))
+      } else if (avertissementInactif) {
+        setAvertissementInactif(false)
+      }
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [router, avertissementInactif])
+
+  async function prolongerSession() {
+    // Reset côté client + rafraîchit le cookie côté serveur via /api/admin/ping.
+    lastActivityRef.current = Date.now()
+    setAvertissementInactif(false)
+    try {
+      const res = await fetch("/api/admin/ping", { method: "POST" })
+      if (!res.ok) {
+        // Cookie déjà expiré côté serveur : on déconnecte côté UI pour rester cohérent.
+        router.refresh()
+      }
+    } catch {
+      // silencieux — le prochain fetch admin échouera de toute façon si le cookie est mort
+    }
+  }
+
   const compteurAujourdhui = useMemo(() => {
     const debutJour = new Date()
     debutJour.setHours(0, 0, 0, 0)
@@ -166,6 +224,55 @@ export default function AdminDashboard() {
       className="relative min-h-screen bg-[#E8E0D5] pb-24"
       style={{ fontFamily: "var(--font-sans)" }}
     >
+      {/* Modal d'inactivité — apparaît à 1 min avant la déconnexion auto */}
+      {avertissementInactif && (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="inactif-titre"
+          aria-describedby="inactif-desc"
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-[#1E1E1E]/55 px-5 backdrop-blur-sm"
+        >
+          <div className="animate-in fade-in zoom-in-95 w-full max-w-[360px] rounded-2xl border border-[#C4956A]/30 bg-[#E8E0D5] p-6 text-center shadow-[0_8px_28px_rgba(0,0,0,0.18)]">
+            <BloomMark className="mx-auto h-9 w-9 text-[#C4956A]" />
+            <h2
+              id="inactif-titre"
+              className="mt-4 text-[18px] font-semibold tracking-tight text-[#1E4D3A]"
+            >
+              Vous êtes inactif
+            </h2>
+            <p
+              id="inactif-desc"
+              className="mt-2 text-[13px] leading-relaxed text-[#1E4D3A]/65"
+            >
+              Pour votre sécurité, vous serez déconnecté dans
+              <br />
+              <span className="mt-2 inline-block text-[28px] font-semibold tabular-nums text-[#C4956A]">
+                {secondesRestantes}
+              </span>
+              <br />
+              seconde{secondesRestantes > 1 ? "s" : ""}.
+            </p>
+
+            <div className="mt-5 space-y-2">
+              <button
+                onClick={prolongerSession}
+                autoFocus
+                className="w-full rounded-lg bg-[#1E4D3A] py-3 text-[14px] font-semibold text-[#E8E0D5] shadow-[0_1px_2px_rgba(30,77,58,0.18),0_4px_12px_rgba(30,77,58,0.12)] transition-all hover:bg-[#1E4D3A]/92 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1E4D3A]/20"
+              >
+                Rester connecté
+              </button>
+              <button
+                onClick={seDeconnecter}
+                className="w-full rounded-lg border border-[#1E4D3A]/15 bg-transparent py-2.5 text-[12px] font-semibold uppercase tracking-[0.12em] text-[#1E4D3A]/65 transition-colors hover:bg-[#1E4D3A]/[0.04] hover:text-[#1E4D3A]"
+              >
+                Se déconnecter maintenant
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Filigranes décoratifs (très discrets) */}
       <BloomMark
         strokeWidth={0.7}

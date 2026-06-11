@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
 import { getAdminDb } from "@/lib/firebase/admin"
-import { estAdminConnecte } from "@/lib/admin/auth"
+import { verifierEtRafraichirAdmin } from "@/lib/admin/auth"
 import { Session } from "@/types"
 
 export const runtime = "nodejs"
 
 export async function GET() {
-  if (!(await estAdminConnecte())) {
+  if (!(await verifierEtRafraichirAdmin())) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
   }
 

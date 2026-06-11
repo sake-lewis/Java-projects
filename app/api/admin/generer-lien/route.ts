@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { v4 as uuidv4 } from "uuid"
 import { creerSession } from "@/lib/session/manager"
-import { estAdminConnecte } from "@/lib/admin/auth"
+import { verifierEtRafraichirAdmin } from "@/lib/admin/auth"
 import { Forfait } from "@/types"
 
 export const runtime = "nodejs"
@@ -9,7 +9,7 @@ export const runtime = "nodejs"
 const FORFAITS_VALIDES: Forfait[] = ["standard", "pro", "premium"]
 
 export async function POST(req: NextRequest) {
-  if (!(await estAdminConnecte())) {
+  if (!(await verifierEtRafraichirAdmin())) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
   }
 

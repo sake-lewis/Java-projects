@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import Handlebars from "handlebars"
 import fs from "fs/promises"
 import path from "path"
-import { estAdminConnecte } from "@/lib/admin/auth"
+import { verifierEtRafraichirAdmin } from "@/lib/admin/auth"
 import { launchBrowser } from "@/lib/pdf/browser"
 import { Forfait, FORFAIT_CONFIG } from "@/types"
 
@@ -18,7 +18,7 @@ function lienWhatsApp(forfaitLabel: string): string {
 }
 
 export async function GET(req: NextRequest) {
-  if (!(await estAdminConnecte())) {
+  if (!(await verifierEtRafraichirAdmin())) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
   }
 

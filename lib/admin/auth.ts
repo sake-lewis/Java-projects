@@ -2,7 +2,10 @@ import crypto from "crypto"
 import { cookies } from "next/headers"
 
 const COOKIE_NAME = "everbloom_admin"
-const DUREE_MS = 7 * 24 * 60 * 60 * 1000
+// Fenêtre glissante d'inactivité de 15 minutes : le cookie expire 15 min après
+// la dernière action admin (sliding session). Combiné au détecteur côté client,
+// le proprio est protégé si son téléphone reste déverrouillé sur l'admin.
+export const DUREE_MS = 15 * 60 * 1000
 
 function getSecret(): string {
   const s = process.env.ADMIN_SESSION_SECRET
@@ -65,4 +68,26 @@ export async function effacerCookieAdmin(): Promise<void> {
 export async function estAdminConnecte(): Promise<boolean> {
   const store = await cookies()
   return jetonValide(store.get(COOKIE_NAME)?.value)
+}
+
+/**
+ * Variante pour Route Handlers : vérifie le cookie ET le rafraîchit si valide,
+ * réalisant le sliding session côté serveur. À appeler dans CHAQUE endpoint
+ * admin protégé (pas dans les Server Components, qui ne peuvent pas muter les
+ * cookies sans Server Action).
+ */
+export async function verifierEtRafraichirAdmin(): Promise<boolean> {
+  const store = await cookies()
+  const valide = jetonValide(store.get(COOKIE_NAME)?.value)
+  if (valide) {
+    // Reset la fenêtre glissante (nouveau jeton avec expire_at = now + 15 min)
+    store.set(COOKIE_NAME, fabriquerJeton(), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: Math.floor(DUREE_MS / 1000),
+    })
+  }
+  return valide
 }
