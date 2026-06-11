@@ -37,7 +37,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const { token, url } = await request.json()
 
-    if (!token || !url) {
+    if (!token || !url || typeof url !== "string") {
       return NextResponse.json({ error: "Données manquantes" }, { status: 400 })
     }
 
@@ -46,15 +46,29 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Session invalide" }, { status: 403 })
     }
 
-    // Extraire le public_id de l'URL Cloudinary
-    // Format type: https://res.cloudinary.com/[cloud_name]/image/upload/v[version]/everbloom/[token]/[filename].[ext]
-    const parts = url.split('/')
-    const folderIndex = parts.indexOf('everbloom')
-    if (folderIndex !== -1) {
-      const publicIdWithExt = parts.slice(folderIndex).join('/')
-      const publicId = publicIdWithExt.split('.')[0]
-      await cloudinary.uploader.destroy(publicId)
+    // Valide d'abord que l'URL pointe bien vers le bon compte Cloudinary
+    // (garde anti-SSRF + anti-suppression croisée).
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+    if (!cloudName || !url.startsWith(`https://res.cloudinary.com/${cloudName}/`)) {
+      return NextResponse.json({ error: "URL invalide" }, { status: 400 })
     }
+
+    // Extrait le public_id et vérifie qu'il appartient au dossier du token.
+    // Sans cette garde, un client avec un token valide pourrait supprimer la
+    // photo d'un autre client en devinant son URL.
+    const parts = url.split("/")
+    const folderIndex = parts.indexOf("everbloom")
+    if (folderIndex === -1) {
+      return NextResponse.json({ error: "URL hors périmètre" }, { status: 400 })
+    }
+    const tokenDansUrl = parts[folderIndex + 1]
+    if (tokenDansUrl !== token) {
+      return NextResponse.json({ error: "Photo non rattachée à la session" }, { status: 403 })
+    }
+
+    const publicIdWithExt = parts.slice(folderIndex).join("/")
+    const publicId = publicIdWithExt.split(".")[0]
+    await cloudinary.uploader.destroy(publicId)
 
     return NextResponse.json({ success: true })
   } catch (error: any) {

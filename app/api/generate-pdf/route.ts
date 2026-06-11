@@ -100,6 +100,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Photos invalides" }, { status: 400 });
     }
 
+    // Validation des champs texte (filets de sécurité au cas où le front est contourné).
+    // Les mêmes limites s'appliquent côté UI ; ici on coupe sans rejeter pour la
+    // robustesse (génération sans bloquer le client si la copie locale dépasse d'un caractère).
+    const nomNorm = typeof nom_catalogue === "string" ? nom_catalogue.slice(0, 60).trim() : "";
+    const descNorm = typeof description === "string" ? description.slice(0, 200) : "";
+    if (nomNorm.length < 3) {
+      return NextResponse.json({ error: "Nom du catalogue trop court" }, { status: 400 });
+    }
+    // Plafonne aussi la description par photo (80 car. côté UI).
+    const photosAvecDesc = photos.map(p => ({
+      ...p,
+      description: typeof p.description === "string" ? p.description.slice(0, 80) : "",
+    }));
+
     const config = FORFAIT_CONFIG[session.forfait];
 
     // Dédicace : tronquée silencieusement à la limite du forfait, vidée si forfait sans dédicace.
@@ -122,7 +136,7 @@ export async function POST(req: NextRequest) {
 
     // Plafond pages : couverture + intro + (dédicace ?) + N photos + clôture.
     const pagesFixes = 3 + (dedicacePresente ? 1 : 0);
-    if (photos.length + pagesFixes > config.pages_max) {
+    if (photosAvecDesc.length + pagesFixes > config.pages_max) {
       return NextResponse.json(
         { error: `Trop de pages : ${config.pages_max} pages max pour ce forfait` },
         { status: 400 }
@@ -131,10 +145,10 @@ export async function POST(req: NextRequest) {
 
     await updateSession(token, {
       statut: "generating",
-      nom_catalogue,
-      description,
+      nom_catalogue: nomNorm,
+      description: descNorm,
       style_choisi: styleId,
-      photos,
+      photos: photosAvecDesc,
       dedicace: dedicaceNormalisee,
       photo_couverture_index: couvertureIndexValide,
     });
@@ -142,7 +156,7 @@ export async function POST(req: NextRequest) {
     const style = STYLES[styleId];
 
     // Transforme les URLs des photos pour appliquer l'effet choisi par photo.
-    const photosRendues = photos.map((p, i) => ({
+    const photosRendues = photosAvecDesc.map((p, i) => ({
       url: appliquerEffet(p.url, p.effet),
       url_brute: p.url,                  // pour la couverture si elle ne doit PAS prendre l'effet
       description: p.description ?? '',
@@ -166,8 +180,8 @@ export async function POST(req: NextRequest) {
     const template = Handlebars.compile(templateContent);
 
     const templateData = {
-      nom_catalogue,
-      description,
+      nom_catalogue: nomNorm,
+      description: descNorm,
       photos: photosRendues,
       total_photos: photosRendues.length,
       boutique_url: process.env.NEXT_PUBLIC_CHARIOW_BOUTIQUE_URL,
@@ -209,7 +223,7 @@ export async function POST(req: NextRequest) {
     }
 
     const hash = crypto.createHash('sha256').update(pdfBuffer).digest('hex');
-    const pdfUrl = await uploadPdf(pdfBuffer, token, nom_catalogue);
+    const pdfUrl = await uploadPdf(pdfBuffer, token, nomNorm);
 
     await marquerPdfPret(token, pdfUrl, hash);
     await supprimerPhotosSession(token);
