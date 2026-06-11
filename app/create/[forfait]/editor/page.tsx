@@ -3,10 +3,12 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { Session, Photo, PageAlbum, FORFAIT_CONFIG, Forfait, StyleId, EffetPhoto, PHOTOS_PAR_PAGE_MAX } from '@/types'
+import { STYLES } from '@/lib/styles/catalog'
 import FormulaireCreation from '@/components/FormulaireCreation'
 import StyleSelector from '@/components/StyleSelector'
 import PageGrid from '@/components/PageGrid'
 import ChoixPhotosModal from '@/components/ChoixPhotosModal'
+import ChoixStockageModal from '@/components/ChoixStockageModal'
 import BloomMark from '@/components/ui/BloomMark'
 import { preparerPhoto } from '@/lib/album/compress'
 
@@ -27,6 +29,9 @@ function EditorContent() {
   const config = FORFAIT_CONFIG[forfait]
 
   const [session, setSession] = useState<Session | null>(null)
+  // Le client choisit d'abord son style (esquisse visuelle), puis la
+  // fenêtre de création s'ouvre.
+  const [etape, setEtape] = useState<"style" | "creation">("style")
   const [nomCatalogue, setNomCatalogue] = useState("")
   const [description, setDescription] = useState("")
   const [styleChoisi, setStyleChoisi] = useState<StyleId>(1)
@@ -34,6 +39,7 @@ function EditorContent() {
   const [dedicace, setDedicace] = useState("")
   const [couvertureUrl, setCouvertureUrl] = useState<string | null>(null)
   const [modalChoixOuverte, setModalChoixOuverte] = useState(false)
+  const [modalStockageOuverte, setModalStockageOuverte] = useState(false)
   const [cible, setCible] = useState<CibleUpload | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -84,6 +90,10 @@ function EditorContent() {
             : null
         )
         setPdfUrl(data.pdf_url || null)
+        // Travail déjà commencé : on rouvre directement la fenêtre de création.
+        if (pagesChargees.length > 0 || data.pdf_url || data.nom_catalogue) {
+          setEtape("creation")
+        }
       } catch (err) {
         console.error(err)
         router.push("/error")
@@ -275,6 +285,48 @@ function EditorContent() {
   const focusRing =
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E4D3A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E8E0D5]"
 
+  // ——— Écran 1 : choix du style (esquisse visuelle) ———
+  if (etape === "style") {
+    return (
+      <div className="min-h-screen bg-[#E8E0D5]">
+        <div className="mx-auto max-w-[560px] px-6 py-12 space-y-10">
+          <header className="animate-fade-up flex flex-col items-center gap-2 text-center">
+            <BloomMark className="h-10 w-10 text-or" />
+            <h1 className="wordmark mt-1 text-xl">EVERBLOOM</h1>
+            <div className="hairline-or mt-2 w-24" />
+            <p className="display mt-3 text-[28px] text-vert">Choisissez votre style</p>
+            <p className="max-w-xs text-[13px] leading-relaxed text-vert/55">
+              Touchez un style pour ouvrir la création de votre catalogue.
+              Vous pourrez en changer à tout moment.
+            </p>
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-vert/15 bg-vert/[0.04] px-4 py-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-or" />
+              <span className="text-[12px] font-semibold tracking-wide text-vert">
+                Forfait {config?.label}
+              </span>
+              <span className="text-[11px] font-light text-vert/55">
+                · {config?.styles_disponibles.length ?? 0} styles · {maxPhotos} photos max
+              </span>
+            </div>
+          </header>
+
+          <StyleSelector
+            forfait={forfait}
+            selectedStyle={styleChoisi}
+            onSelect={id => {
+              setStyleChoisi(id)
+              setEtape("creation")
+              window.scrollTo({ top: 0 })
+            }}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  // ——— Écran 2 : fenêtre de création ———
+  const style = STYLES[styleChoisi]
+
   const blocage =
     nomCatalogue.length < 3
       ? "Donnez un nom d'au moins 3 caractères pour générer."
@@ -295,15 +347,25 @@ function EditorContent() {
           <div className="hairline-or mt-2 w-24" />
           <p className="display mt-3 text-[28px] text-vert">Composez votre catalogue</p>
 
-          <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-vert/15 bg-vert/[0.04] px-4 py-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-or" />
+          {/* Style choisi + accès au changement */}
+          <button
+            onClick={() => setEtape("style")}
+            className={`mt-3 inline-flex items-center gap-2 rounded-full border border-vert/15 bg-vert/[0.04] px-4 py-1.5 transition-all hover:border-vert/40 ${focusRing}`}
+          >
+            <span
+              className="h-3 w-3 rounded-full border"
+              style={{ background: style.palette.bg, borderColor: style.palette.accent }}
+            />
             <span className="text-[12px] font-semibold tracking-wide text-vert">
-              Forfait {config?.label}
+              {style.label}
             </span>
-            <span className="text-[11px] font-light text-vert/55">
-              · {maxPhotos} photos max
+            <span className="text-[11px] font-medium text-or underline-offset-2 hover:underline">
+              Changer
             </span>
-          </div>
+          </button>
+          <p className="text-[11px] text-vert/45">
+            Forfait {config?.label} · {maxPhotos} photos max
+          </p>
         </header>
 
         {/* Étape 1 — nom */}
@@ -317,39 +379,16 @@ function EditorContent() {
           />
         </section>
 
-        {/* Étape 2 — thème */}
+        {/* Étape 2 — pages de photos */}
         <section className="space-y-6">
-          <StepHeader numero={2} titre="Choisissez votre thème" />
-          <StyleSelector
-            forfait={forfait}
-            selectedStyle={styleChoisi}
-            onSelect={setStyleChoisi}
+          <StepHeader numero={2} titre="Composez vos pages" />
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept="image/*"
+            onChange={handleFileSelect}
           />
-        </section>
-
-        {/* Étape 3 — pages de photos */}
-        <section className="space-y-6">
-          <div className="flex items-center justify-between gap-4">
-            <StepHeader numero={3} titre="Composez vos pages" />
-            <button
-              onClick={() => setModalChoixOuverte(true)}
-              disabled={plein || isUploading}
-              aria-label="Ajouter une page"
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#1E4D3A] text-[#1E4D3A] transition-all hover:bg-[#1E4D3A] hover:text-[#E8E0D5] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[#1E4D3A] ${focusRing}`}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-            </button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              className="hidden"
-              accept="image/*"
-              onChange={handleFileSelect}
-            />
-          </div>
 
           {/* Compteur live */}
           <div
@@ -428,10 +467,10 @@ function EditorContent() {
           />
         </section>
 
-        {/* Étape 4 — dédicace (Pro + Premium) */}
+        {/* Étape 3 — dédicace (Pro + Premium) */}
         {dedicaceActive && (
           <section className="space-y-6">
-            <StepHeader numero={4} titre="Ajoutez une dédicace" />
+            <StepHeader numero={3} titre="Ajoutez une dédicace" />
             <div className="space-y-2">
               <label className="flex items-baseline justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-[#1E4D3A]/60">
                 <span>Mot personnel · optionnel</span>
@@ -463,6 +502,21 @@ function EditorContent() {
           </section>
         )}
       </div>
+
+      {/* Bouton flottant d'ajout — toujours à portée de pouce */}
+      {!pdfUrl && (
+        <button
+          onClick={() => setModalChoixOuverte(true)}
+          disabled={plein || isUploading}
+          aria-label="Ajouter une page de photos"
+          className={`fixed bottom-28 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-vert text-ivoire shadow-[0_8px_24px_rgba(30,77,58,0.4)] transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100 ${focusRing}`}
+        >
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        </button>
+      )}
 
       {/* Barre d'action collante */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#C4956A]/30 bg-[#E8E0D5]/95 backdrop-blur-sm">
@@ -507,19 +561,17 @@ function EditorContent() {
           {pdfUrl && (
             <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4">
               <div className="flex gap-3">
-                <a
-                  href={pdfUrl}
-                  download={`${nomCatalogue || 'catalogue'}.pdf`}
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => setModalStockageOuverte(true)}
                   className={`btn-primary flex-1 text-base ${focusRing}`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path>
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                     <polyline points="7 10 12 15 17 10"></polyline>
                     <line x1="12" y1="15" x2="12" y2="3"></line>
                   </svg>
                   Télécharger
-                </a>
+                </button>
 
                 <a
                   href={`https://wa.me/?text=${encodeURIComponent(`Voici mon catalogue EVERBLOOM : ${pdfUrl}`)}`}
@@ -552,6 +604,15 @@ function EditorContent() {
         }}
         onCancel={() => setModalChoixOuverte(false)}
       />
+
+      {pdfUrl && (
+        <ChoixStockageModal
+          isOpen={modalStockageOuverte}
+          pdfUrl={pdfUrl}
+          nomCatalogue={nomCatalogue}
+          onClose={() => setModalStockageOuverte(false)}
+        />
+      )}
     </div>
   )
 }

@@ -1,6 +1,8 @@
 "use client"
 
+import { useState } from "react"
 import BloomMark from "@/components/ui/BloomMark"
+import ChoixStockageModal from "@/components/ChoixStockageModal"
 
 interface Props {
   pdfUrl: string
@@ -15,6 +17,7 @@ function joursRestants(pdfExpiresAt: number | null): number {
 }
 
 export default function TelechargerView({ pdfUrl, nomCatalogue, pdfExpiresAt }: Props) {
+  const [modalStockageOuverte, setModalStockageOuverte] = useState(false)
   const jours = joursRestants(pdfExpiresAt)
   const messageWhatsApp = `Voici mon catalogue EVERBLOOM : ${pdfUrl}`
   const partageUrl = `https://wa.me/?text=${encodeURIComponent(messageWhatsApp)}`
@@ -40,10 +43,8 @@ export default function TelechargerView({ pdfUrl, nomCatalogue, pdfExpiresAt }: 
         </p>
 
         <div className="mt-10 flex w-full flex-col gap-3 sm:flex-row">
-          <a
-            href={pdfUrl}
-            download={`${nomCatalogue}.pdf`}
-            rel="noopener noreferrer"
+          <button
+            onClick={() => setModalStockageOuverte(true)}
             className="btn-primary focus-ring flex-1 text-base"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -52,7 +53,7 @@ export default function TelechargerView({ pdfUrl, nomCatalogue, pdfExpiresAt }: 
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
             Télécharger le PDF
-          </a>
+          </button>
 
           <a
             href={partageUrl}
@@ -72,6 +73,13 @@ export default function TelechargerView({ pdfUrl, nomCatalogue, pdfExpiresAt }: 
           Disponible {jours > 0 ? `${jours} jour${jours > 1 ? "s" : ""}` : "aujourd'hui seulement"}
         </p>
       </div>
+
+      <ChoixStockageModal
+        isOpen={modalStockageOuverte}
+        pdfUrl={pdfUrl}
+        nomCatalogue={nomCatalogue}
+        onClose={() => setModalStockageOuverte(false)}
+      />
     </main>
   )
 }
