@@ -31,6 +31,9 @@ cles*chariow*
 *.secrets.*
 secrets.local.*
 
+# Notes de session locales (contiennent des infos perso)
+EVERBLOOM_contexte_reprise.md
+
 # debug
 npm-debug.log*
 yarn-debug.log*
