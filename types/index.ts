@@ -22,7 +22,18 @@ export interface Photo {
   url: string
   description?: string
   effet?: EffetPhoto
+  // Rapport largeur/hauteur naturel de l'image — pilote le recadrage
+  // intelligent (choix de la mise en page selon l'orientation).
+  ratio?: number
 }
+
+// Une page de l'album : 1 à 4 photos. La mise en page est déduite
+// automatiquement du nombre de photos et de leurs orientations.
+export interface PageAlbum {
+  photos: Photo[]
+}
+
+export const PHOTOS_PAR_PAGE_MAX = 4
 
 export interface Session {
   token: string
@@ -37,9 +48,10 @@ export interface Session {
   style_choisi: StyleId
   // Dédicace personnalisée (Pro 200 car. / Premium 500 car.). Vide ou absente sinon.
   dedicace?: string
-  // Index dans `photos` de la photo choisie comme couverture (Premium uniquement).
+  // Index (dans la liste aplatie des photos de toutes les pages) de la photo
+  // choisie comme couverture (Premium uniquement).
   photo_couverture_index?: number | null
-  photos: Photo[]
+  pages: PageAlbum[]
   pdf_url: string | null
   pdf_hash: string | null
   created_at: number

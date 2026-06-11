@@ -3,7 +3,8 @@ import { verifierToken, updateSession, marquerPdfPret } from '@/lib/session/mana
 import { supprimerPhotosSession, uploadPdf } from '@/lib/cloudinary/upload';
 import { launchBrowser } from '@/lib/pdf/browser';
 import { STYLES, styleAccessible } from '@/lib/styles/catalog';
-import { StyleId, FORFAIT_CONFIG, EffetPhoto } from '@/types';
+import { StyleId, FORFAIT_CONFIG, EffetPhoto, PHOTOS_PAR_PAGE_MAX } from '@/types';
+import { layoutPage, ordonnerPourLayout } from '@/lib/album/layout';
 import Handlebars from 'handlebars';
 import fs from 'fs/promises';
 import path from 'path';
@@ -35,13 +36,22 @@ Handlebars.registerHelper('ifEgal', function (
  * ouvrirait un SSRF vers le réseau interne Vercel, les metadata AWS, ou des
  * fichiers locaux via file://. On bloque tout ce qui ne sort pas de Cloudinary.
  */
-function photosValides(photos: unknown): photos is { url: string; description?: string; effet?: EffetPhoto }[] {
-  if (!Array.isArray(photos)) return false;
+type PhotoEntrante = { url: string; description?: string; effet?: EffetPhoto; ratio?: number };
+
+function pagesValides(pages: unknown): pages is { photos: PhotoEntrante[] }[] {
+  if (!Array.isArray(pages)) return false;
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   if (!cloudName) return false;
   const prefixeAttendu = `https://res.cloudinary.com/${cloudName}/`;
-  return photos.every(
-    p => p && typeof p.url === 'string' && p.url.startsWith(prefixeAttendu)
+  return pages.every(
+    page =>
+      page &&
+      Array.isArray(page.photos) &&
+      page.photos.length >= 1 &&
+      page.photos.length <= PHOTOS_PAR_PAGE_MAX &&
+      page.photos.every(
+        (p: any) => p && typeof p.url === 'string' && p.url.startsWith(prefixeAttendu)
+      )
   );
 }
 
@@ -77,7 +87,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { token, nom_catalogue, description, style_choisi, photos, dedicace, photo_couverture_index } = body;
+    const { token, nom_catalogue, description, style_choisi, pages, dedicace, photo_couverture_index } = body;
     currentToken = token;
 
     const session = await verifierToken(token);
@@ -100,8 +110,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!photosValides(photos)) {
-      return NextResponse.json({ error: "Photos invalides" }, { status: 400 });
+    if (!pagesValides(pages)) {
+      return NextResponse.json({ error: "Pages invalides" }, { status: 400 });
     }
 
     // Validation des champs texte (filets de sécurité au cas où le front est contourné).
@@ -112,11 +122,19 @@ export async function POST(req: NextRequest) {
     if (nomNorm.length < 3) {
       return NextResponse.json({ error: "Nom du catalogue trop court" }, { status: 400 });
     }
-    // Plafonne aussi la description par photo (80 car. côté UI).
-    const photosAvecDesc = photos.map(p => ({
-      ...p,
-      description: typeof p.description === "string" ? p.description.slice(0, 80) : "",
+    // Normalise chaque photo : description plafonnée (80 car.), ratio assaini.
+    const pagesNormalisees = pages.map(page => ({
+      photos: page.photos.map(p => ({
+        url: p.url,
+        description: typeof p.description === "string" ? p.description.slice(0, 80) : "",
+        effet: p.effet,
+        ratio:
+          typeof p.ratio === "number" && isFinite(p.ratio) && p.ratio > 0.1 && p.ratio < 10
+            ? p.ratio
+            : 1,
+      })),
     }));
+    const photosAplaties = pagesNormalisees.flatMap(p => p.photos);
 
     const config = FORFAIT_CONFIG[session.forfait];
 
@@ -127,19 +145,19 @@ export async function POST(req: NextRequest) {
         : '';
     const dedicacePresente = dedicaceNormalisee.length > 0;
 
-    // Couverture photo : doit pointer vers une photo valide ET être autorisée par le forfait.
+    // Couverture photo : index dans la liste aplatie, photo valide ET forfait autorisé.
     let couvertureIndexValide: number | null = null;
     if (
       config.photo_couverture &&
       typeof photo_couverture_index === 'number' &&
       photo_couverture_index >= 0 &&
-      photo_couverture_index < photos.length
+      photo_couverture_index < photosAplaties.length
     ) {
       couvertureIndexValide = photo_couverture_index;
     }
 
     // Plafond : la valeur du forfait se joue sur le nombre de photos.
-    if (photosAvecDesc.length > config.photos_max) {
+    if (photosAplaties.length > config.photos_max) {
       return NextResponse.json(
         { error: `Trop de photos : ${config.photos_max} photos max pour ce forfait` },
         { status: 400 }
@@ -151,28 +169,33 @@ export async function POST(req: NextRequest) {
       nom_catalogue: nomNorm,
       description: descNorm,
       style_choisi: styleId,
-      photos: photosAvecDesc,
+      pages: pagesNormalisees,
       dedicace: dedicaceNormalisee,
       photo_couverture_index: couvertureIndexValide,
     });
 
     const style = STYLES[styleId];
 
-    // Transforme les URLs des photos pour appliquer l'effet choisi par photo.
-    const photosRendues = photosAvecDesc.map((p, i) => ({
-      url: appliquerEffet(p.url, p.effet),
-      url_brute: p.url,                  // pour la couverture si elle ne doit PAS prendre l'effet
-      description: p.description ?? '',
-      effet: p.effet ?? 'couleur',
-      index: i,
-    }));
-
     // Pour la couverture photo, on garde l'image originale (sans effet) :
     // c'est le visuel d'accueil, on veut sa couleur.
     const photoCouverture =
       couvertureIndexValide !== null
-        ? photosRendues[couvertureIndexValide]
+        ? photosAplaties[couvertureIndexValide]
         : null;
+
+    // Mise en page intelligente : pour chaque page, le moteur choisit la
+    // grille selon le nombre de photos et leurs orientations, puis place la
+    // photo dominante en cellule principale. L'effet est appliqué par photo.
+    const planches = pagesNormalisees.map(page => {
+      const layout = layoutPage(page.photos);
+      const ordonnees = ordonnerPourLayout(page.photos, layout);
+      return {
+        layout,
+        solo: page.photos.length === 1,
+        caption: page.photos.length === 1 ? page.photos[0].description : '',
+        photos: ordonnees.map(p => ({ url: appliquerEffet(p.url, p.effet) })),
+      };
+    });
 
     // Un seul template maître : les 20 styles sont des données (palette,
     // typographies, thème, mode clair/sombre) injectées dans master.html.
@@ -186,8 +209,8 @@ export async function POST(req: NextRequest) {
     const templateData = {
       nom_catalogue: nomNorm,
       description: descNorm,
-      photos: photosRendues,
-      total_photos: photosRendues.length,
+      planches,
+      total_planches: planches.length,
       boutique_url: process.env.NEXT_PUBLIC_CHARIOW_BOUTIQUE_URL,
       theme: style.theme,
       theme_label: style.themeLabel,
@@ -200,7 +223,7 @@ export async function POST(req: NextRequest) {
       // Phase 3
       dedicace: dedicaceNormalisee,
       dedicace_presente: dedicacePresente,
-      photo_couverture: photoCouverture ? { url: photoCouverture.url_brute } : null,
+      photo_couverture: photoCouverture ? { url: photoCouverture.url } : null,
       edition_unique: config.edition_unique
         ? numeroEditionUnique(token, session.created_at)
         : null,

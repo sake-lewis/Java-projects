@@ -22,7 +22,7 @@ export async function creerSession(params: CreerSessionParams): Promise<Session>
     nom_catalogue: "",
     description: "",
     style_choisi: 1,
-    photos: [],
+    pages: [],
     pdf_url: null,
     pdf_hash: null,
     created_at: Date.now(),

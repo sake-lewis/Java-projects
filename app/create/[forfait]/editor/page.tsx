@@ -2,12 +2,20 @@
 
 import React, { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
-import { Session, Photo, FORFAIT_CONFIG, Forfait, StyleId, EffetPhoto } from '@/types'
+import { Session, Photo, PageAlbum, FORFAIT_CONFIG, Forfait, StyleId, EffetPhoto, PHOTOS_PAR_PAGE_MAX } from '@/types'
 import FormulaireCreation from '@/components/FormulaireCreation'
 import StyleSelector from '@/components/StyleSelector'
-import PhotoGrid from '@/components/PhotoGrid'
-import CropperModal from '@/components/CropperModal'
+import PageGrid from '@/components/PageGrid'
+import ChoixPhotosModal from '@/components/ChoixPhotosModal'
 import BloomMark from '@/components/ui/BloomMark'
+import { preparerPhoto } from '@/lib/album/compress'
+
+// Cible des fichiers en attente de sélection : nouvelle page, ajout à une
+// page existante, ou remplacement d'une photo précise.
+type CibleUpload =
+  | { type: "nouvelle-page"; nombre: number }
+  | { type: "ajout-page"; pageIdx: number }
+  | { type: "remplacement"; pageIdx: number; photoIdx: number }
 
 function EditorContent() {
   const router = useRouter()
@@ -22,18 +30,19 @@ function EditorContent() {
   const [nomCatalogue, setNomCatalogue] = useState("")
   const [description, setDescription] = useState("")
   const [styleChoisi, setStyleChoisi] = useState<StyleId>(1)
-  const [photos, setPhotos] = useState<Photo[]>([])
+  const [pages, setPages] = useState<PageAlbum[]>([])
   const [dedicace, setDedicace] = useState("")
-  const [couvertureIndex, setCouvertureIndex] = useState<number | null>(null)
-  const [cropFile, setCropFile] = useState<File | null>(null)
-  const [cropOpen, setCropOpen] = useState(false)
+  const [couvertureUrl, setCouvertureUrl] = useState<string | null>(null)
+  const [modalChoixOuverte, setModalChoixOuverte] = useState(false)
+  const [cible, setCible] = useState<CibleUpload | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Capacités du forfait (Phase 3).
+  // Capacités du forfait.
   const dedicaceMax = config?.dedicace_max ?? 0
   const dedicaceActive = dedicaceMax > 0
   const effetsActives = config?.effets_photo ?? false
@@ -41,11 +50,12 @@ function EditorContent() {
 
   // La valeur du forfait se joue sur le nombre de photos.
   const maxPhotos = config?.photos_max ?? 60
+  const photosTotal = pages.reduce((n, p) => n + p.photos.length, 0)
   const pagesFixes = 3 + (dedicaceActive && dedicace.trim().length > 0 ? 1 : 0)
-  const pagesActuelles = photos.length + pagesFixes
-  const ratioPhotos = photos.length / maxPhotos
+  const pagesActuelles = pages.length + pagesFixes
+  const ratioPhotos = photosTotal / maxPhotos
   const presquePlein = ratioPhotos >= 0.85 && ratioPhotos < 1
-  const plein = photos.length >= maxPhotos
+  const plein = photosTotal >= maxPhotos
 
   useEffect(() => {
     async function loadSession() {
@@ -61,10 +71,17 @@ function EditorContent() {
         setNomCatalogue(data.nom_catalogue || "")
         setDescription(data.description || "")
         setStyleChoisi(data.style_choisi || 1)
-        setPhotos(data.photos || [])
+        // Compat : les anciennes sessions stockaient une liste plate `photos`.
+        const pagesChargees: PageAlbum[] =
+          data.pages ??
+          (Array.isArray(data.photos) ? data.photos.map((p: Photo) => ({ photos: [p] })) : [])
+        setPages(pagesChargees)
         setDedicace(data.dedicace || "")
-        setCouvertureIndex(
-          typeof data.photo_couverture_index === "number" ? data.photo_couverture_index : null
+        const flat = pagesChargees.flatMap(p => p.photos)
+        setCouvertureUrl(
+          typeof data.photo_couverture_index === "number"
+            ? flat[data.photo_couverture_index]?.url ?? null
+            : null
         )
         setPdfUrl(data.pdf_url || null)
       } catch (err) {
@@ -77,76 +94,138 @@ function EditorContent() {
     loadSession()
   }, [token, router])
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  // ——— Upload ———
 
-    if (photos.length >= maxPhotos) {
-      setError(`Nombre maximum de photos atteint (${maxPhotos})`)
-      return
-    }
-
-    setCropFile(file)
-    setCropOpen(true)
-    if (fileInputRef.current) fileInputRef.current.value = ""
-  }
-
-  const handleCropConfirm = async (base64: string) => {
-    setCropOpen(false)
-    try {
-      const res = await fetch('/api/upload-photo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, image: base64 })
-      })
-      if (!res.ok) throw new Error("Échec de l'upload")
-      const { url } = await res.json()
-      setPhotos(prev => [...prev, { url, description: "", effet: "couleur" }])
-      setError(null)
-    } catch (err) {
-      setError("Erreur lors de l'envoi de la photo")
+  function lancerSelectionFichiers(nouvelleCible: CibleUpload) {
+    setCible(nouvelleCible)
+    if (fileInputRef.current) {
+      fileInputRef.current.multiple = nouvelleCible.type === "nouvelle-page" && nouvelleCible.nombre > 1
+      fileInputRef.current.click()
     }
   }
 
-  const handleDeletePhoto = async (index: number) => {
-    const photoToDelete = photos[index]
+  async function uploadFichier(file: File): Promise<Photo> {
+    const { base64, ratio } = await preparerPhoto(file)
+    const res = await fetch('/api/upload-photo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, image: base64 })
+    })
+    if (!res.ok) throw new Error("Échec de l'upload")
+    const { url } = await res.json()
+    return { url, ratio, description: "", effet: "couleur" }
+  }
+
+  async function supprimerSurCloudinary(url: string) {
     try {
-      setPhotos(prev => prev.filter((_, i) => i !== index))
-      // Si on supprime la couverture ou un index avant la couverture, on ajuste.
-      setCouvertureIndex(prev => {
-        if (prev === null) return prev
-        if (prev === index) return null
-        if (prev > index) return prev - 1
-        return prev
-      })
       await fetch('/api/upload-photo', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, url: photoToDelete.url })
+        body: JSON.stringify({ token, url })
       })
     } catch (err) {
       console.error("Erreur suppression photo:", err)
     }
   }
 
-  const handleAddDescription = (index: number, desc: string) => {
-    setPhotos(prev => prev.map((p, i) => i === index ? { ...p, description: desc } : p))
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fichiers = Array.from(e.target.files ?? [])
+    if (fileInputRef.current) fileInputRef.current.value = ""
+    if (fichiers.length === 0 || !cible) return
+
+    // Plafonds : nombre demandé, 4 par page, capacité restante du forfait.
+    let quota = maxPhotos - photosTotal
+    if (cible.type === "nouvelle-page") quota = Math.min(quota, cible.nombre)
+    if (cible.type === "ajout-page")
+      quota = Math.min(quota, PHOTOS_PAR_PAGE_MAX - pages[cible.pageIdx].photos.length)
+    if (cible.type === "remplacement") quota = 1
+    const retenus = fichiers.slice(0, Math.max(0, quota))
+    if (retenus.length === 0) {
+      setError(`Nombre maximum de photos atteint (${maxPhotos})`)
+      return
+    }
+
+    setIsUploading(true)
+    setError(null)
+    try {
+      const nouvelles: Photo[] = []
+      for (const f of retenus) {
+        nouvelles.push(await uploadFichier(f))
+      }
+
+      if (cible.type === "nouvelle-page") {
+        setPages(prev => [...prev, { photos: nouvelles }])
+      } else if (cible.type === "ajout-page") {
+        setPages(prev => prev.map((p, i) =>
+          i === cible.pageIdx ? { photos: [...p.photos, ...nouvelles] } : p
+        ))
+      } else {
+        const ancienne = pages[cible.pageIdx]?.photos[cible.photoIdx]
+        setPages(prev => prev.map((p, i) =>
+          i === cible.pageIdx
+            ? {
+                photos: p.photos.map((photo, j) =>
+                  j === cible.photoIdx
+                    ? { ...nouvelles[0], description: photo.description, effet: photo.effet }
+                    : photo
+                ),
+              }
+            : p
+        ))
+        if (ancienne) {
+          if (couvertureUrl === ancienne.url) setCouvertureUrl(null)
+          await supprimerSurCloudinary(ancienne.url)
+        }
+      }
+    } catch {
+      setError("Erreur lors de l'envoi des photos")
+    } finally {
+      setIsUploading(false)
+      setCible(null)
+    }
   }
 
-  const handleChangeEffet = (index: number, effet: EffetPhoto) => {
-    setPhotos(prev => prev.map((p, i) => i === index ? { ...p, effet } : p))
+  // ——— Actions sur les pages ———
+
+  const handleDeletePhoto = async (pageIdx: number, photoIdx: number) => {
+    const photo = pages[pageIdx]?.photos[photoIdx]
+    if (!photo) return
+    // La page se réorganise automatiquement ; elle disparaît si elle se vide.
+    setPages(prev =>
+      prev
+        .map((p, i) =>
+          i === pageIdx ? { photos: p.photos.filter((_, j) => j !== photoIdx) } : p
+        )
+        .filter(p => p.photos.length > 0)
+    )
+    if (couvertureUrl === photo.url) setCouvertureUrl(null)
+    await supprimerSurCloudinary(photo.url)
   }
 
-  const handleSetCouverture = (index: number | null) => {
-    setCouvertureIndex(index)
+  const handleChangeEffet = (pageIdx: number, photoIdx: number, effet: EffetPhoto) => {
+    setPages(prev => prev.map((p, i) =>
+      i === pageIdx
+        ? { photos: p.photos.map((photo, j) => (j === photoIdx ? { ...photo, effet } : photo)) }
+        : p
+    ))
   }
+
+  const handleChangeDescription = (pageIdx: number, photoIdx: number, desc: string) => {
+    setPages(prev => prev.map((p, i) =>
+      i === pageIdx
+        ? { photos: p.photos.map((photo, j) => (j === photoIdx ? { ...photo, description: desc } : photo)) }
+        : p
+    ))
+  }
+
+  // ——— Génération ———
 
   const handleGenerate = async () => {
     if (nomCatalogue.length < 3) {
       setError("Le nom du catalogue est trop court")
       return
     }
-    if (photos.length === 0) {
+    if (photosTotal === 0) {
       setError("Ajoutez au moins une photo")
       return
     }
@@ -155,6 +234,10 @@ function EditorContent() {
     setError(null)
 
     try {
+      const flat = pages.flatMap(p => p.photos)
+      const couvertureIndex = couvertureUrl
+        ? flat.findIndex(p => p.url === couvertureUrl)
+        : -1
       const res = await fetch('/api/generate-pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -163,9 +246,10 @@ function EditorContent() {
           nom_catalogue: nomCatalogue,
           description,
           style_choisi: styleChoisi,
-          photos,
+          pages,
           dedicace: dedicaceActive ? dedicace.slice(0, dedicaceMax) : "",
-          photo_couverture_index: couvertureActive ? couvertureIndex : null,
+          photo_couverture_index:
+            couvertureActive && couvertureIndex >= 0 ? couvertureIndex : null,
         })
       })
       const data = await res.json()
@@ -194,7 +278,7 @@ function EditorContent() {
   const blocage =
     nomCatalogue.length < 3
       ? "Donnez un nom d'au moins 3 caractères pour générer."
-      : photos.length === 0
+      : photosTotal === 0
         ? "Ajoutez au moins une photo pour générer."
         : null
 
@@ -243,14 +327,14 @@ function EditorContent() {
           />
         </section>
 
-        {/* Étape 3 — photos */}
+        {/* Étape 3 — pages de photos */}
         <section className="space-y-6">
           <div className="flex items-center justify-between gap-4">
-            <StepHeader numero={3} titre="Ajoutez vos photos" />
+            <StepHeader numero={3} titre="Composez vos pages" />
             <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={plein}
-              aria-label="Ajouter une photo"
+              onClick={() => setModalChoixOuverte(true)}
+              disabled={plein || isUploading}
+              aria-label="Ajouter une page"
               className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#1E4D3A] text-[#1E4D3A] transition-all hover:bg-[#1E4D3A] hover:text-[#E8E0D5] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[#1E4D3A] ${focusRing}`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -267,7 +351,7 @@ function EditorContent() {
             />
           </div>
 
-          {/* Compteur de photos live */}
+          {/* Compteur live */}
           <div
             className={`card px-4 py-3 transition-colors ${
               plein
@@ -283,7 +367,7 @@ function EditorContent() {
                   Votre album
                 </div>
                 <div className="mt-1 text-[15px] font-semibold tabular-nums text-vert">
-                  {photos.length} photo{photos.length > 1 ? "s" : ""}
+                  {photosTotal} photo{photosTotal > 1 ? "s" : ""}
                   <span className="ml-1 text-[12px] font-normal text-vert/45">
                     / {maxPhotos} max
                   </span>
@@ -312,22 +396,35 @@ function EditorContent() {
             )}
             {presquePlein && !plein && (
               <p className="mt-2 text-[12px] text-[#8B6840]/80">
-                Plus que {maxPhotos - photos.length} photo
-                {maxPhotos - photos.length > 1 ? "s" : ""} avant le plafond.
+                Plus que {maxPhotos - photosTotal} photo
+                {maxPhotos - photosTotal > 1 ? "s" : ""} avant le plafond.
               </p>
             )}
           </div>
 
-          <PhotoGrid
-            photos={photos}
-            maxPhotos={maxPhotos}
+          {isUploading && (
+            <div className="flex items-center justify-center gap-2 rounded-lg bg-vert/[0.04] py-3">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-vert border-t-transparent" />
+              <span className="text-[13px] text-vert/70">Envoi des photos…</span>
+            </div>
+          )}
+
+          <PageGrid
+            pages={pages}
             effetsActives={effetsActives}
             couvertureActive={couvertureActive}
-            couvertureIndex={couvertureIndex}
-            onAddDescription={handleAddDescription}
+            couvertureUrl={couvertureUrl}
             onDeletePhoto={handleDeletePhoto}
+            onReplacePhoto={(pageIdx, photoIdx) =>
+              lancerSelectionFichiers({ type: "remplacement", pageIdx, photoIdx })
+            }
+            onAddPhotoToPage={pageIdx => {
+              if (plein) return
+              lancerSelectionFichiers({ type: "ajout-page", pageIdx })
+            }}
             onChangeEffet={handleChangeEffet}
-            onSetCouverture={handleSetCouverture}
+            onChangeDescription={handleChangeDescription}
+            onSetCouverture={setCouvertureUrl}
           />
         </section>
 
@@ -380,7 +477,7 @@ function EditorContent() {
             <>
               <button
                 onClick={handleGenerate}
-                disabled={!!blocage || dedicaceTropLongue}
+                disabled={!!blocage || dedicaceTropLongue || isUploading}
                 className={`btn-primary w-full text-lg ${focusRing}`}
               >
                 Générer mon catalogue PDF
@@ -446,11 +543,14 @@ function EditorContent() {
         </div>
       </div>
 
-      <CropperModal
-        isOpen={cropOpen}
-        imageFile={cropFile}
-        onConfirm={handleCropConfirm}
-        onCancel={() => setCropOpen(false)}
+      <ChoixPhotosModal
+        isOpen={modalChoixOuverte}
+        maxChoix={Math.min(PHOTOS_PAR_PAGE_MAX, maxPhotos - photosTotal)}
+        onChoisir={n => {
+          setModalChoixOuverte(false)
+          lancerSelectionFichiers({ type: "nouvelle-page", nombre: n })
+        }}
+        onCancel={() => setModalChoixOuverte(false)}
       />
     </div>
   )
