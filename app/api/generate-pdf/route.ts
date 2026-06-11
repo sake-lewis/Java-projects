@@ -127,7 +127,8 @@ export async function POST(req: NextRequest) {
       photos: page.photos.map(p => ({
         url: p.url,
         description: typeof p.description === "string" ? p.description.slice(0, 80) : "",
-        effet: p.effet,
+        // Jamais undefined : Firestore refuse les valeurs indéfinies.
+        effet: p.effet ?? ('couleur' as EffetPhoto),
         ratio:
           typeof p.ratio === "number" && isFinite(p.ratio) && p.ratio > 0.1 && p.ratio < 10
             ? p.ratio
