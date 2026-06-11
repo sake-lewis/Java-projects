@@ -95,66 +95,6 @@ export async function expirerSession(token: string): Promise<void> {
   })
 }
 
-/**
- * Trouve et **verrouille** la session la plus récente pour ce forfait, dans la
- * fenêtre courte donnée, **non encore réclamée** (statut `paid`).
- *
- * Sert au flux Chariow Pulse : le dashboard Chariow ne sait pas insérer de
- * variable dynamique (`{sale_id}`) dans l'URL de redirection, on identifie donc
- * la session par forfait + temporalité. La transaction Firestore atomique
- * empêche deux clients qui paieraient en simultané pour le même forfait de
- * récupérer la même session : le second tour de sondage trouvera SA session
- * (créée juste après).
- *
- * Pourquoi un verrou plutôt qu'une simple lecture : `paid → claimed` est
- * définitif et atomique, donc même si /merci est rechargée plusieurs fois ou
- * si plusieurs onglets sont ouverts en parallèle, la même session ne peut être
- * réclamée qu'une fois.
- */
-export async function reclamerSessionRecente(
-  forfait: Forfait,
-  // Fenêtre serrée (90s) : Chariow envoie le webhook quelques secondes après
-  // le paiement, /merci sonde dans la foulée. Au-delà, on considère qu'un
-  // client légitime ne pourrait plus tomber sur sa session — réduit l'angle
-  // d'attaque pour un script qui essaierait de capter une session payée.
-  fenetreSecondes = 90
-): Promise<{ token: string; forfait: Forfait } | null> {
-  const db = getAdminDb()
-  const seuil = Date.now() - fenetreSecondes * 1000
-
-  // 1. Sélection des candidates (hors transaction — filtres + tri en mémoire
-  //    pour éviter d'avoir à créer un index composite Firestore).
-  const snap = await db
-    .collection("sessions")
-    .where("forfait", "==", forfait)
-    .where("statut", "==", "paid")
-    .get()
-
-  const candidates = snap.docs
-    .map(d => d.data() as Session)
-    .filter(s => s.created_at >= seuil)
-    .sort((a, b) => b.created_at - a.created_at)
-
-  // 2. Pour chaque candidate (la plus récente d'abord), tenter le verrou
-  //    atomique. Si une autre requête l'a réclamée entre-temps, on essaye la
-  //    suivante. C'est la garantie anti-collision même en concurrence.
-  for (const candidate of candidates) {
-    const ref = db.collection("sessions").doc(candidate.token)
-    const reussi = await db.runTransaction(async tx => {
-      const doc = await tx.get(ref)
-      if (!doc.exists) return false
-      const s = doc.data() as Session
-      if (s.statut !== "paid") return false
-      tx.update(ref, { statut: "claimed", claimed_at: Date.now() })
-      return true
-    })
-    if (reussi) {
-      return { token: candidate.token, forfait: candidate.forfait }
-    }
-  }
-  return null
-}
-
 export async function nettoyerSessionsExpirees(): Promise<number> {
   const maintenant = Date.now()
   const snapshot = await getAdminDb().collection("sessions")

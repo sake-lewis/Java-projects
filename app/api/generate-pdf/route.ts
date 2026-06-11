@@ -45,8 +45,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Session invalide ou expirée" }, { status: 404 });
     }
 
-    // Une session peut être "claimed" (réclamée sur /merci mais pas encore PDF)
-    // ou "paid" (ancien flux test) ou "generating" (réessai après échec).
+    // Une session peut être "paid" (lien admin fraîchement ouvert), "claimed"
+    // (donnée historique) ou "generating" (réessai après échec).
     if (!["paid", "claimed", "generating"].includes(session.statut)) {
       return NextResponse.json({ error: "Action non autorisée" }, { status: 403 });
     }
@@ -125,9 +125,8 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Erreur génération PDF:", error);
     if (currentToken) {
-      // Revenir à "claimed" et non "paid" : la session a déjà été réclamée par
-      // ce client sur /merci, on ne doit pas la rendre disponible à un autre.
-      await updateSession(currentToken, { statut: "claimed" });
+      // Revenir à "paid" pour permettre un nouvel essai depuis le même lien.
+      await updateSession(currentToken, { statut: "paid" });
     }
     return NextResponse.json({ error: "Génération échouée, veuillez réessayer" }, { status: 500 });
   }

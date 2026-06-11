@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation"
 import { verifierToken } from "@/lib/session/manager"
-import { Forfait } from "@/types"
 
 interface PageProps {
   params: Promise<{ forfait: string }>
@@ -11,38 +10,32 @@ export default async function CreatePage({ params, searchParams }: PageProps) {
   const { forfait } = await params
   const { token } = await searchParams
 
-  // 1. Valider le forfait
   if (forfait !== "standard" && forfait !== "pro" && forfait !== "premium") {
-    redirect("/error")
+    redirect("/error?reason=invalid")
   }
-
-  // 2. Si token absent
   if (!token) {
-    redirect("/error")
+    redirect("/error?reason=invalid")
   }
 
-  // 3. Valider le token
   const session = await verifierToken(token)
-
-  // 4. Vérifications supplémentaires
   if (!session || session.forfait !== forfait) {
-    redirect("/error")
+    redirect("/error?reason=invalid")
   }
 
-  // 5. Redirection selon le statut.
-  // "paid"     = ancien flux test sans /merci
-  // "claimed"  = réclamée sur /merci (nouveau flux Chariow) → on entre direct dans l'éditeur
-  // "generating" = relance après échec PDF
+  // Nouveau workflow (lien admin) : la session est créée directement en `paid`
+  // par l'admin, le client tombe donc dans l'éditeur sans passer par /start.
+  // Une fois le PDF généré (`ready`/`downloaded`), le lien est consommé :
+  // le client est envoyé sur /telecharger pour les visites suivantes.
   switch (session.statut) {
     case "paid":
-      redirect(`/create/${forfait}/start?token=${token}`)
     case "claimed":
     case "generating":
+      redirect(`/create/${forfait}/editor?token=${token}`)
     case "ready":
     case "downloaded":
-      redirect(`/create/${forfait}/editor?token=${token}`)
+      redirect(`/telecharger?token=${token}`)
     case "expired":
     default:
-      redirect("/error")
+      redirect("/error?reason=expired")
   }
 }

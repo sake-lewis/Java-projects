@@ -17,8 +17,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Session non trouvée ou expirée" }, { status: 404 })
   }
 
-  // Ne pas exposer les données sensibles ni les identifiants client
-  // (utilisés uniquement côté serveur pour le rapprochement webhook/merci).
+  // Ne pas exposer les données sensibles ni les identifiants client.
   const { pdf_hash, phone, chariow_ref, ...publicSession } = session as any
 
   return NextResponse.json(publicSession)
