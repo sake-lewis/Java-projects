@@ -18,7 +18,10 @@ const nextConfig: NextConfig = {
   // dans le bundle serverless. Sans cela, Turbopack externalise le package mais
   // omet son dossier bin/ → "input directory ... does not exist" sur Vercel.
   outputFileTracingIncludes: {
-    '/api/generate-pdf': ['./node_modules/@sparticuz/chromium/bin/**/*'],
+    '/api/generate-pdf': [
+      './node_modules/@sparticuz/chromium/bin/**/*',
+      './lib/pdf/templates/v2/**/*',
+    ],
     '/api/admin/instructions-pdf': [
       './node_modules/@sparticuz/chromium/bin/**/*',
       './lib/pdf/templates/instructions/**/*',

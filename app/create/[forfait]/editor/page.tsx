@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
-import { Session, Photo, FORFAIT_CONFIG, Forfait } from '@/types'
+import { Session, Photo, FORFAIT_CONFIG, Forfait, StyleId } from '@/types'
 import FormulaireCreation from '@/components/FormulaireCreation'
 import StyleSelector from '@/components/StyleSelector'
 import PhotoGrid from '@/components/PhotoGrid'
@@ -19,7 +19,7 @@ function EditorContent() {
   const [session, setSession] = useState<Session | null>(null)
   const [nomCatalogue, setNomCatalogue] = useState("")
   const [description, setDescription] = useState("")
-  const [styleChoisi, setStyleChoisi] = useState<1 | 2 | 3 | 4 | 5>(1)
+  const [styleChoisi, setStyleChoisi] = useState<StyleId>(1)
   const [photos, setPhotos] = useState<Photo[]>([])
   const [cropFile, setCropFile] = useState<File | null>(null)
   const [cropOpen, setCropOpen] = useState(false)
@@ -29,7 +29,14 @@ function EditorContent() {
   const [isLoading, setIsLoading] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const maxPhotos = FORFAIT_CONFIG[forfait]?.photos_max || 50
+  // Le nombre max de photos = pages_max - 3 (couverture + intro + clôture).
+  const pagesMax = FORFAIT_CONFIG[forfait]?.pages_max ?? 40
+  const PAGES_FIXES = 3
+  const maxPhotos = pagesMax - PAGES_FIXES
+  const pagesActuelles = photos.length + PAGES_FIXES
+  const ratioPages = pagesActuelles / pagesMax
+  const presquePlein = ratioPages >= 0.85 && ratioPages < 1
+  const plein = pagesActuelles >= pagesMax
 
   useEffect(() => {
     async function loadSession() {
@@ -180,7 +187,7 @@ function EditorContent() {
               Forfait {FORFAIT_CONFIG[forfait]?.label}
             </span>
             <span className="text-[11px] font-light text-[#1E4D3A]/55">
-              · jusqu&apos;à {maxPhotos} photos
+              · {pagesMax} pages max
             </span>
           </div>
         </header>
@@ -206,13 +213,13 @@ function EditorContent() {
           />
         </section>
 
-        {/* Étape 3 — photos. Le compteur vit dans PhotoGrid uniquement (plus de doublon). */}
+        {/* Étape 3 — photos. */}
         <section className="space-y-6">
           <div className="flex items-center justify-between gap-4">
             <StepHeader numero={3} titre="Ajoutez vos photos" />
             <button
               onClick={() => fileInputRef.current?.click()}
-              disabled={photos.length >= maxPhotos}
+              disabled={plein}
               aria-label="Ajouter une photo"
               className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#1E4D3A] text-[#1E4D3A] transition-all hover:bg-[#1E4D3A] hover:text-[#E8E0D5] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[#1E4D3A] ${focusRing}`}
             >
@@ -228,6 +235,65 @@ function EditorContent() {
               accept="image/*"
               onChange={handleFileSelect}
             />
+          </div>
+
+          {/* Compteur de pages live — affiche la projection du PDF en temps réel.
+              Couverture (1) + intro (1) + N photos + clôture (1). */}
+          <div
+            className={`rounded-lg border px-4 py-3 transition-colors ${
+              plein
+                ? "border-[#C4956A]/40 bg-[#C4956A]/8"
+                : presquePlein
+                ? "border-[#C4956A]/25 bg-[#C4956A]/5"
+                : "border-[#1E4D3A]/10 bg-white"
+            }`}
+          >
+            <div className="flex items-baseline justify-between gap-3">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#1E4D3A]/55">
+                  Aperçu de votre album
+                </div>
+                <div className="mt-1 text-[15px] font-semibold text-[#1E4D3A]">
+                  {photos.length === 0
+                    ? `${pagesMax} pages disponibles`
+                    : `${pagesActuelles} page${pagesActuelles > 1 ? "s" : ""}`}
+                  <span className="ml-1 text-[12px] font-normal text-[#1E4D3A]/45">
+                    {photos.length > 0 ? `/ ${pagesMax} max` : ""}
+                  </span>
+                </div>
+              </div>
+              <div className="text-right text-[11px] text-[#1E4D3A]/50">
+                {photos.length} photo{photos.length > 1 ? "s" : ""}
+                <br />
+                <span className="text-[#1E4D3A]/35">
+                  + couverture, intro, clôture
+                </span>
+              </div>
+            </div>
+            {/* Jauge */}
+            <div className="mt-2 h-1 overflow-hidden rounded-full bg-[#1E4D3A]/8">
+              <div
+                className={`h-full rounded-full transition-all duration-300 ${
+                  plein
+                    ? "bg-[#C4956A]"
+                    : presquePlein
+                    ? "bg-[#C4956A]/80"
+                    : "bg-[#1E4D3A]/60"
+                }`}
+                style={{ width: `${Math.min(100, Math.round(ratioPages * 100))}%` }}
+              />
+            </div>
+            {plein && (
+              <p className="mt-2 text-[12px] font-medium text-[#8B6840]">
+                Vous avez atteint le maximum de votre forfait.
+              </p>
+            )}
+            {presquePlein && !plein && (
+              <p className="mt-2 text-[12px] text-[#8B6840]/80">
+                Plus que {maxPhotos - photos.length} photo
+                {maxPhotos - photos.length > 1 ? "s" : ""} avant le plafond.
+              </p>
+            )}
           </div>
 
           <PhotoGrid

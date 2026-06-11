@@ -12,13 +12,6 @@ export const maxDuration = 60
 const FORFAITS_VALIDES: Forfait[] = ["standard", "pro", "premium"]
 const NUMERO_WHATSAPP = "237675947160"
 
-// Nombre de styles débloqués par forfait (modèle économique 3/7/10 — voir [[everbloom-modele-economique]]).
-const STYLES_DISPO: Record<Forfait, number> = {
-  standard: 3,
-  pro: 7,
-  premium: 10,
-}
-
 function lienWhatsApp(forfaitLabel: string): string {
   const message = `Bonjour, j'ai payé mon forfait ${forfaitLabel}. Voici ma preuve de paiement.`
   return `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(message)}`
@@ -46,8 +39,10 @@ export async function GET(req: NextRequest) {
 
   const html = template({
     forfait_label: forfaitLabel,
-    photos_max: config.photos_max,
-    styles_dispo: STYLES_DISPO[forfait],
+    // Photos max approximatif = pages_max - 3 (couverture + intro + clôture).
+    photos_max: config.pages_max - 3,
+    pages_max: config.pages_max,
+    styles_dispo: config.styles_disponibles.length,
     whatsapp_url: lienWhatsApp(forfaitLabel),
   })
 

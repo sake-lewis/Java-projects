@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>{{nom_catalogue}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Caveat:wght@500;700&family=Cinzel:wght@400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    --bg: {{palette.bg}};
+    --surface: {{palette.surface}};
+    --accent: {{palette.accent}};
+    --encre: {{palette.encre}};
+    --accent-clair: color-mix(in srgb, var(--accent) 60%, white);
+    --accent-fonce: color-mix(in srgb, var(--accent) 70%, black);
+    color: var(--encre);
+    font-family: 'Cormorant Garamond', serif;
+    background: var(--bg);
+  }
+  .page { width: 794px; height: 1123px; position: relative; page-break-after: always; background: var(--bg); overflow: hidden; }
+  .page:last-child { page-break-after: auto; }
+
+  .cover { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+    background: radial-gradient(110% 70% at 50% 0%, color-mix(in srgb, var(--bg) 85%, white) 0%, var(--bg) 60%, var(--surface) 100%); }
+  .cover .frame { position:absolute; inset:36px; border:2px dashed var(--accent); opacity:0.45; border-radius:24px; }
+  .monogramme { width:86px; height:86px; border-radius:50%; border:1.5px solid var(--accent); display:flex; align-items:center; justify-content:center;
+    font-family:'Cinzel',serif; font-size:18px; letter-spacing:6px; color:var(--accent); margin-bottom:24px; }
+  .eyebrow { font-family:'Lato',sans-serif; font-size:13px; letter-spacing:9px; text-transform:uppercase; color:var(--accent); margin-bottom:12px; }
+  .cover-title { font-size:68px; line-height:1.05; font-weight:600; max-width:640px; padding:0 60px; color:var(--encre); letter-spacing:-0.5px; }
+  body.classique .cover-title { font-family:'Caveat',cursive; font-size:108px; font-weight:700; color:var(--accent-fonce); }
+  body.contemporain .cover-title { font-family:'Cormorant Garamond',serif; font-style:italic; }
+  .cover-divider { width:200px; height:1px; margin:36px 0; background:linear-gradient(90deg,transparent,var(--accent),transparent); }
+  .cover-sign { font-family:'Cinzel',serif; font-size:14px; letter-spacing:10px; color:var(--encre); opacity:0.7; }
+  .cover-year { margin-top:14px; font-family:'Lato',sans-serif; font-size:11px; letter-spacing:4px; color:var(--accent); opacity:0.8; }
+  .cover-ornement-haut, .cover-ornement-bas { position:absolute; left:50%; transform:translateX(-50%); width:360px; opacity:0.85; }
+  .cover-ornement-haut { top:100px; } .cover-ornement-bas { bottom:100px; transform:translateX(-50%) rotate(180deg); }
+
+  .intro { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:0 120px; }
+  .intro .eyebrow { margin-bottom:32px; }
+  .intro-desc { font-style:italic; font-size:22px; line-height:1.85; color:color-mix(in srgb, var(--encre) 85%, transparent); max-width:540px; }
+  body.contemporain .intro-desc { font-style:normal; font-weight:400; }
+  .intro-quote { font-family:'Caveat',cursive; font-size:48px; color:var(--accent); opacity:0.7; margin-bottom:16px; }
+  body.contemporain .intro-quote { display:none; }
+  .foil { width:120px; height:2px; margin:32px 0 0; background:linear-gradient(90deg,transparent,var(--accent),var(--accent-clair),var(--accent),transparent); }
+  .intro-sign { margin-top:48px; font-family:'Cinzel',serif; font-size:11px; letter-spacing:6px; color:var(--accent); }
+
+  .photo-page { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 60px; }
+  .photo-frame { position:relative; width:580px; height:770px; padding:18px;
+    background:linear-gradient(135deg,var(--accent-clair),var(--accent)); border-radius:18px;
+    box-shadow:0 18px 48px color-mix(in srgb,var(--encre) 22%,transparent); }
+  body.contemporain .photo-frame { background:var(--surface); border-radius:6px; }
+  .photo-mat { position:absolute; inset:18px; background:#fff; border-radius:12px; }
+  body.contemporain .photo-mat { border-radius:4px; }
+  .photo-inner { position:absolute; inset:32px; overflow:hidden; border-radius:6px; }
+  body.contemporain .photo-inner { border-radius:2px; }
+  .photo-inner img { width:100%; height:100%; object-fit:cover; display:block; }
+  .photo-caption { margin-top:32px; font-style:italic; font-size:18px; line-height:1.6; color:color-mix(in srgb,var(--encre) 80%,transparent); text-align:center; max-width:480px; }
+  body.contemporain .photo-caption { font-style:normal; font-weight:400; }
+  .photo-folio { position:absolute; bottom:36px; left:50%; transform:translateX(-50%); font-family:'Cinzel',serif; font-size:10px; letter-spacing:4px; color:var(--accent); }
+
+  .cloture { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:0 80px;
+    background:linear-gradient(180deg,var(--bg) 0%,var(--surface) 100%); }
+  .cloture .frame { position:absolute; inset:40px; border:2px dashed var(--accent); opacity:0.4; border-radius:20px; }
+  .cloture-script { font-family:'Caveat',cursive; font-size:96px; line-height:1; color:var(--accent-fonce); margin-bottom:24px; }
+  body.contemporain .cloture-script { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:48px; font-weight:500; }
+  .cloture-text { font-style:italic; font-size:19px; line-height:1.8; max-width:480px; color:color-mix(in srgb,var(--encre) 75%,transparent); }
+  .cloture-brand { margin-top:56px; font-family:'Cinzel',serif; font-size:16px; letter-spacing:10px; color:var(--encre); }
+  .cloture-boutique { margin-top:10px; font-family:'Lato',sans-serif; font-size:11px; letter-spacing:2.5px; color:var(--accent); text-decoration:none; }
+
+  .bloom-watermark { position:absolute; right:32px; bottom:32px; width:22px; height:22px; opacity:0.18; color:var(--accent); }
+</style>
+</head>
+<body class="{{variation}}">
+
+  <section class="page cover">
+    <div class="frame"></div>
+    {{#ifVariation variation "classique"}}
+    <svg class="cover-ornement-haut" viewBox="0 0 360 60" xmlns="http://www.w3.org/2000/svg">
+      <g fill="var(--accent)" opacity="0.85">
+        <path d="M 50 35 c -3 -4 -8 -2 -8 2 c 0 3 3 6 8 9 c 5 -3 8 -6 8 -9 c 0 -4 -5 -6 -8 -2 Z" />
+        <path d="M 120 25 c -2 -3 -6 -1 -6 2 c 0 2 2 4 6 7 c 4 -3 6 -5 6 -7 c 0 -3 -4 -5 -6 -2 Z" />
+        <path d="M 180 32 c -4 -5 -10 -2 -10 3 c 0 4 4 8 10 12 c 6 -4 10 -8 10 -12 c 0 -5 -6 -8 -10 -3 Z" />
+        <path d="M 240 25 c -2 -3 -6 -1 -6 2 c 0 2 2 4 6 7 c 4 -3 6 -5 6 -7 c 0 -3 -4 -5 -6 -2 Z" />
+        <path d="M 310 35 c -3 -4 -8 -2 -8 2 c 0 3 3 6 8 9 c 5 -3 8 -6 8 -9 c 0 -4 -5 -6 -8 -2 Z" />
+      </g>
+    </svg>
+    <svg class="cover-ornement-bas" viewBox="0 0 360 60" xmlns="http://www.w3.org/2000/svg">
+      <g fill="var(--accent)" opacity="0.85">
+        <circle cx="100" cy="30" r="2.5" /><circle cx="140" cy="22" r="2" />
+        <circle cx="180" cy="30" r="3" /><circle cx="220" cy="22" r="2" />
+        <circle cx="260" cy="30" r="2.5" />
+      </g>
+    </svg>
+    {{else}}
+    <svg class="cover-ornement-haut" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="aq">
+          <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.5" />
+          <stop offset="100%" stop-color="var(--accent)" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+      <circle cx="90" cy="35" r="24" fill="url(#aq)" />
+      <circle cx="180" cy="30" r="30" fill="url(#aq)" />
+      <circle cx="270" cy="35" r="24" fill="url(#aq)" />
+    </svg>
+    <svg class="cover-ornement-bas" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="aq2">
+          <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.5" />
+          <stop offset="100%" stop-color="var(--accent)" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+      <circle cx="120" cy="35" r="28" fill="url(#aq2)" />
+      <circle cx="240" cy="35" r="22" fill="url(#aq2)" />
+    </svg>
+    {{/ifVariation}}
+    <div class="monogramme">EB</div>
+    <div class="eyebrow">{{occasion_label}} · {{style_label}}</div>
+    <h1 class="cover-title">{{nom_catalogue}}</h1>
+    <div class="cover-divider"></div>
+    <div class="cover-sign">EVERBLOOM</div>
+    <div class="cover-year">Édition à conserver</div>
+  </section>
+
+  <section class="page intro">
+    <div class="eyebrow">Prélude</div>
+    <div class="intro-quote">~</div>
+    <p class="intro-desc">{{#if description}}{{description}}{{else}}Les premières années ne se rejouent pas. Voilà pourquoi on les fait fleurir sur la page.{{/if}}</p>
+    <div class="foil"></div>
+    <div class="intro-sign">{{occasion_label}} · {{style_label}}</div>
+  </section>
+
+  {{#each photos}}
+  <section class="page photo-page">
+    <div class="photo-frame">
+      <div class="photo-mat"></div>
+      <div class="photo-inner"><img src="{{this.url}}" alt="" /></div>
+    </div>
+    {{#if this.description}}<p class="photo-caption">{{this.description}}</p>{{/if}}
+    <div class="photo-folio">{{add @index 1}} / {{../total_photos}}</div>
+    <svg class="bloom-watermark" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round">
+      <path d="M60 60 C 49 36, 49 20, 60 6 C 71 20, 71 36, 60 60 Z" />
+      <path d="M60 60 C 49 36, 49 20, 60 6 C 71 20, 71 36, 60 60 Z" transform="rotate(90 60 60)" />
+    </svg>
+  </section>
+  {{/each}}
+
+  <section class="page cloture">
+    <div class="frame"></div>
+    <div class="cloture-script">Merci</div>
+    <p class="cloture-text">D&apos;avoir choisi EVERBLOOM pour fixer ces instants. Que ces pages les protègent comme on protège une floraison.</p>
+    <div class="cloture-brand">EVERBLOOM</div>
+    <a class="cloture-boutique" href="{{boutique_url}}">{{boutique_url}}</a>
+  </section>
+</body>
+</html>
