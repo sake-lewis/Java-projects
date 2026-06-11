@@ -19,16 +19,12 @@ export default function FormulaireCreation({
 
   return (
     <div className="space-y-8">
-      <div className="space-y-3">
-        <div className="flex justify-between items-end">
-          <label 
-            htmlFor="nom-catalogue" 
-            className="text-base font-semibold text-[#1E4D3A]"
-            style={{ fontFamily: 'var(--font-sans)' }}
-          >
+      <div className="space-y-2">
+        <div className="flex items-end justify-between">
+          <label htmlFor="nom-catalogue" className="text-[15px] font-semibold text-vert">
             Nom du catalogue
           </label>
-          <span className="text-[12px] font-light text-[#C4956A]" style={{ fontFamily: 'var(--font-sans)' }}>
+          <span className="text-[12px] tabular-nums text-vert/40">
             {nomCatalogue.length}/60
           </span>
         </div>
@@ -38,29 +34,22 @@ export default function FormulaireCreation({
           maxLength={60}
           value={nomCatalogue}
           onChange={(e) => onNomChange(e.target.value)}
-          placeholder="Ex: Mariage de Jean & Marie"
-          className={`w-full rounded-md border bg-[#F5F0EA] px-4 py-3 text-[15px] font-light text-[#1E4D3A] outline-none transition-all placeholder:text-[#1E4D3A]/30 ${
-            isNomInvalide ? 'border-[#E53E3E]' : 'border-[#C4956A]/40 focus:border-[#1E4D3A]'
-          }`}
-          style={{ fontFamily: 'var(--font-sans)' }}
+          placeholder="Ex : Mariage de Jean & Marie"
+          className={`field ${isNomInvalide ? 'border-erreur/50' : ''}`}
         />
         {isNomInvalide && (
-          <p className="text-[12px] font-light text-[#E53E3E]" style={{ fontFamily: 'var(--font-sans)' }}>
+          <p className="text-[12px] text-erreur">
             Le nom doit contenir au moins 3 caractères
           </p>
         )}
       </div>
 
-      <div className="space-y-3">
-        <div className="flex justify-between items-end">
-          <label 
-            htmlFor="description" 
-            className="text-base font-semibold text-[#1E4D3A]"
-            style={{ fontFamily: 'var(--font-sans)' }}
-          >
+      <div className="space-y-2">
+        <div className="flex items-end justify-between">
+          <label htmlFor="description" className="text-[15px] font-semibold text-vert">
             Description
           </label>
-          <span className="text-[12px] font-light text-[#C4956A]" style={{ fontFamily: 'var(--font-sans)' }}>
+          <span className="text-[12px] tabular-nums text-vert/40">
             {description.length}/200
           </span>
         </div>
@@ -70,9 +59,8 @@ export default function FormulaireCreation({
           rows={3}
           value={description}
           onChange={(e) => onDescriptionChange(e.target.value)}
-          placeholder="Décrivez ce moment en quelques mots..."
-          className="w-full resize-none rounded-md border border-[#C4956A]/40 bg-[#F5F0EA] px-4 py-3 text-[15px] font-light text-[#1E4D3A] outline-none transition-all placeholder:text-[#1E4D3A]/30 focus:border-[#1E4D3A]"
-          style={{ fontFamily: 'var(--font-sans)' }}
+          placeholder="Décrivez ce moment en quelques mots…"
+          className="field resize-none"
         />
       </div>
     </div>

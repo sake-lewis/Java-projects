@@ -406,7 +406,7 @@ export default function AdminDashboard() {
                         {config.prix.toLocaleString("fr-FR")} FCFA
                       </span>
                       <span aria-hidden>·</span>
-                      <span>{config.pages_max} pages</span>
+                      <span>{config.photos_max} photos</span>
                       <span aria-hidden>·</span>
                       <span>{config.styles_disponibles.length}/10 styles</span>
                     </div>

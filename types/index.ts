@@ -49,7 +49,8 @@ export const FORFAIT_CONFIG: Record<
   Forfait,
   {
     prix: number
-    pages_max: number
+    // La valeur commerciale du forfait se joue sur le nombre de photos.
+    photos_max: number
     label: string
     styles_disponibles: StyleId[]
     // Longueur max de la dédicace en caractères ; 0 = dédicace désactivée.
@@ -61,7 +62,7 @@ export const FORFAIT_CONFIG: Record<
 > = {
   standard: {
     prix: 3000,
-    pages_max: 40,
+    photos_max: 60,
     label: "Standard",
     // 3 styles classiques : Mariage romantique, Enfance tendre, Anniversaire festif.
     styles_disponibles: [1, 3, 7],
@@ -72,7 +73,7 @@ export const FORFAIT_CONFIG: Record<
   },
   pro: {
     prix: 5000,
-    pages_max: 80,
+    photos_max: 100,
     label: "Pro",
     // 5 classiques + 2 contemporains au choix (Mariage moderne, Anniversaire élégant).
     styles_disponibles: [1, 2, 3, 5, 7, 8, 9],
@@ -83,7 +84,7 @@ export const FORFAIT_CONFIG: Record<
   },
   premium: {
     prix: 10000,
-    pages_max: 130,
+    photos_max: 200,
     label: "Premium",
     // Tous les styles.
     styles_disponibles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],

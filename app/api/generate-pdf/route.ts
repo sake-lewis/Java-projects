@@ -134,11 +134,10 @@ export async function POST(req: NextRequest) {
       couvertureIndexValide = photo_couverture_index;
     }
 
-    // Plafond pages : couverture + intro + (dédicace ?) + N photos + clôture.
-    const pagesFixes = 3 + (dedicacePresente ? 1 : 0);
-    if (photosAvecDesc.length + pagesFixes > config.pages_max) {
+    // Plafond : la valeur du forfait se joue sur le nombre de photos.
+    if (photosAvecDesc.length > config.photos_max) {
       return NextResponse.json(
-        { error: `Trop de pages : ${config.pages_max} pages max pour ce forfait` },
+        { error: `Trop de photos : ${config.photos_max} photos max pour ce forfait` },
         { status: 400 }
       );
     }

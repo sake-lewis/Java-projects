@@ -26,18 +26,16 @@ export default function TelechargerView({ pdfUrl, nomCatalogue, pdfExpiresAt }: 
         className="pointer-events-none absolute -right-24 -top-24 h-[420px] w-[420px] text-[#1E4D3A]/[0.05]"
       />
 
-      <div className="relative z-10 flex w-full max-w-md flex-col items-center">
-        <BloomMark className="h-12 w-12 text-[#C4956A]" />
-        <div className="mt-4 text-lg font-semibold tracking-[0.3em] text-[#1E4D3A]">
-          EVERBLOOM
-        </div>
+      <div className="animate-fade-up relative z-10 flex w-full max-w-md flex-col items-center">
+        <BloomMark className="h-12 w-12 text-or" />
+        <div className="wordmark mt-4 text-lg">EVERBLOOM</div>
 
-        <div className="mt-10 h-px w-12 bg-[#C4956A]" />
+        <div className="hairline-or mt-10 w-24" />
 
-        <h1 className="mt-8 text-[1.75rem] font-semibold leading-tight tracking-tight text-[#1E4D3A] sm:text-3xl">
+        <h1 className="display mt-8 text-[32px] text-vert sm:text-4xl">
           Votre catalogue est prêt
         </h1>
-        <p className="mt-3 text-[15px] leading-relaxed text-[#1E4D3A]/65">
+        <p className="mt-3 text-[15px] leading-relaxed text-vert/65">
           « {nomCatalogue} » vous attend. Téléchargez-le ou partagez-le directement par WhatsApp.
         </p>
 
@@ -46,7 +44,7 @@ export default function TelechargerView({ pdfUrl, nomCatalogue, pdfExpiresAt }: 
             href={pdfUrl}
             download={`${nomCatalogue}.pdf`}
             rel="noopener noreferrer"
-            className="flex flex-1 items-center justify-center gap-2 rounded-md bg-[#1E4D3A] py-4 text-base font-semibold text-[#E8E0D5] shadow-xl transition-all hover:bg-[#1E4D3A]/90 active:scale-95"
+            className="btn-primary focus-ring flex-1 text-base"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />

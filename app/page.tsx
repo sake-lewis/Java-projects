@@ -18,20 +18,19 @@ export default function Home() {
         className="pointer-events-none absolute -right-28 -top-28 h-[460px] w-[460px] text-[#1E4D3A]/[0.05]"
       />
 
-      <div className="relative z-10 flex w-full max-w-2xl flex-col items-center text-center">
-        <BloomMark className="h-12 w-12 text-[#C4956A]" />
-        <div className="mt-4 text-xl font-semibold tracking-[0.32em] text-[#1E4D3A]">
-          EVERBLOOM
-        </div>
+      <div className="animate-fade-up relative z-10 flex w-full max-w-2xl flex-col items-center text-center">
+        <BloomMark className="h-12 w-12 text-or" />
+        <div className="wordmark mt-4 text-xl">EVERBLOOM</div>
+        <div className="hairline-or mt-3 w-24" />
 
-        <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-[#C4956A]/40 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-[#C4956A]">
+        <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-or/40 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-or">
           Mode développement
         </div>
 
-        <h1 className="mt-6 text-2xl font-semibold tracking-tight text-[#1E4D3A] sm:text-3xl">
+        <h1 className="display mt-6 text-3xl text-vert sm:text-4xl">
           Simuler une session payée
         </h1>
-        <p className="mt-3 max-w-md text-[15px] leading-relaxed text-[#1E4D3A]/60">
+        <p className="mt-3 max-w-md text-[15px] leading-relaxed text-vert/60">
           Choisissez un forfait pour créer une session de test. Une session réelle
           sera enregistrée dans Firestore.
         </p>
@@ -47,16 +46,19 @@ export default function Home() {
               >
                 <button
                   type="submit"
-                  className="group flex w-full flex-col items-center gap-1 rounded-xl border border-[#C4956A]/30 bg-[#F5F0EA] px-6 py-6 text-center transition-all hover:-translate-y-0.5 hover:border-[#1E4D3A] hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E4D3A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E8E0D5]"
+                  className="group card focus-ring flex w-full flex-col items-center gap-1 px-6 py-6 text-center transition-all hover:-translate-y-0.5 hover:border-vert hover:shadow-lg"
                 >
-                  <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#C4956A]">
+                  <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-or">
                     {POSITIONNEMENT[forfait]}
                   </span>
-                  <span className="text-lg font-semibold text-[#1E4D3A]">
+                  <span className="display text-[22px] text-vert">
                     {config.label}
                   </span>
-                  <span className="text-sm text-[#1E4D3A]/55">
+                  <span className="text-sm tabular-nums text-vert/55">
                     {config.prix.toLocaleString("fr-FR")} FCFA
+                  </span>
+                  <span className="mt-1 text-[11px] text-vert/45">
+                    {config.photos_max} photos · {config.styles_disponibles.length} styles
                   </span>
                 </button>
               </form>

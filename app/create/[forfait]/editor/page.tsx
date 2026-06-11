@@ -39,14 +39,13 @@ function EditorContent() {
   const effetsActives = config?.effets_photo ?? false
   const couvertureActive = config?.photo_couverture ?? false
 
-  // Compteur de pages : couverture + intro + (dédicace ?) + N photos + clôture.
-  const pagesMax = config?.pages_max ?? 40
+  // La valeur du forfait se joue sur le nombre de photos.
+  const maxPhotos = config?.photos_max ?? 60
   const pagesFixes = 3 + (dedicaceActive && dedicace.trim().length > 0 ? 1 : 0)
-  const maxPhotos = pagesMax - pagesFixes
   const pagesActuelles = photos.length + pagesFixes
-  const ratioPages = pagesActuelles / pagesMax
-  const presquePlein = ratioPages >= 0.85 && ratioPages < 1
-  const plein = pagesActuelles >= pagesMax
+  const ratioPhotos = photos.length / maxPhotos
+  const presquePlein = ratioPhotos >= 0.85 && ratioPhotos < 1
+  const plein = photos.length >= maxPhotos
 
   useEffect(() => {
     async function loadSession() {
@@ -206,18 +205,19 @@ function EditorContent() {
     <div className="min-h-screen bg-[#E8E0D5] pb-28">
       <div className="mx-auto max-w-[560px] px-6 py-12 space-y-12">
 
-        <header className="flex flex-col items-center gap-2 text-center">
-          <BloomMark className="h-9 w-9 text-[#C4956A]" />
-          <h1 className="text-2xl font-semibold tracking-[0.28em] text-[#1E4D3A]">EVERBLOOM</h1>
-          <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#C4956A]">Éditeur de catalogue</p>
+        <header className="animate-fade-up flex flex-col items-center gap-2 text-center">
+          <BloomMark className="h-10 w-10 text-or" />
+          <h1 className="wordmark mt-1 text-xl">EVERBLOOM</h1>
+          <div className="hairline-or mt-2 w-24" />
+          <p className="display mt-3 text-[28px] text-vert">Composez votre catalogue</p>
 
-          <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-[#1E4D3A]/15 bg-[#1E4D3A]/[0.04] px-4 py-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#C4956A]" />
-            <span className="text-[12px] font-semibold tracking-wide text-[#1E4D3A]">
+          <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-vert/15 bg-vert/[0.04] px-4 py-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-or" />
+            <span className="text-[12px] font-semibold tracking-wide text-vert">
               Forfait {config?.label}
             </span>
-            <span className="text-[11px] font-light text-[#1E4D3A]/55">
-              · {pagesMax} pages max
+            <span className="text-[11px] font-light text-vert/55">
+              · {maxPhotos} photos max
             </span>
           </div>
         </header>
@@ -267,44 +267,42 @@ function EditorContent() {
             />
           </div>
 
-          {/* Compteur de pages live */}
+          {/* Compteur de photos live */}
           <div
-            className={`rounded-lg border px-4 py-3 transition-colors ${
+            className={`card px-4 py-3 transition-colors ${
               plein
-                ? "border-[#C4956A]/40 bg-[#C4956A]/8"
+                ? "border-or/40 bg-or/8"
                 : presquePlein
-                ? "border-[#C4956A]/25 bg-[#C4956A]/5"
-                : "border-[#1E4D3A]/10 bg-white"
+                ? "border-or/25 bg-or/5"
+                : ""
             }`}
           >
             <div className="flex items-baseline justify-between gap-3">
               <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#1E4D3A]/55">
-                  Aperçu de votre album
+                <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-vert/55">
+                  Votre album
                 </div>
-                <div className="mt-1 text-[15px] font-semibold text-[#1E4D3A]">
-                  {photos.length === 0
-                    ? `${pagesMax} pages disponibles`
-                    : `${pagesActuelles} page${pagesActuelles > 1 ? "s" : ""}`}
-                  <span className="ml-1 text-[12px] font-normal text-[#1E4D3A]/45">
-                    {photos.length > 0 ? `/ ${pagesMax} max` : ""}
+                <div className="mt-1 text-[15px] font-semibold tabular-nums text-vert">
+                  {photos.length} photo{photos.length > 1 ? "s" : ""}
+                  <span className="ml-1 text-[12px] font-normal text-vert/45">
+                    / {maxPhotos} max
                   </span>
                 </div>
               </div>
-              <div className="text-right text-[11px] text-[#1E4D3A]/50">
-                {photos.length} photo{photos.length > 1 ? "s" : ""}
+              <div className="text-right text-[11px] text-vert/50">
+                soit {pagesActuelles} page{pagesActuelles > 1 ? "s" : ""}
                 <br />
-                <span className="text-[#1E4D3A]/35">
-                  + couverture, intro{dedicaceActive && dedicace.trim().length > 0 ? ", dédicace" : ""}, clôture
+                <span className="text-vert/35">
+                  avec couverture, intro{dedicaceActive && dedicace.trim().length > 0 ? ", dédicace" : ""}, clôture
                 </span>
               </div>
             </div>
-            <div className="mt-2 h-1 overflow-hidden rounded-full bg-[#1E4D3A]/8">
+            <div className="mt-2 h-1 overflow-hidden rounded-full bg-vert/8">
               <div
                 className={`h-full rounded-full transition-all duration-300 ${
-                  plein ? "bg-[#C4956A]" : presquePlein ? "bg-[#C4956A]/80" : "bg-[#1E4D3A]/60"
+                  plein ? "bg-or" : presquePlein ? "bg-or/80" : "bg-vert/60"
                 }`}
-                style={{ width: `${Math.min(100, Math.round(ratioPages * 100))}%` }}
+                style={{ width: `${Math.min(100, Math.round(ratioPhotos * 100))}%` }}
               />
             </div>
             {plein && (
@@ -373,7 +371,7 @@ function EditorContent() {
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#C4956A]/30 bg-[#E8E0D5]/95 backdrop-blur-sm">
         <div className="mx-auto max-w-[560px] px-6 py-4 space-y-3">
           {error && (
-            <p role="alert" className="text-center text-[14px] text-[#E53E3E] bg-[#E53E3E]/10 py-2 rounded">
+            <p role="alert" className="rounded-lg bg-erreur/10 py-2 text-center text-[14px] text-erreur">
               {error}
             </p>
           )}
@@ -383,8 +381,7 @@ function EditorContent() {
               <button
                 onClick={handleGenerate}
                 disabled={!!blocage || dedicaceTropLongue}
-                className={`w-full rounded-md bg-[#1E4D3A] py-4 text-lg font-semibold text-[#E8E0D5] shadow-xl transition-all hover:bg-[#1E4D3A]/90 disabled:opacity-40 disabled:cursor-not-allowed ${focusRing}`}
-                style={{ fontFamily: 'var(--font-sans)' }}
+                className={`btn-primary w-full text-lg ${focusRing}`}
               >
                 Générer mon catalogue PDF
               </button>
@@ -417,8 +414,7 @@ function EditorContent() {
                   href={pdfUrl}
                   download={`${nomCatalogue || 'catalogue'}.pdf`}
                   rel="noopener noreferrer"
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-md bg-[#1E4D3A] py-4 text-base font-semibold text-[#E8E0D5] shadow-xl transition-all hover:bg-[#1E4D3A]/90 ${focusRing}`}
-                  style={{ fontFamily: 'var(--font-sans)' }}
+                  className={`btn-primary flex-1 text-base ${focusRing}`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path>
@@ -464,12 +460,11 @@ function EditorContent() {
 function StepHeader({ numero, titre }: { numero: number; titre: string }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1E4D3A] text-sm font-semibold text-[#E8E0D5]">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-vert text-sm font-semibold text-ivoire">
         {numero}
       </span>
-      <h2 className="text-2xl font-semibold text-[#1E4D3A]" style={{ fontFamily: 'var(--font-sans)' }}>
-        {titre}
-      </h2>
+      <h2 className="display text-[26px] text-vert">{titre}</h2>
+      <div className="hairline-or min-w-6 flex-1" />
     </div>
   )
 }

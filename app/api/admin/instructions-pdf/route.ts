@@ -39,9 +39,7 @@ export async function GET(req: NextRequest) {
 
   const html = template({
     forfait_label: forfaitLabel,
-    // Photos max approximatif = pages_max - 3 (couverture + intro + clôture).
-    photos_max: config.pages_max - 3,
-    pages_max: config.pages_max,
+    photos_max: config.photos_max,
     styles_dispo: config.styles_disponibles.length,
     whatsapp_url: lienWhatsApp(forfaitLabel),
   })

@@ -43,24 +43,22 @@ function ErrorContent() {
         className="pointer-events-none absolute -bottom-28 -left-24 h-[380px] w-[380px] text-[#1E4D3A]/[0.05]"
       />
 
-      <div className="relative z-10 flex w-full max-w-md flex-col items-center">
-        <BloomMark className="h-10 w-10 text-[#C4956A]/70" />
-        <div className="mt-3 text-base font-semibold tracking-[0.3em] text-[#1E4D3A]/80">
-          EVERBLOOM
-        </div>
+      <div className="animate-fade-up relative z-10 flex w-full max-w-md flex-col items-center">
+        <BloomMark className="h-10 w-10 text-or/70" />
+        <div className="wordmark mt-3 text-base opacity-80">EVERBLOOM</div>
 
-        <div className="mt-10 h-px w-12 bg-[#C4956A]" />
+        <div className="hairline-or mt-10 w-24" />
 
-        <h1 className="mt-8 text-[1.75rem] font-semibold leading-tight tracking-tight text-[#1E4D3A] sm:text-3xl">
+        <h1 className="display mt-8 text-[32px] text-vert sm:text-4xl">
           {titre}
         </h1>
-        <p className="mt-4 text-[15px] leading-relaxed text-[#1E4D3A]/65">
+        <p className="mt-4 text-[15px] leading-relaxed text-vert/65">
           {texte}
         </p>
 
         <Link
           href={process.env.NEXT_PUBLIC_CHARIOW_BOUTIQUE_URL || "#"}
-          className="mt-10 inline-flex w-full items-center justify-center rounded-md bg-[#1E4D3A] px-8 py-4 text-base font-semibold text-[#E8E0D5] shadow-lg transition-all hover:bg-[#1E4D3A]/90 hover:scale-[1.02] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E4D3A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#E8E0D5] sm:w-auto sm:px-10"
+          className="btn-primary focus-ring mt-10 w-full text-base sm:w-auto"
         >
           {action} →
         </Link>
