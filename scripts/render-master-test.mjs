@@ -10,6 +10,9 @@ Handlebars.registerHelper("ifEgal", function (v, a, options) {
 
 // Palettes copiées du catalogue (le catalogue est en TS, on évite la compilation).
 const STYLES_TEST = {
+  2: { theme: "nature", themeLabel: "Nature & Organique", label: "Feuillage", mode: "clair",
+    palette: { bg: "#F2F0E6", surface: "#D8E4D6", accent: "#2F7A57", encre: "#1E3B2E" },
+    fontDisplay: "'Cormorant Garamond', serif", fontScript: "none" },
   4: { theme: "nature", themeLabel: "Nature & Organique", label: "Océan Profond", mode: "sombre",
     palette: { bg: "#0F2A3D", surface: "#173A52", accent: "#3FB8AF", encre: "#F2F7F5" },
     fontDisplay: "'Playfair Display', serif", fontScript: "none" },
@@ -22,6 +25,9 @@ const STYLES_TEST = {
   13: { theme: "moderne", themeLabel: "Moderne & Minimaliste", label: "Épuré", mode: "clair",
     palette: { bg: "#FCFCFB", surface: "#EFEFED", accent: "#1C1C1C", encre: "#2A2A2A" },
     fontDisplay: "'Montserrat', sans-serif", fontScript: "none" },
+  20: { theme: "heritage", themeLabel: "Héritage & Événementiel", label: "Mémoire", mode: "clair",
+    palette: { bg: "#F3F2F4", surface: "#E0DEE4", accent: "#5B3A77", encre: "#3B3540" },
+    fontDisplay: "'Cinzel', serif", fontScript: "none" },
 }
 
 const id = Number(process.argv[2] ?? 6)

@@ -84,12 +84,14 @@
     font-family: 'Lato', sans-serif;
     font-size: 11px; letter-spacing: 4px; color: var(--accent); opacity: 0.85;
   }
-  .cover-ornement-haut, .cover-ornement-bas {
-    position: absolute; left: 50%; transform: translateX(-50%);
-    width: 360px; opacity: 0.85;
-  }
-  .cover-ornement-haut { top: 90px; }
-  .cover-ornement-bas { bottom: 90px; transform: translateX(-50%) rotate(180deg); }
+  /* === CADRE DÉCORATIF DU THÈME ===
+     Coins ornés (feuillage, fleurs, confettis…) dessinés en SVG et colorés
+     par la palette du style : le décor est toujours en harmonie. */
+  .decor { position: absolute; inset: 0; }
+  .photo-page .decor { opacity: 0.5; }
+  .intro .decor, .dedicace .decor, .cloture .decor { opacity: 0.75; }
+  .cover-photo .decor { display: none; }
+  .decor-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 
   /* === INTRO === */
   .intro {
@@ -254,8 +256,6 @@
   .cover-photo .cover-divider { background: linear-gradient(90deg, transparent, #fff, transparent); }
   .cover-photo .cover-sign { color: rgba(255,255,255,0.92); }
   .cover-photo .cover-year { color: rgba(255,255,255,0.75); }
-  .cover-photo .cover-ornement-haut *,
-  .cover-photo .cover-ornement-bas * { stroke: #fff; fill: none; }
 
   /* === DÉDICACE (Pro + Premium) === */
   .dedicace { display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -279,6 +279,139 @@
 </head>
 <body class="{{theme}} {{mode}}{{#if script_present}} script{{/if}}">
 
+  {{!-- Définition du coin décoratif du thème, réutilisé aux 4 angles de
+       chaque page (miroirs). Couleurs : variables de la palette du style. --}}
+  <svg class="decor-defs" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      {{#ifEgal theme "nature"}}
+      <g id="coin-theme">
+        {{!-- branches courbes partant du coin --}}
+        <path d="M -8 38 C 60 58, 132 42, 206 8" fill="none" stroke="var(--accent)" stroke-width="1.6" opacity="0.45"/>
+        <path d="M 38 -8 C 58 60, 42 132, 8 206" fill="none" stroke="var(--accent)" stroke-width="1.6" opacity="0.45"/>
+        {{!-- feuilles le long des branches --}}
+        <g fill="var(--accent)">
+          <path d="M0 0 q -9 -15 3 -26 q 12 11 -3 26" transform="translate(46 50) rotate(-18)" opacity="0.6"/>
+          <path d="M0 0 q -9 -15 3 -26 q 12 11 -3 26" transform="translate(90 54) rotate(6) scale(0.9)" opacity="0.42"/>
+          <path d="M0 0 q -9 -15 3 -26 q 12 11 -3 26" transform="translate(132 42) rotate(-32) scale(0.78)" opacity="0.55"/>
+          <path d="M0 0 q -9 -15 3 -26 q 12 11 -3 26" transform="translate(172 26) rotate(-52) scale(0.62)" opacity="0.38"/>
+          <path d="M0 0 q -9 -15 3 -26 q 12 11 -3 26" transform="translate(50 46) rotate(110)" opacity="0.6"/>
+          <path d="M0 0 q -9 -15 3 -26 q 12 11 -3 26" transform="translate(54 90) rotate(86) scale(0.9)" opacity="0.42"/>
+          <path d="M0 0 q -9 -15 3 -26 q 12 11 -3 26" transform="translate(42 132) rotate(122) scale(0.78)" opacity="0.55"/>
+          <path d="M0 0 q -9 -15 3 -26 q 12 11 -3 26" transform="translate(26 172) rotate(142) scale(0.62)" opacity="0.38"/>
+        </g>
+        {{!-- bouquet du coin --}}
+        <g fill="var(--accent-clair)">
+          <path d="M0 0 q -11 -18 4 -32 q 14 13 -4 32" transform="translate(26 30) rotate(28)" opacity="0.85"/>
+          <path d="M0 0 q -11 -18 4 -32 q 14 13 -4 32" transform="translate(30 26) rotate(64)" opacity="0.85"/>
+          <path d="M0 0 q -11 -18 4 -32 q 14 13 -4 32" transform="translate(22 22) rotate(46) scale(1.15)" opacity="0.6"/>
+        </g>
+        {{!-- feuilles volées dans la page --}}
+        <g fill="var(--accent)">
+          <path d="M0 0 q -9 -15 3 -26 q 12 11 -3 26" transform="translate(296 96) rotate(152) scale(0.6)" opacity="0.25"/>
+          <path d="M0 0 q -9 -15 3 -26 q 12 11 -3 26" transform="translate(96 296) rotate(-152) scale(0.6)" opacity="0.25"/>
+          <path d="M0 0 q -9 -15 3 -26 q 12 11 -3 26" transform="translate(360 48) rotate(120) scale(0.45)" opacity="0.18"/>
+        </g>
+      </g>
+      {{/ifEgal}}
+      {{#ifEgal theme "elegance"}}
+      <g id="coin-theme">
+        {{!-- filets Art déco en équerre --}}
+        <path d="M 18 200 L 18 18 L 200 18" fill="none" stroke="var(--accent)" stroke-width="1.1" opacity="0.6"/>
+        <path d="M 30 152 L 30 30 L 152 30" fill="none" stroke="var(--accent)" stroke-width="0.8" opacity="0.32"/>
+        {{!-- éventail de rayons --}}
+        <g stroke="var(--accent)" stroke-width="0.8" opacity="0.3">
+          <line x1="18" y1="18" x2="86" y2="36"/>
+          <line x1="18" y1="18" x2="74" y2="56"/>
+          <line x1="18" y1="18" x2="58" y2="74"/>
+          <line x1="18" y1="18" x2="36" y2="86"/>
+        </g>
+        {{!-- diamants --}}
+        <path d="M 62 62 L 74 50 L 86 62 L 74 74 Z" fill="none" stroke="var(--accent)" stroke-width="1" opacity="0.7"/>
+        <path d="M 68 62 L 74 56 L 80 62 L 74 68 Z" fill="var(--accent)" opacity="0.5"/>
+        <path d="M 196 12 L 202 6 L 208 12 L 202 18 Z" fill="none" stroke="var(--accent)" stroke-width="0.8" opacity="0.4"/>
+        <path d="M 12 196 L 18 190 L 24 196 L 18 202 Z" fill="none" stroke="var(--accent)" stroke-width="0.8" opacity="0.4"/>
+      </g>
+      {{/ifEgal}}
+      {{#ifEgal theme "vif"}}
+      <g id="coin-theme">
+        {{!-- serpentins --}}
+        <path d="M -4 34 Q 64 54 116 22 Q 150 4 188 14" fill="none" stroke="var(--accent)" stroke-width="2" opacity="0.45"/>
+        <path d="M 34 -4 Q 54 64 22 116 Q 4 150 14 188" fill="none" stroke="var(--accent)" stroke-width="2" opacity="0.45"/>
+        {{!-- confettis --}}
+        <circle cx="30" cy="30" r="8" fill="var(--accent)" opacity="0.8"/>
+        <circle cx="74" cy="42" r="4.5" fill="var(--accent-clair)" opacity="0.85"/>
+        <circle cx="46" cy="76" r="5.5" fill="var(--accent)" opacity="0.55"/>
+        <circle cx="106" cy="24" r="3" fill="var(--accent)" opacity="0.5"/>
+        <circle cx="24" cy="106" r="3" fill="var(--accent)" opacity="0.5"/>
+        <circle cx="140" cy="52" r="4" fill="var(--accent-clair)" opacity="0.6"/>
+        <circle cx="52" cy="140" r="4" fill="var(--accent-clair)" opacity="0.6"/>
+        <circle cx="176" cy="30" r="2.5" fill="var(--accent)" opacity="0.35"/>
+        <circle cx="30" cy="176" r="2.5" fill="var(--accent)" opacity="0.35"/>
+        <rect x="86" y="62" width="9" height="9" transform="rotate(28 90 66)" fill="var(--accent)" opacity="0.5"/>
+        <rect x="62" y="90" width="9" height="9" transform="rotate(-22 66 94)" fill="var(--accent-clair)" opacity="0.7"/>
+        <path d="M 118 78 l 6 11 l -12 0 Z" fill="var(--accent)" opacity="0.42"/>
+        <path d="M 78 118 l 11 6 l -11 6 Z" fill="var(--accent)" opacity="0.42"/>
+      </g>
+      {{/ifEgal}}
+      {{#ifEgal theme "moderne"}}
+      <g id="coin-theme">
+        <path d="M 26 118 L 26 26 L 118 26" fill="none" stroke="var(--accent)" stroke-width="1.4" opacity="0.6"/>
+        <path d="M 34 88 L 34 34 L 88 34" fill="none" stroke="var(--accent)" stroke-width="0.9" opacity="0.22"/>
+        <circle cx="26" cy="26" r="3.2" fill="var(--accent)" opacity="0.75"/>
+      </g>
+      {{/ifEgal}}
+      {{#ifEgal theme "heritage"}}
+      <g id="coin-theme">
+        {{!-- filets du cadre --}}
+        <path d="M 22 196 L 22 22 L 196 22" fill="none" stroke="var(--accent)" stroke-width="1" opacity="0.5"/>
+        <path d="M 30 150 L 30 30 L 150 30" fill="none" stroke="var(--accent)" stroke-width="0.7" opacity="0.28"/>
+        {{!-- grande fleur du coin --}}
+        <g transform="translate(36 36)">
+          <g fill="var(--accent-clair)" stroke="var(--accent)" stroke-width="0.6" opacity="0.85">
+            <ellipse cx="0" cy="-13" rx="7" ry="12"/>
+            <ellipse cx="0" cy="-13" rx="7" ry="12" transform="rotate(72)"/>
+            <ellipse cx="0" cy="-13" rx="7" ry="12" transform="rotate(144)"/>
+            <ellipse cx="0" cy="-13" rx="7" ry="12" transform="rotate(216)"/>
+            <ellipse cx="0" cy="-13" rx="7" ry="12" transform="rotate(288)"/>
+          </g>
+          <circle r="4.5" fill="var(--accent)" opacity="0.9"/>
+        </g>
+        {{!-- fleurs satellites --}}
+        <g transform="translate(92 22) scale(0.62)">
+          <g fill="var(--accent-clair)" stroke="var(--accent)" stroke-width="0.6" opacity="0.75">
+            <ellipse cx="0" cy="-13" rx="7" ry="12"/>
+            <ellipse cx="0" cy="-13" rx="7" ry="12" transform="rotate(72)"/>
+            <ellipse cx="0" cy="-13" rx="7" ry="12" transform="rotate(144)"/>
+            <ellipse cx="0" cy="-13" rx="7" ry="12" transform="rotate(216)"/>
+            <ellipse cx="0" cy="-13" rx="7" ry="12" transform="rotate(288)"/>
+          </g>
+          <circle r="4.5" fill="var(--accent)" opacity="0.8"/>
+        </g>
+        <g transform="translate(22 92) scale(0.62)">
+          <g fill="var(--accent-clair)" stroke="var(--accent)" stroke-width="0.6" opacity="0.75">
+            <ellipse cx="0" cy="-13" rx="7" ry="12"/>
+            <ellipse cx="0" cy="-13" rx="7" ry="12" transform="rotate(72)"/>
+            <ellipse cx="0" cy="-13" rx="7" ry="12" transform="rotate(144)"/>
+            <ellipse cx="0" cy="-13" rx="7" ry="12" transform="rotate(216)"/>
+            <ellipse cx="0" cy="-13" rx="7" ry="12" transform="rotate(288)"/>
+          </g>
+          <circle r="4.5" fill="var(--accent)" opacity="0.8"/>
+        </g>
+        {{!-- feuilles et boutons --}}
+        <g fill="var(--accent)">
+          <path d="M0 0 q -8 -13 3 -23 q 10 10 -3 23" transform="translate(66 58) rotate(40)" opacity="0.45"/>
+          <path d="M0 0 q -8 -13 3 -23 q 10 10 -3 23" transform="translate(58 66) rotate(72)" opacity="0.45"/>
+          <circle cx="126" cy="34" r="3.4" opacity="0.5"/>
+          <circle cx="34" cy="126" r="3.4" opacity="0.5"/>
+        </g>
+        {{!-- losange tissé --}}
+        <path d="M 156 22 L 166 12 L 176 22 L 166 32 Z" fill="none" stroke="var(--accent)" stroke-width="0.9" opacity="0.45"/>
+        <path d="M 22 156 L 12 166 L 22 176 L 32 166 Z" fill="none" stroke="var(--accent)" stroke-width="0.9" opacity="0.45"/>
+      </g>
+      {{/ifEgal}}
+    </defs>
+  </svg>
+
   {{!-- ============ COUVERTURE ============ --}}
   <section class="page cover{{#if photo_couverture}} cover-photo{{/if}}">
     {{#if photo_couverture}}
@@ -287,70 +420,12 @@
     {{/if}}
     <div class="frame"></div>
 
-    {{!-- Ornement signature du thème --}}
-    {{#ifEgal theme "nature"}}
-    <svg class="cover-ornement-haut" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg">
-      <path d="M 40 45 Q 110 18 180 30 Q 250 18 320 45" fill="none" stroke="var(--accent)" stroke-width="1.2" />
-      <path d="M 120 27 q -6 -12 4 -18 q 8 8 -4 18" fill="var(--accent)" opacity="0.7" />
-      <path d="M 180 30 q -6 -12 4 -18 q 8 8 -4 18" fill="var(--accent)" opacity="0.9" />
-      <path d="M 240 27 q -6 -12 4 -18 q 8 8 -4 18" fill="var(--accent)" opacity="0.7" />
+    <svg class="decor" viewBox="0 0 794 1123" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <use href="#coin-theme" />
+      <use href="#coin-theme" transform="translate(794 0) scale(-1 1)" />
+      <use href="#coin-theme" transform="translate(0 1123) scale(1 -1)" />
+      <use href="#coin-theme" transform="translate(794 1123) scale(-1 -1)" />
     </svg>
-    <svg class="cover-ornement-bas" viewBox="0 0 360 70" xmlns="http://www.w3.org/2000/svg">
-      <path d="M 40 45 Q 110 18 180 30 Q 250 18 320 45" fill="none" stroke="var(--accent)" stroke-width="1.2" />
-      <path d="M 180 30 q -6 -12 4 -18 q 8 8 -4 18" fill="var(--accent)" opacity="0.9" />
-    </svg>
-    {{/ifEgal}}
-    {{#ifEgal theme "elegance"}}
-    <svg class="cover-ornement-haut" viewBox="0 0 360 60" xmlns="http://www.w3.org/2000/svg">
-      <line x1="30" y1="30" x2="150" y2="30" stroke="var(--accent)" stroke-width="0.9" />
-      <line x1="210" y1="30" x2="330" y2="30" stroke="var(--accent)" stroke-width="0.9" />
-      <path d="M180 12 L 198 30 L 180 48 L 162 30 Z" fill="none" stroke="var(--accent)" stroke-width="1" />
-      <path d="M180 20 L 190 30 L 180 40 L 170 30 Z" fill="none" stroke="var(--accent)" stroke-width="0.8" opacity="0.6" />
-    </svg>
-    <svg class="cover-ornement-bas" viewBox="0 0 360 60" xmlns="http://www.w3.org/2000/svg">
-      <line x1="30" y1="30" x2="150" y2="30" stroke="var(--accent)" stroke-width="0.9" />
-      <line x1="210" y1="30" x2="330" y2="30" stroke="var(--accent)" stroke-width="0.9" />
-      <path d="M180 12 L 198 30 L 180 48 L 162 30 Z" fill="none" stroke="var(--accent)" stroke-width="1" />
-    </svg>
-    {{/ifEgal}}
-    {{#ifEgal theme "vif"}}
-    <svg class="cover-ornement-haut" viewBox="0 0 360 60" xmlns="http://www.w3.org/2000/svg">
-      <g fill="var(--accent)">
-        <circle cx="80" cy="32" r="5" /><circle cx="130" cy="20" r="3" opacity="0.7" />
-        <circle cx="180" cy="36" r="6.5" /><circle cx="230" cy="18" r="3.5" opacity="0.7" />
-        <circle cx="280" cy="32" r="5" />
-      </g>
-    </svg>
-    <svg class="cover-ornement-bas" viewBox="0 0 360 60" xmlns="http://www.w3.org/2000/svg">
-      <g fill="var(--accent)">
-        <circle cx="110" cy="28" r="4" /><circle cx="180" cy="34" r="6" /><circle cx="250" cy="28" r="4" />
-      </g>
-    </svg>
-    {{/ifEgal}}
-    {{#ifEgal theme "moderne"}}
-    <svg class="cover-ornement-haut" viewBox="0 0 360 60" xmlns="http://www.w3.org/2000/svg">
-      <line x1="60" y1="30" x2="300" y2="30" stroke="var(--accent)" stroke-width="0.8" />
-      <circle cx="180" cy="30" r="20" fill="none" stroke="var(--accent)" stroke-width="0.8" />
-    </svg>
-    <svg class="cover-ornement-bas" viewBox="0 0 360 60" xmlns="http://www.w3.org/2000/svg">
-      <line x1="60" y1="30" x2="300" y2="30" stroke="var(--accent)" stroke-width="0.8" />
-      <circle cx="180" cy="30" r="20" fill="none" stroke="var(--accent)" stroke-width="0.8" />
-    </svg>
-    {{/ifEgal}}
-    {{#ifEgal theme "heritage"}}
-    <svg class="cover-ornement-haut" viewBox="0 0 360 60" xmlns="http://www.w3.org/2000/svg">
-      <g fill="none" stroke="var(--accent)" stroke-width="1">
-        <path d="M120 30 L 138 14 L 156 30 L 138 46 Z" />
-        <path d="M162 30 L 180 14 L 198 30 L 180 46 Z" />
-        <path d="M204 30 L 222 14 L 240 30 L 222 46 Z" />
-      </g>
-    </svg>
-    <svg class="cover-ornement-bas" viewBox="0 0 360 60" xmlns="http://www.w3.org/2000/svg">
-      <g fill="none" stroke="var(--accent)" stroke-width="1">
-        <path d="M162 30 L 180 14 L 198 30 L 180 46 Z" />
-      </g>
-    </svg>
-    {{/ifEgal}}
 
     <div class="monogramme">EB</div>
     <div class="eyebrow">{{theme_label}} · {{style_label}}</div>
@@ -362,6 +437,12 @@
 
   {{!-- ============ INTRO ============ --}}
   <section class="page intro">
+    <svg class="decor" viewBox="0 0 794 1123" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <use href="#coin-theme" />
+      <use href="#coin-theme" transform="translate(794 0) scale(-1 1)" />
+      <use href="#coin-theme" transform="translate(0 1123) scale(1 -1)" />
+      <use href="#coin-theme" transform="translate(794 1123) scale(-1 -1)" />
+    </svg>
     <div class="eyebrow">Prélude</div>
     <div class="intro-quote">~</div>
     <p class="intro-desc">
@@ -374,6 +455,12 @@
   {{#if dedicace_presente}}
   {{!-- ============ DÉDICACE (Pro + Premium) ============ --}}
   <section class="page dedicace">
+    <svg class="decor" viewBox="0 0 794 1123" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <use href="#coin-theme" />
+      <use href="#coin-theme" transform="translate(794 0) scale(-1 1)" />
+      <use href="#coin-theme" transform="translate(0 1123) scale(1 -1)" />
+      <use href="#coin-theme" transform="translate(794 1123) scale(-1 -1)" />
+    </svg>
     <div class="frame"></div>
     <div class="eyebrow">Dédicace</div>
     <div class="dedicace-sym">~</div>
@@ -385,6 +472,12 @@
   {{!-- ============ PLANCHES PHOTOS (1 à 4 photos par page) ============ --}}
   {{#each planches}}
   <section class="page photo-page layout-{{this.layout}}">
+    <svg class="decor" viewBox="0 0 794 1123" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <use href="#coin-theme" />
+      <use href="#coin-theme" transform="translate(794 0) scale(-1 1)" />
+      <use href="#coin-theme" transform="translate(0 1123) scale(1 -1)" />
+      <use href="#coin-theme" transform="translate(794 1123) scale(-1 -1)" />
+    </svg>
     <div class="planche">
       {{#if this.solo}}
       <figure class="cell">
@@ -415,6 +508,12 @@
 
   {{!-- ============ CLÔTURE ============ --}}
   <section class="page cloture">
+    <svg class="decor" viewBox="0 0 794 1123" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <use href="#coin-theme" />
+      <use href="#coin-theme" transform="translate(794 0) scale(-1 1)" />
+      <use href="#coin-theme" transform="translate(0 1123) scale(1 -1)" />
+      <use href="#coin-theme" transform="translate(794 1123) scale(-1 -1)" />
+    </svg>
     <div class="frame"></div>
     <div class="cloture-script">Merci</div>
     <p class="cloture-text">
