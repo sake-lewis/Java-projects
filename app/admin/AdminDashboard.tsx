@@ -93,6 +93,11 @@ export default function AdminDashboard() {
   const [avertissementInactif, setAvertissementInactif] = useState(false)
   const [secondesRestantes, setSecondesRestantes] = useState(INACTIVITE_AVERTISSEMENT_MS / 1000)
   const lastActivityRef = useRef<number>(Date.now())
+  // Maintenance — nombre de PDFs ≥ 7 jours à nettoyer.
+  const [nettoyageACount, setNettoyageACount] = useState<number | null>(null)
+  const [nettoyageEnCours, setNettoyageEnCours] = useState(false)
+  const [nettoyageResultat, setNettoyageResultat] = useState<number | null>(null)
+  const [nettoyageErreur, setNettoyageErreur] = useState<string | null>(null)
 
   async function chargerSessions() {
     try {
@@ -107,9 +112,47 @@ export default function AdminDashboard() {
     }
   }
 
+  async function chargerNettoyageStatus() {
+    try {
+      const res = await fetch("/api/admin/nettoyage-status", { cache: "no-store" })
+      if (!res.ok) {
+        setNettoyageACount(0)
+        return
+      }
+      const data = await res.json()
+      setNettoyageACount(typeof data.a_nettoyer === "number" ? data.a_nettoyer : 0)
+    } catch {
+      setNettoyageACount(0)
+    }
+  }
+
   useEffect(() => {
     chargerSessions()
+    chargerNettoyageStatus()
   }, [])
+
+  async function forcerNettoyage() {
+    if (!nettoyageACount) return
+    setNettoyageEnCours(true)
+    setNettoyageErreur(null)
+    setNettoyageResultat(null)
+    try {
+      const res = await fetch("/api/admin/forcer-nettoyage", { method: "POST" })
+      const data = await res.json()
+      if (!res.ok) {
+        setNettoyageErreur(data?.error ?? "Échec du nettoyage")
+        return
+      }
+      setNettoyageResultat(typeof data.nettoyees === "number" ? data.nettoyees : 0)
+      setNettoyageACount(0)
+      // Reflète les statuts mis à jour dans la liste des sessions récentes.
+      chargerSessions()
+    } catch {
+      setNettoyageErreur("Erreur réseau")
+    } finally {
+      setNettoyageEnCours(false)
+    }
+  }
 
   async function genererLien(forfait: Forfait) {
     setGeneration(forfait)
@@ -527,6 +570,82 @@ export default function AdminDashboard() {
               </a>
             ))}
           </div>
+        </section>
+
+        {/* MAINTENANCE — nettoyage manuel des PDFs expirés */}
+        <section className="space-y-3">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1E4D3A]/60">
+            Maintenance
+          </h2>
+          {(() => {
+            const inactif = !nettoyageACount
+            const hasResult = nettoyageResultat !== null && nettoyageResultat > 0
+            return (
+              <div
+                className={`rounded-xl border px-4 py-4 transition-colors ${
+                  inactif
+                    ? "border-[#1E4D3A]/8 bg-white"
+                    : "border-[#C4956A]/40 bg-[#C4956A]/[0.06]"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-[14px] font-semibold text-[#1E4D3A]">
+                      Nettoyer les PDFs expirés
+                    </div>
+                    <div className="mt-0.5 text-[12px] text-[#1E4D3A]/55">
+                      {nettoyageACount === null
+                        ? "Vérification…"
+                        : nettoyageACount === 0
+                        ? "Aucun PDF de plus de 7 jours."
+                        : `${nettoyageACount} PDF${nettoyageACount > 1 ? "s" : ""} en attente de suppression.`}
+                    </div>
+                  </div>
+                  <button
+                    onClick={forcerNettoyage}
+                    disabled={inactif || nettoyageEnCours}
+                    className={`shrink-0 inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-[13px] font-semibold transition-all focus-visible:outline-none focus-visible:ring-4 ${
+                      inactif
+                        ? "bg-[#1E4D3A]/8 text-[#1E4D3A]/40 cursor-not-allowed"
+                        : "bg-[#C4956A] text-white shadow-[0_1px_2px_rgba(196,149,106,0.25),0_4px_12px_rgba(196,149,106,0.18)] hover:bg-[#B07E55] active:scale-[0.98] focus-visible:ring-[#C4956A]/30"
+                    }`}
+                  >
+                    {nettoyageEnCours ? (
+                      <>
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        Suppression…
+                      </>
+                    ) : (
+                      <>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="3 6 5 6 21 6" />
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                          <line x1="10" y1="11" x2="10" y2="17" />
+                          <line x1="14" y1="11" x2="14" y2="17" />
+                        </svg>
+                        Supprimer
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {hasResult && (
+                  <p className="mt-3 rounded-md bg-[#2F855A]/10 px-3 py-2 text-center text-[12px] font-medium text-[#216A47]">
+                    {nettoyageResultat} PDF{nettoyageResultat! > 1 ? "s" : ""} supprimé{nettoyageResultat! > 1 ? "s" : ""} de Cloudinary.
+                  </p>
+                )}
+                {nettoyageErreur && (
+                  <p className="mt-3 rounded-md bg-[#C53030]/8 px-3 py-2 text-center text-[12px] font-medium text-[#C53030]">
+                    {nettoyageErreur}
+                  </p>
+                )}
+
+                <p className="mt-3 text-[11px] leading-relaxed text-[#1E4D3A]/40">
+                  Le cron Vercel s&apos;exécute déjà chaque nuit. Ce bouton sert au cas où vous souhaitez forcer le nettoyage immédiatement.
+                </p>
+              </div>
+            )
+          })()}
         </section>
 
         {/* SESSIONS RÉCENTES */}

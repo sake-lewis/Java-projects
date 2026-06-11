@@ -95,6 +95,21 @@ export async function expirerSession(token: string): Promise<void> {
   })
 }
 
+/**
+ * Compte les sessions dont le PDF a dépassé sa durée de vie sans être nettoyé.
+ * Même filtre que `nettoyerSessionsExpirees` mais sans suppression — utilisé par
+ * le tableau de bord admin pour afficher le compteur et activer/désactiver
+ * le bouton « Forcer le nettoyage ».
+ */
+export async function compterSessionsExpirees(): Promise<number> {
+  const maintenant = Date.now()
+  const snap = await getAdminDb().collection("sessions")
+    .where("pdf_expires_at", "<=", maintenant)
+    .where("statut", "!=", "expired")
+    .get()
+  return snap.size
+}
+
 export async function nettoyerSessionsExpirees(): Promise<number> {
   const maintenant = Date.now()
   const snapshot = await getAdminDb().collection("sessions")
