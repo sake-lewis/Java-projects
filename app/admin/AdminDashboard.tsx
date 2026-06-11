@@ -361,6 +361,22 @@ export default function AdminDashboard() {
               </button>
             </div>
 
+            {/* Ouvre l'éditeur directement — utile pour tester un forfait sans
+                passer par le copier-coller. Le lien reste à usage unique. */}
+            <a
+              href={lien.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#1E4D3A]/20 bg-white py-2.5 text-[13px] font-semibold text-[#1E4D3A] transition-all hover:border-[#1E4D3A]/40 hover:bg-[#1E4D3A]/[0.03] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1E4D3A]/15"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+              Tester l&apos;éditeur (nouvel onglet)
+            </a>
+
             <p className="text-center text-[11px] uppercase tracking-[0.16em] text-[#1E4D3A]/45">
               Envoyez-le au client — il ne fonctionne qu&apos;une seule fois
             </p>
