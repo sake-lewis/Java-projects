@@ -17,13 +17,15 @@ export async function uploadPhoto(base64Image: string, token: string): Promise<s
     throw new Error("Fichier trop volumineux (max 10 Mo)");
   }
 
+  // `limit` plafonne les dimensions SANS changer le rapport largeur/hauteur :
+  // le recadrage intelligent (mise en page par orientation) et le cadrage
+  // manuel dépendent du format naturel de la photo.
   const result = await cloudinary.uploader.upload(base64Image, {
     folder: `everbloom/${token}`,
     transformation: [{
-      width: 1080,
-      height: 1920,
-      crop: 'fill',
-      gravity: 'center'
+      width: 1600,
+      height: 1600,
+      crop: 'limit'
     }]
   });
 

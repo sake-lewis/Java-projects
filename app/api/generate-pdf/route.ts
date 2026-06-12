@@ -38,11 +38,15 @@ Handlebars.registerHelper('ifEgal', function (
  */
 type PhotoEntrante = { url: string; description?: string; effet?: EffetPhoto; ratio?: number };
 
-function pagesValides(pages: unknown): pages is { photos: PhotoEntrante[] }[] {
+function pagesValides(pages: unknown, token: string): pages is { photos: PhotoEntrante[] }[] {
   if (!Array.isArray(pages)) return false;
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   if (!cloudName) return false;
-  const prefixeAttendu = `https://res.cloudinary.com/${cloudName}/`;
+  // Anti-SSRF + propriété : l'URL doit venir de NOTRE compte Cloudinary ET
+  // du dossier de CETTE session — impossible de référencer la photo d'un
+  // autre client ou un autre asset du compte.
+  const prefixeAttendu = `https://res.cloudinary.com/${cloudName}/image/upload/`;
+  const dossierSession = `/everbloom/${token}/`;
   return pages.every(
     page =>
       page &&
@@ -50,7 +54,11 @@ function pagesValides(pages: unknown): pages is { photos: PhotoEntrante[] }[] {
       page.photos.length >= 1 &&
       page.photos.length <= PHOTOS_PAR_PAGE_MAX &&
       page.photos.every(
-        (p: any) => p && typeof p.url === 'string' && p.url.startsWith(prefixeAttendu)
+        (p: any) =>
+          p &&
+          typeof p.url === 'string' &&
+          p.url.startsWith(prefixeAttendu) &&
+          p.url.includes(dossierSession)
       )
   );
 }
@@ -110,7 +118,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!pagesValides(pages)) {
+    if (!pagesValides(pages, token)) {
       return NextResponse.json({ error: "Pages invalides" }, { status: 400 });
     }
 

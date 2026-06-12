@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Ne pas exposer les données sensibles ni les identifiants client.
-  const { pdf_hash, phone, chariow_ref, ...publicSession } = session as any
+  const { pdf_hash, phone, chariow_ref, email, ...publicSession } = session as any
 
   return NextResponse.json(publicSession)
 }
