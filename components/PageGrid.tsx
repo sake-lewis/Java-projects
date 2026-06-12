@@ -1,17 +1,22 @@
 "use client"
 
 import React, { useState } from "react"
-import { PageAlbum, EffetPhoto, PHOTOS_PAR_PAGE_MAX } from "@/types"
+import { PageAlbum, EffetPhoto, PHOTOS_PAR_PAGE_MAX, StyleId } from "@/types"
 import { layoutPage, ordonnerPourLayout, LayoutId } from "@/lib/album/layout"
+import { STYLES } from "@/lib/styles/catalog"
+import { motifInner } from "@/lib/styles/motifs"
 
 interface PageGridProps {
   pages: PageAlbum[]
+  styleChoisi: StyleId
   effetsActives: boolean
   couvertureActive: boolean
   couvertureUrl: string | null
   onDeletePhoto: (pageIdx: number, photoIdx: number) => void
   onReplacePhoto: (pageIdx: number, photoIdx: number) => void
   onAjusterPhoto: (pageIdx: number, photoIdx: number) => void
+  onAgrandirPhoto: (pageIdx: number, photoIdx: number) => void
+  onReduirePhoto: (pageIdx: number) => void
   onAddPhotoToPage: (pageIdx: number) => void
   onChangeEffet: (pageIdx: number, photoIdx: number, effet: EffetPhoto) => void
   onChangeDescription: (pageIdx: number, photoIdx: number, description: string) => void
@@ -58,12 +63,15 @@ function styleCellule(layout: LayoutId, idx: number): React.CSSProperties {
 
 export default function PageGrid({
   pages,
+  styleChoisi,
   effetsActives,
   couvertureActive,
   couvertureUrl,
   onDeletePhoto,
   onReplacePhoto,
   onAjusterPhoto,
+  onAgrandirPhoto,
+  onReduirePhoto,
   onAddPhotoToPage,
   onChangeEffet,
   onChangeDescription,
@@ -71,6 +79,29 @@ export default function PageGrid({
 }: PageGridProps) {
   // Photo sélectionnée : ouvre la barre d'outils sous sa page.
   const [selection, setSelection] = useState<{ page: number; photo: number } | null>(null)
+  // Images en échec de chargement (réseau) + jeton de relance par URL.
+  const [imgErr, setImgErr] = useState<Record<string, true>>({})
+  const [bust, setBust] = useState<Record<string, number>>({})
+
+  // Motif du style courant, posé en filigrane sur chaque cadre photo.
+  const motifSvg = motifInner(STYLES[styleChoisi]?.motif ?? "none")
+  const accent = STYLES[styleChoisi]?.palette.accent ?? "#1E4D3A"
+
+  function signalerEchec(url: string) {
+    setImgErr(e => (e[url] ? e : { ...e, [url]: true }))
+  }
+  function effacerEchec(url: string) {
+    setImgErr(e => {
+      if (!e[url]) return e
+      const c = { ...e }
+      delete c[url]
+      return c
+    })
+  }
+  function relancerImage(url: string) {
+    setBust(b => ({ ...b, [url]: (b[url] ?? 0) + 1 }))
+    effacerEchec(url)
+  }
 
   if (pages.length === 0) {
     return (
@@ -125,6 +156,10 @@ export default function PageGrid({
                   const i = indexReel(photo)
                   const estSel = sel === i
                   const estCouverture = couvertureUrl === photo.url
+                  const enErreur = !!imgErr[photo.url]
+                  const srcImg = bust[photo.url]
+                    ? `${photo.url}${photo.url.includes("?") ? "&" : "?"}r=${bust[photo.url]}`
+                    : photo.url
                   return (
                     <button
                       key={photo.url}
@@ -138,14 +173,44 @@ export default function PageGrid({
                       style={styleCellule(layout, ordonnees.indexOf(photo))}
                     >
                       <img
-                        src={photo.url}
+                        src={srcImg}
                         alt=""
                         className="h-full w-full object-cover"
                         style={{ filter: FILTRES_CSS[photo.effet ?? "couleur"] }}
+                        onError={() => signalerEchec(photo.url)}
+                        onLoad={() => effacerEchec(photo.url)}
                       />
+                      {/* Motif décoratif du style, posé sur le cadre */}
+                      {motifSvg && !enErreur && (
+                        <svg
+                          viewBox="0 0 100 100"
+                          preserveAspectRatio="none"
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-0 h-full w-full opacity-50"
+                          style={{ color: accent }}
+                          dangerouslySetInnerHTML={{ __html: motifSvg }}
+                        />
+                      )}
                       {estCouverture && (
                         <span className="absolute left-1 top-1 flex items-center gap-1 rounded-full bg-or px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.08em] text-white shadow">
                           ★ Couv.
+                        </span>
+                      )}
+                      {/* Image qui n'a pas pu charger (réseau) : relance non destructive */}
+                      {enErreur && (
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={e => {
+                            e.stopPropagation()
+                            relancerImage(photo.url)
+                          }}
+                          className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-vert/[0.06] text-[10px] font-medium text-vert/70"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" />
+                          </svg>
+                          Réessayer
                         </span>
                       )}
                     </button>
@@ -190,11 +255,37 @@ export default function PageGrid({
                     </button>
                   )}
                   <span className="flex-1" />
+                  {page.photos.length > 1 && (
+                    <button
+                      onClick={() => {
+                        setSelection(null)
+                        onAgrandirPhoto(pageIdx, sel)
+                      }}
+                      className="rounded-md bg-vert/[0.05] px-2 py-1 text-[11px] font-medium text-vert/70 hover:text-vert"
+                    >
+                      Agrandir
+                    </button>
+                  )}
+                  {solo &&
+                    ((pages[pageIdx - 1] &&
+                      pages[pageIdx - 1].photos.length < PHOTOS_PAR_PAGE_MAX) ||
+                      (pages[pageIdx + 1] &&
+                        pages[pageIdx + 1].photos.length < PHOTOS_PAR_PAGE_MAX)) && (
+                      <button
+                        onClick={() => {
+                          setSelection(null)
+                          onReduirePhoto(pageIdx)
+                        }}
+                        className="rounded-md bg-vert/[0.05] px-2 py-1 text-[11px] font-medium text-vert/70 hover:text-vert"
+                      >
+                        Réduire
+                      </button>
+                    )}
                   <button
                     onClick={() => onAjusterPhoto(pageIdx, sel)}
                     className="rounded-md bg-vert/[0.05] px-2 py-1 text-[11px] font-medium text-vert/70 hover:text-vert"
                   >
-                    Cadrer
+                    Rogner
                   </button>
                   <button
                     onClick={() => onReplacePhoto(pageIdx, sel)}

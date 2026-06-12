@@ -148,6 +148,14 @@
     object-fit: cover; display: block;
     border-radius: 1px;
   }
+  /* Petit motif du style (cœurs/roses, bougies…) posé sur chaque cadre photo. */
+  .cell-motif {
+    position: absolute; inset: 10px;
+    width: auto; height: auto;
+    color: var(--accent);
+    pointer-events: none; opacity: 0.5;
+  }
+  body.sombre .cell-motif { opacity: 0.62; }
 
   /* Solo : cadre premium dégradé accent autour du mat blanc */
   .layout-solo-portrait .planche,
@@ -161,7 +169,9 @@
   body.moderne .layout-solo-portrait .cell,
   body.moderne .layout-solo-paysage .cell { background: var(--surface); border-radius: 0; }
   .layout-solo-portrait .cell .mat,
-  .layout-solo-paysage .cell .mat { background: #fff; padding: 14px; display: flex; flex: 1; border-radius: 3px; }
+  .layout-solo-paysage .cell .mat { position: relative; background: #fff; padding: 14px; display: flex; flex: 1; border-radius: 3px; }
+  .layout-solo-portrait .cell .mat .cell-motif,
+  .layout-solo-paysage .cell .mat .cell-motif { inset: 14px; }
   .layout-solo-portrait .cell { width: 580px; height: 100%; }
   .layout-solo-paysage .cell { width: 100%; aspect-ratio: 4 / 3; align-self: center; }
 
@@ -483,12 +493,14 @@
       <figure class="cell">
         <div class="mat">
           <img src="{{this.photos.[0].url}}" alt="" />
+          {{#if ../motif_svg}}<svg class="cell-motif" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">{{{../motif_svg}}}</svg>{{/if}}
         </div>
       </figure>
       {{else}}
       {{#each this.photos}}
       <figure class="cell">
         <img src="{{this.url}}" alt="" />
+        {{#if ../../motif_svg}}<svg class="cell-motif" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">{{{../../motif_svg}}}</svg>{{/if}}
       </figure>
       {{/each}}
       {{/if}}

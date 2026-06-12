@@ -1,4 +1,5 @@
 import { Forfait, StyleId, FORFAIT_CONFIG } from "@/types"
+import { MotifId } from "@/lib/styles/motifs"
 
 // 5 thèmes × 4 styles = 20 styles.
 // Déblocage par position dans le thème : 1 & 2 → Standard, 3 → Pro, 4 → Premium.
@@ -31,6 +32,8 @@ export interface StyleDef {
   // Familles typographiques injectées dans le template PDF (CSS font-family).
   fontDisplay: string
   fontScript: string             // ornement calligraphique ("none" si aucun)
+  // Petit motif posé sur les cadres photo (cœurs/roses, bougies…). "none" = aucun.
+  motif: MotifId
 }
 
 function def(
@@ -42,7 +45,8 @@ function def(
   palette: StyleDef["palette"],
   mode: "clair" | "sombre",
   fontDisplay: string,
-  fontScript = "none"
+  fontScript = "none",
+  motif: MotifId = "none"
 ): StyleDef {
   return {
     id: id as StyleId,
@@ -55,6 +59,7 @@ function def(
     mode,
     fontDisplay,
     fontScript,
+    motif,
   }
 }
 
@@ -108,13 +113,13 @@ export const STYLES: Record<StyleId, StyleDef> = {
 
   // ——— Héritage & Événementiel ———
   17: def(17, "heritage", 1, "Tissage", "Ocre, terracotta, fil d'or — l'étoffe des grands jours",
-    { bg: "#F7EBDA", surface: "#EAD2AC", accent: "#C25E2E", encre: "#4F2F16" }, "clair", CORMORANT),
+    { bg: "#F7EBDA", surface: "#EAD2AC", accent: "#C25E2E", encre: "#4F2F16" }, "clair", CORMORANT, "none", "fleurs-douces"),
   18: def(18, "heritage", 2, "Amour & Union", "Blanc, or, rouge rosé — la promesse",
-    { bg: "#FDF8F2", surface: "#F4E3DA", accent: "#C04A4A", encre: "#44282A" }, "clair", CORMORANT, PINYON),
+    { bg: "#FDF8F2", surface: "#F4E3DA", accent: "#C04A4A", encre: "#44282A" }, "clair", CORMORANT, PINYON, "coeurs-roses"),
   19: def(19, "heritage", 3, "Innocence", "Rose poudré, bleu ciel, douceur d'enfance",
-    { bg: "#FBF3F4", surface: "#F2DEE3", accent: "#8FB3D6", encre: "#5A4A50" }, "clair", CORMORANT, CAVEAT),
+    { bg: "#FBF3F4", surface: "#F2DEE3", accent: "#8FB3D6", encre: "#5A4A50" }, "clair", CORMORANT, CAVEAT, "etoiles-tendres"),
   20: def(20, "heritage", 4, "Mémoire", "Gris perle, blanc, violet profond — le souvenir",
-    { bg: "#F3F2F4", surface: "#E0DEE4", accent: "#5B3A77", encre: "#3B3540" }, "clair", CINZEL),
+    { bg: "#F3F2F4", surface: "#E0DEE4", accent: "#5B3A77", encre: "#3B3540" }, "clair", CINZEL, "none", "bougies"),
 }
 
 /** Styles d'un thème, dans l'ordre des positions. */

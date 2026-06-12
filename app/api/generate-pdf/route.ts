@@ -3,6 +3,7 @@ import { verifierToken, updateSession, marquerPdfPret } from '@/lib/session/mana
 import { supprimerPhotosSession, uploadPdf } from '@/lib/cloudinary/upload';
 import { launchBrowser } from '@/lib/pdf/browser';
 import { STYLES, styleAccessible } from '@/lib/styles/catalog';
+import { motifInner } from '@/lib/styles/motifs';
 import { StyleId, FORFAIT_CONFIG, EffetPhoto, PHOTOS_PAR_PAGE_MAX } from '@/types';
 import { layoutPage, ordonnerPourLayout } from '@/lib/album/layout';
 import Handlebars from 'handlebars';
@@ -229,6 +230,8 @@ export async function POST(req: NextRequest) {
       font_script: style.fontScript === 'none' ? style.fontDisplay : style.fontScript,
       script_present: style.fontScript !== 'none',
       palette: style.palette,
+      // Petit motif du style, posé sur chaque cadre photo (chaîne vide = aucun).
+      motif_svg: motifInner(style.motif),
       // Phase 3
       dedicace: dedicaceNormalisee,
       dedicace_presente: dedicacePresente,

@@ -21,6 +21,20 @@ type CibleUpload =
   | { type: "ajout-page"; pageIdx: number }
   | { type: "remplacement"; pageIdx: number; photoIdx: number }
 
+// Brouillon local (anti-perte) : tout le travail en cours est sauvegardé dans
+// le navigateur, lié au token, et restauré à l'actualisation de la page.
+const draftKey = (token: string) => `everbloom:draft:${token}`
+
+interface Brouillon {
+  nomCatalogue: string
+  description: string
+  styleChoisi: StyleId
+  pages: PageAlbum[]
+  dedicace: string
+  couvertureUrl: string | null
+  updatedAt: number
+}
+
 function EditorContent() {
   const router = useRouter()
   const params = useParams()
@@ -83,24 +97,41 @@ function EditorContent() {
         if (!res.ok) throw new Error("Session non trouvée")
         const data = await res.json()
         setSession(data)
-        setNomCatalogue(data.nom_catalogue || "")
-        setDescription(data.description || "")
-        setStyleChoisi(data.style_choisi || 1)
+
+        // Brouillon local : si le client avait commencé puis actualisé, on
+        // restaure son travail. Sauf si le PDF est déjà généré (photos
+        // supprimées côté serveur) : on nettoie alors le brouillon obsolète.
+        let draft: Brouillon | null = null
+        if (data.pdf_url) {
+          try { localStorage.removeItem(draftKey(token)) } catch {}
+        } else {
+          try {
+            const raw = localStorage.getItem(draftKey(token))
+            if (raw) draft = JSON.parse(raw) as Brouillon
+          } catch {}
+        }
+
+        setNomCatalogue(draft?.nomCatalogue ?? data.nom_catalogue ?? "")
+        setDescription(draft?.description ?? data.description ?? "")
+        setStyleChoisi(draft?.styleChoisi ?? data.style_choisi ?? 1)
         // Compat : les anciennes sessions stockaient une liste plate `photos`.
-        const pagesChargees: PageAlbum[] =
+        const pagesServeur: PageAlbum[] =
           data.pages ??
           (Array.isArray(data.photos) ? data.photos.map((p: Photo) => ({ photos: [p] })) : [])
+        const pagesChargees = draft?.pages ?? pagesServeur
         setPages(pagesChargees)
-        setDedicace(data.dedicace || "")
-        const flat = pagesChargees.flatMap(p => p.photos)
+        setDedicace(draft?.dedicace ?? data.dedicace ?? "")
+        const flat = pagesServeur.flatMap(p => p.photos)
         setCouvertureUrl(
-          typeof data.photo_couverture_index === "number"
-            ? flat[data.photo_couverture_index]?.url ?? null
-            : null
+          draft
+            ? draft.couvertureUrl ?? null
+            : typeof data.photo_couverture_index === "number"
+              ? flat[data.photo_couverture_index]?.url ?? null
+              : null
         )
         setPdfUrl(data.pdf_url || null)
         // Travail déjà commencé : on rouvre directement la fenêtre de création.
-        if (pagesChargees.length > 0 || data.pdf_url || data.nom_catalogue) {
+        if (pagesChargees.length > 0 || data.pdf_url || data.nom_catalogue || draft) {
           setEtape("creation")
         }
       } catch (err) {
@@ -112,6 +143,23 @@ function EditorContent() {
     }
     loadSession()
   }, [token, router])
+
+  // Sauvegarde locale automatique (débounce) : à l'actualisation, rien n'est
+  // perdu. On ne sauvegarde pas tant que le chargement initial n'est pas fini,
+  // ni une fois le PDF généré (les photos n'existent plus côté serveur).
+  useEffect(() => {
+    if (isLoading || !token || etape !== "creation" || pdfUrl) return
+    const id = setTimeout(() => {
+      try {
+        const brouillon: Brouillon = {
+          nomCatalogue, description, styleChoisi, pages, dedicace, couvertureUrl,
+          updatedAt: Date.now(),
+        }
+        localStorage.setItem(draftKey(token), JSON.stringify(brouillon))
+      } catch {}
+    }, 500)
+    return () => clearTimeout(id)
+  }, [isLoading, token, etape, pdfUrl, nomCatalogue, description, styleChoisi, pages, dedicace, couvertureUrl])
 
   // ——— Upload ———
 
@@ -125,14 +173,29 @@ function EditorContent() {
 
   async function uploadFichier(file: File): Promise<Photo> {
     const { base64, ratio } = await preparerPhoto(file)
-    const res = await fetch('/api/upload-photo', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, image: base64 })
-    })
-    if (!res.ok) throw new Error("Échec de l'upload")
-    const { url } = await res.json()
-    return { url, ratio, description: "", effet: "couleur" }
+    // Connexions mobiles instables : jusqu'à 3 tentatives sur erreur réseau ou
+    // 5xx (pas sur un refus 4xx, qui ne se résoudra pas en réessayant).
+    let derniereErreur: unknown
+    for (let tentative = 0; tentative < 3; tentative++) {
+      try {
+        const res = await fetch('/api/upload-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, image: base64 })
+        })
+        if (res.ok) {
+          const { url } = await res.json()
+          return { url, ratio, description: "", effet: "couleur" }
+        }
+        if (res.status < 500) throw new Error("Échec de l'upload")
+        derniereErreur = new Error("Service indisponible")
+      } catch (err) {
+        derniereErreur = err
+      }
+      // Pause croissante avant la prochaine tentative.
+      if (tentative < 2) await new Promise(r => setTimeout(r, 700 * (tentative + 1)))
+    }
+    throw derniereErreur instanceof Error ? derniereErreur : new Error("Upload impossible")
   }
 
   async function supprimerSurCloudinary(url: string) {
@@ -197,7 +260,7 @@ function EditorContent() {
         }
       }
     } catch {
-      setError("Erreur lors de l'envoi des photos")
+      setError("Envoi des photos interrompu — vérifiez votre connexion, puis réessayez. Votre travail est conservé.")
     } finally {
       setIsUploading(false)
       setCible(null)
@@ -235,6 +298,52 @@ function EditorContent() {
         ? { photos: p.photos.map((photo, j) => (j === photoIdx ? { ...photo, description: desc } : photo)) }
         : p
     ))
+  }
+
+  // ——— Agrandir / Réduire (taille sur la page) ———
+
+  // « Agrandir » : la photo quitte sa page partagée pour occuper sa propre
+  // page pleine (insérée juste après). La page d'origine se réduit, ou
+  // disparaît si elle se vide.
+  const handleAgrandirPhoto = (pageIdx: number, photoIdx: number) => {
+    const page = pages[pageIdx]
+    if (!page || page.photos.length <= 1) return
+    const photo = page.photos[photoIdx]
+    setPages(prev => {
+      const out: PageAlbum[] = []
+      prev.forEach((p, i) => {
+        if (i === pageIdx) {
+          const reste = p.photos.filter((_, j) => j !== photoIdx)
+          if (reste.length > 0) out.push({ photos: reste })
+          out.push({ photos: [photo] })
+        } else {
+          out.push(p)
+        }
+      })
+      return out
+    })
+  }
+
+  // « Réduire » : une photo seule sur sa page rejoint une page voisine ayant
+  // de la place (la précédente en priorité, sinon la suivante).
+  const handleReduirePhoto = (pageIdx: number) => {
+    const page = pages[pageIdx]
+    if (!page || page.photos.length !== 1) return
+    const prevLibre =
+      pages[pageIdx - 1] && pages[pageIdx - 1].photos.length < PHOTOS_PAR_PAGE_MAX
+    const nextLibre =
+      pages[pageIdx + 1] && pages[pageIdx + 1].photos.length < PHOTOS_PAR_PAGE_MAX
+    const cible = prevLibre ? pageIdx - 1 : nextLibre ? pageIdx + 1 : -1
+    if (cible === -1) {
+      setError("Aucune page voisine n'a de place disponible.")
+      return
+    }
+    const photo = page.photos[0]
+    setPages(prev =>
+      prev
+        .map((p, i) => (i === cible ? { photos: [...p.photos, photo] } : p))
+        .filter((_, i) => i !== pageIdx)
+    )
   }
 
   // ——— Cadrage manuel ———
@@ -318,6 +427,11 @@ function EditorContent() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Erreur génération")
       setPdfUrl(data.pdf_url)
+      // PDF prêt : les photos sont supprimées côté serveur, le brouillon local
+      // n'a plus lieu d'être (ses URLs deviendraient des images cassées).
+      if (token) {
+        try { localStorage.removeItem(draftKey(token)) } catch {}
+      }
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -501,24 +615,31 @@ function EditorContent() {
             </div>
           )}
 
-          <PageGrid
-            pages={pages}
-            effetsActives={effetsActives}
-            couvertureActive={couvertureActive}
-            couvertureUrl={couvertureUrl}
-            onDeletePhoto={handleDeletePhoto}
-            onReplacePhoto={(pageIdx, photoIdx) =>
-              lancerSelectionFichiers({ type: "remplacement", pageIdx, photoIdx })
-            }
-            onAjusterPhoto={handleAjusterPhoto}
-            onAddPhotoToPage={pageIdx => {
-              if (plein) return
-              lancerSelectionFichiers({ type: "ajout-page", pageIdx })
-            }}
-            onChangeEffet={handleChangeEffet}
-            onChangeDescription={handleChangeDescription}
-            onSetCouverture={setCouvertureUrl}
-          />
+          {pdfUrl ? (
+            <CatalogueGenereResume photosTotal={photosTotal} pages={pagesActuelles} />
+          ) : (
+            <PageGrid
+              pages={pages}
+              styleChoisi={styleChoisi}
+              effetsActives={effetsActives}
+              couvertureActive={couvertureActive}
+              couvertureUrl={couvertureUrl}
+              onDeletePhoto={handleDeletePhoto}
+              onReplacePhoto={(pageIdx, photoIdx) =>
+                lancerSelectionFichiers({ type: "remplacement", pageIdx, photoIdx })
+              }
+              onAjusterPhoto={handleAjusterPhoto}
+              onAgrandirPhoto={handleAgrandirPhoto}
+              onReduirePhoto={handleReduirePhoto}
+              onAddPhotoToPage={pageIdx => {
+                if (plein) return
+                lancerSelectionFichiers({ type: "ajout-page", pageIdx })
+              }}
+              onChangeEffet={handleChangeEffet}
+              onChangeDescription={handleChangeDescription}
+              onSetCouverture={setCouvertureUrl}
+            />
+          )}
         </section>
 
         {/* Étape 3 — dédicace (Pro + Premium) */}
@@ -576,9 +697,15 @@ function EditorContent() {
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#C4956A]/30 bg-[#E8E0D5]/95 backdrop-blur-sm">
         <div className="mx-auto max-w-[560px] px-6 py-4 space-y-3">
           {error && (
-            <p role="alert" className="rounded-lg bg-erreur/10 py-2 text-center text-[14px] text-erreur">
-              {error}
-            </p>
+            <div role="alert" className="space-y-2 rounded-lg bg-erreur/10 px-3 py-2 text-center">
+              <p className="text-[14px] text-erreur">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className={`text-[12px] font-semibold text-vert underline underline-offset-2 ${focusRing}`}
+              >
+                Actualiser sans perdre vos données
+              </button>
+            </div>
           )}
 
           {!pdfUrl && !isGenerating && (
@@ -677,6 +804,28 @@ function EditorContent() {
           onCancel={() => setCadrage(null)}
         />
       )}
+    </div>
+  )
+}
+
+/**
+ * Une fois le catalogue généré, les photos sont supprimées côté serveur :
+ * on n'affiche donc plus la grille (qui montrerait des images cassées) mais
+ * un résumé. Le téléchargement se fait via la barre d'action en bas.
+ */
+function CatalogueGenereResume({ photosTotal, pages }: { photosTotal: number; pages: number }) {
+  return (
+    <div className="card flex flex-col items-center gap-3 !rounded-lg px-6 py-10 text-center">
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-vert text-ivoire">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      </span>
+      <p className="display text-[22px] text-vert">Votre catalogue est prêt</p>
+      <p className="max-w-xs text-[13px] leading-relaxed text-vert/55">
+        {photosTotal} photo{photosTotal > 1 ? "s" : ""} · {pages} page{pages > 1 ? "s" : ""}.
+        Téléchargez-le ou partagez-le avec le bouton ci-dessous.
+      </p>
     </div>
   )
 }
