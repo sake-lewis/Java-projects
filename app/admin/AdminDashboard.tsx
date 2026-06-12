@@ -13,6 +13,7 @@ interface SessionResume {
   token: string
   forfait: Forfait
   statut: StatutSession
+  categorie: "a_utiliser" | "en_cours"
   nom_catalogue: string
   created_at: number
   pdf_expires_at: number | null
@@ -42,6 +43,12 @@ const COULEURS_STATUT: Record<StatutSession, { dot: string; bg: string; text: st
   ready:       { dot: "bg-[#2F855A]",      bg: "bg-[#2F855A]/10",      text: "text-[#216A47]" },
   downloaded:  { dot: "bg-[#1E4D3A]/50",   bg: "bg-[#1E4D3A]/5",       text: "text-[#1E4D3A]/70" },
   expired:     { dot: "bg-[#C53030]",      bg: "bg-[#C53030]/8",       text: "text-[#A02525]" },
+}
+
+function joursAvantExpiration(pdfExpiresAt: number | null): string | null {
+  if (!pdfExpiresAt) return null
+  const j = Math.max(0, Math.ceil((pdfExpiresAt - Date.now()) / (24 * 60 * 60 * 1000)))
+  return j > 0 ? `expire dans ${j} j` : "expire aujourd'hui"
 }
 
 function formatTempsRelatif(ms: number): string {
@@ -90,6 +97,7 @@ export default function AdminDashboard() {
   const [generation, setGeneration] = useState<Forfait | null>(null)
   const [copie, setCopie] = useState(false)
   const [erreur, setErreur] = useState<string | null>(null)
+  const [copieLienToken, setCopieLienToken] = useState<string | null>(null)
   const [avertissementInactif, setAvertissementInactif] = useState(false)
   const [secondesRestantes, setSecondesRestantes] = useState(INACTIVITE_AVERTISSEMENT_MS / 1000)
   const lastActivityRef = useRef<number>(Date.now())
@@ -648,79 +656,185 @@ export default function AdminDashboard() {
           })()}
         </section>
 
-        {/* SESSIONS RÉCENTES */}
-        <section className="space-y-3">
-          <div className="flex items-baseline justify-between">
-            <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1E4D3A]/60">
-              Sessions récentes
-            </h2>
-            {!chargement && sessions.length > 0 && (
-              <span className="text-[10px] uppercase tracking-[0.16em] text-[#1E4D3A]/35">
-                {sessions.length} dernière{sessions.length > 1 ? "s" : ""}
-              </span>
-            )}
-          </div>
+        {/* LIENS GÉNÉRÉS — 3 catégories */}
+        {(() => {
+          const aUtiliser = sessions.filter(s => s.categorie === "a_utiliser")
+          const enCours = sessions.filter(s => s.categorie === "en_cours")
 
-          {chargement ? (
-            <ul className="space-y-2" aria-hidden>
-              {[0, 1, 2].map(i => (
-                <li
-                  key={i}
-                  className="flex items-center justify-between rounded-lg border border-[#1E4D3A]/8 bg-white px-3.5 py-3"
-                >
-                  <div className="flex-1 space-y-1.5">
-                    <div className="h-3 w-1/2 animate-pulse rounded bg-[#1E4D3A]/8" />
-                    <div className="h-2.5 w-1/3 animate-pulse rounded bg-[#1E4D3A]/5" />
-                  </div>
-                  <div className="ml-3 h-5 w-14 animate-pulse rounded-full bg-[#1E4D3A]/8" />
-                </li>
-              ))}
-            </ul>
-          ) : sessions.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-[#1E4D3A]/15 bg-white/40 px-5 py-10 text-center">
-              <BloomMark className="mx-auto h-8 w-8 text-[#1E4D3A]/20" />
-              <p className="mt-3 text-[13px] text-[#1E4D3A]/55">
-                Aucune session pour le moment.<br />
-                <span className="text-[#1E4D3A]/40">Les liens générés apparaîtront ici.</span>
-              </p>
-            </div>
-          ) : (
-            <ul className="space-y-2">
-              {sessions.map(s => {
-                const couleurs = COULEURS_STATUT[s.statut]
-                return (
-                  <li
-                    key={s.token}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-[#1E4D3A]/8 bg-white px-3.5 py-3 transition-colors hover:border-[#1E4D3A]/15"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-[14px] font-semibold text-[#1E4D3A]">
-                        {s.nom_catalogue || (
-                          <span className="text-[#1E4D3A]/55">
-                            Lien {FORFAIT_CONFIG[s.forfait].label} en attente
-                          </span>
-                        )}
-                      </div>
-                      <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-[#1E4D3A]/50">
-                        <span className="font-medium uppercase tracking-wide">
-                          {FORFAIT_CONFIG[s.forfait].label}
-                        </span>
-                        <span aria-hidden>·</span>
-                        <span>{formatTempsRelatif(s.created_at)}</span>
-                      </div>
-                    </div>
-                    <span
-                      className={`shrink-0 inline-flex items-center gap-1.5 rounded-full ${couleurs.bg} px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] ${couleurs.text}`}
+          async function copierLien(s: SessionResume) {
+            const url = `${window.location.origin}/create/${s.forfait}?token=${s.token}`
+            try {
+              await navigator.clipboard.writeText(url)
+              setCopieLienToken(s.token)
+              setTimeout(() => setCopieLienToken(t => (t === s.token ? null : t)), 2000)
+            } catch {
+              // Clipboard indisponible : on sélectionne au moins l'URL via prompt.
+              window.prompt("Copiez le lien :", url)
+            }
+          }
+
+          if (chargement) {
+            return (
+              <section className="space-y-3">
+                <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1E4D3A]/60">
+                  Liens générés
+                </h2>
+                <ul className="space-y-2" aria-hidden>
+                  {[0, 1, 2].map(i => (
+                    <li
+                      key={i}
+                      className="flex items-center justify-between rounded-lg border border-[#1E4D3A]/8 bg-white px-3.5 py-3"
                     >
-                      <span className={`h-1.5 w-1.5 rounded-full ${couleurs.dot}`} aria-hidden />
-                      {ETIQUETTES_STATUT[s.statut]}
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-3 w-1/2 animate-pulse rounded bg-[#1E4D3A]/8" />
+                        <div className="h-2.5 w-1/3 animate-pulse rounded bg-[#1E4D3A]/5" />
+                      </div>
+                      <div className="ml-3 h-5 w-14 animate-pulse rounded-full bg-[#1E4D3A]/8" />
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )
+          }
+
+          return (
+            <>
+              {/* À UTILISER — liens jamais ouverts, prêts à être envoyés */}
+              <section className="space-y-3">
+                <div className="flex items-baseline justify-between">
+                  <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1E4D3A]/60">
+                    À utiliser
+                  </h2>
+                  {aUtiliser.length > 0 && (
+                    <span className="text-[10px] uppercase tracking-[0.16em] text-[#1E4D3A]/35">
+                      {aUtiliser.length} lien{aUtiliser.length > 1 ? "s" : ""}
                     </span>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-        </section>
+                  )}
+                </div>
+
+                {aUtiliser.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-[#1E4D3A]/15 bg-white/40 px-5 py-6 text-center">
+                    <p className="text-[13px] text-[#1E4D3A]/55">
+                      Aucun lien en attente d&apos;envoi.
+                    </p>
+                  </div>
+                ) : (
+                  <ul className="space-y-2">
+                    {aUtiliser.map(s => (
+                      <li
+                        key={s.token}
+                        className="flex items-center justify-between gap-3 rounded-lg border border-[#C4956A]/25 bg-white px-3.5 py-3 transition-colors hover:border-[#C4956A]/50"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-[14px] font-semibold text-[#1E4D3A]">
+                            Lien {FORFAIT_CONFIG[s.forfait].label}
+                          </div>
+                          <div className="mt-0.5 text-[11px] text-[#1E4D3A]/50">
+                            généré {formatTempsRelatif(s.created_at)}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => copierLien(s)}
+                          className={`shrink-0 inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[12px] font-semibold transition-all ${
+                            copieLienToken === s.token
+                              ? "bg-[#2F855A] text-white"
+                              : "bg-[#1E4D3A] text-[#E8E0D5] hover:bg-[#2A5F4A]"
+                          }`}
+                        >
+                          {copieLienToken === s.token ? (
+                            <>
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                              Copié
+                            </>
+                          ) : (
+                            <>
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" />
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                              </svg>
+                              Copier
+                            </>
+                          )}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+
+              {/* EN COURS — sessions actives, PDF non expiré */}
+              <section className="space-y-3">
+                <div className="flex items-baseline justify-between">
+                  <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1E4D3A]/60">
+                    En cours
+                  </h2>
+                  {enCours.length > 0 && (
+                    <span className="text-[10px] uppercase tracking-[0.16em] text-[#1E4D3A]/35">
+                      {enCours.length} session{enCours.length > 1 ? "s" : ""}
+                    </span>
+                  )}
+                </div>
+
+                {enCours.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-[#1E4D3A]/15 bg-white/40 px-5 py-6 text-center">
+                    <p className="text-[13px] text-[#1E4D3A]/55">
+                      Aucune création en cours.
+                    </p>
+                  </div>
+                ) : (
+                  <ul className="space-y-2">
+                    {enCours.map(s => {
+                      // Anciens documents : statut inconnu → ton neutre.
+                      const couleurs = COULEURS_STATUT[s.statut] ?? COULEURS_STATUT.generating
+                      const expiration = joursAvantExpiration(s.pdf_expires_at)
+                      return (
+                        <li
+                          key={s.token}
+                          className="flex items-center justify-between gap-3 rounded-lg border border-[#1E4D3A]/8 bg-white px-3.5 py-3 transition-colors hover:border-[#1E4D3A]/15"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate text-[14px] font-semibold text-[#1E4D3A]">
+                              {s.nom_catalogue || (
+                                <span className="text-[#1E4D3A]/55">
+                                  Création {FORFAIT_CONFIG[s.forfait].label}
+                                </span>
+                              )}
+                            </div>
+                            <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-[#1E4D3A]/50">
+                              <span className="font-medium uppercase tracking-wide">
+                                {FORFAIT_CONFIG[s.forfait].label}
+                              </span>
+                              <span aria-hidden>·</span>
+                              <span>{formatTempsRelatif(s.created_at)}</span>
+                              {expiration && (
+                                <>
+                                  <span aria-hidden>·</span>
+                                  <span className="text-[#8B6840]">{expiration}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <span
+                            className={`shrink-0 inline-flex items-center gap-1.5 rounded-full ${couleurs.bg} px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] ${couleurs.text}`}
+                          >
+                            <span className={`h-1.5 w-1.5 rounded-full ${couleurs.dot}`} aria-hidden />
+                            {ETIQUETTES_STATUT[s.statut] ?? "En cours"}
+                          </span>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
+
+                <p className="text-[11px] leading-relaxed text-[#1E4D3A]/40">
+                  Les liens expirés disparaissent automatiquement, avec les PDF qui leur sont rattachés.
+                </p>
+              </section>
+            </>
+          )
+        })()}
       </div>
     </main>
   )

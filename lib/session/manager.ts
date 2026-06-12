@@ -1,5 +1,5 @@
 import { getAdminDb } from "@/lib/firebase/admin"
-import { supprimerPdf } from "@/lib/cloudinary/upload"
+import { supprimerPdf, supprimerPhotosSession } from "@/lib/cloudinary/upload"
 import { Session, Forfait } from "@/types"
 
 interface CreerSessionParams {
@@ -81,6 +81,10 @@ export async function marquerTelechargement(token: string): Promise<void> {
   })
 }
 
+/**
+ * Un lien expiré disparaît entièrement : PDF Cloudinary, photos restantes
+ * et document Firestore sont supprimés. Plus aucune trace côté admin.
+ */
 export async function expirerSession(token: string): Promise<void> {
   const session = await lireSession(token)
   if (!session) return
@@ -88,11 +92,13 @@ export async function expirerSession(token: string): Promise<void> {
   if (session.pdf_url) {
     await supprimerPdf(token)
   }
+  try {
+    await supprimerPhotosSession(token)
+  } catch {
+    // Dossier photos déjà vide (supprimé après génération) : sans gravité.
+  }
 
-  await updateSession(token, {
-    statut: "expired",
-    pdf_url: null
-  })
+  await getAdminDb().collection("sessions").doc(token).delete()
 }
 
 /**
@@ -103,9 +109,11 @@ export async function expirerSession(token: string): Promise<void> {
  */
 export async function compterSessionsExpirees(): Promise<number> {
   const maintenant = Date.now()
+  // Les sessions expirées étant purgées (document supprimé), plus besoin de
+  // filtrer sur le statut — et la requête reste sur un seul champ (pas
+  // d'index composite Firestore à créer).
   const snap = await getAdminDb().collection("sessions")
     .where("pdf_expires_at", "<=", maintenant)
-    .where("statut", "!=", "expired")
     .get()
   return snap.size
 }
@@ -114,7 +122,6 @@ export async function nettoyerSessionsExpirees(): Promise<number> {
   const maintenant = Date.now()
   const snapshot = await getAdminDb().collection("sessions")
     .where("pdf_expires_at", "<=", maintenant)
-    .where("statut", "!=", "expired")
     .get()
     
   let count = 0
