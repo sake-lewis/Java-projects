@@ -9,8 +9,10 @@ import StyleSelector from '@/components/StyleSelector'
 import PageGrid from '@/components/PageGrid'
 import ChoixPhotosModal from '@/components/ChoixPhotosModal'
 import ChoixStockageModal from '@/components/ChoixStockageModal'
+import CadrageModal from '@/components/CadrageModal'
 import BloomMark from '@/components/ui/BloomMark'
 import { preparerPhoto } from '@/lib/album/compress'
+import { layoutPage, ordonnerPourLayout, ratioCellule } from '@/lib/album/layout'
 
 // Cible des fichiers en attente de sélection : nouvelle page, ajout à une
 // page existante, ou remplacement d'une photo précise.
@@ -40,6 +42,13 @@ function EditorContent() {
   const [couvertureUrl, setCouvertureUrl] = useState<string | null>(null)
   const [modalChoixOuverte, setModalChoixOuverte] = useState(false)
   const [modalStockageOuverte, setModalStockageOuverte] = useState(false)
+  // Réglage manuel du cadrage (zoom + déplacement) d'une photo.
+  const [cadrage, setCadrage] = useState<{
+    pageIdx: number
+    photoIdx: number
+    aspect: number
+    url: string
+  } | null>(null)
   const [cible, setCible] = useState<CibleUpload | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -226,6 +235,50 @@ function EditorContent() {
         ? { photos: p.photos.map((photo, j) => (j === photoIdx ? { ...photo, description: desc } : photo)) }
         : p
     ))
+  }
+
+  // ——— Cadrage manuel ———
+
+  const handleAjusterPhoto = (pageIdx: number, photoIdx: number) => {
+    const page = pages[pageIdx]
+    const photo = page?.photos[photoIdx]
+    if (!photo) return
+    // Le cadre du réglage = la cellule où la photo est réellement posée.
+    const layout = layoutPage(page.photos)
+    const slot = ordonnerPourLayout(page.photos, layout).indexOf(photo)
+    setCadrage({ pageIdx, photoIdx, aspect: ratioCellule(layout, slot), url: photo.url })
+  }
+
+  const handleCadrageConfirm = async (base64: string) => {
+    if (!cadrage) return
+    const { pageIdx, photoIdx, aspect, url: ancienneUrl } = cadrage
+    setCadrage(null)
+    setIsUploading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/upload-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, image: base64 })
+      })
+      if (!res.ok) throw new Error("Échec de l'upload")
+      const { url } = await res.json()
+      setPages(prev => prev.map((p, i) =>
+        i === pageIdx
+          ? {
+              photos: p.photos.map((photo, j) =>
+                j === photoIdx ? { ...photo, url, ratio: aspect } : photo
+              ),
+            }
+          : p
+      ))
+      if (couvertureUrl === ancienneUrl) setCouvertureUrl(url)
+      await supprimerSurCloudinary(ancienneUrl)
+    } catch {
+      setError("Erreur lors de l'application du cadrage")
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   // ——— Génération ———
@@ -457,6 +510,7 @@ function EditorContent() {
             onReplacePhoto={(pageIdx, photoIdx) =>
               lancerSelectionFichiers({ type: "remplacement", pageIdx, photoIdx })
             }
+            onAjusterPhoto={handleAjusterPhoto}
             onAddPhotoToPage={pageIdx => {
               if (plein) return
               lancerSelectionFichiers({ type: "ajout-page", pageIdx })
@@ -611,6 +665,16 @@ function EditorContent() {
           pdfUrl={pdfUrl}
           nomCatalogue={nomCatalogue}
           onClose={() => setModalStockageOuverte(false)}
+        />
+      )}
+
+      {cadrage && (
+        <CadrageModal
+          isOpen
+          imageUrl={cadrage.url}
+          aspect={cadrage.aspect}
+          onConfirm={handleCadrageConfirm}
+          onCancel={() => setCadrage(null)}
         />
       )}
     </div>

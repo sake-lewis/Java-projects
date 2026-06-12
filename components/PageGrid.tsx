@@ -11,6 +11,7 @@ interface PageGridProps {
   couvertureUrl: string | null
   onDeletePhoto: (pageIdx: number, photoIdx: number) => void
   onReplacePhoto: (pageIdx: number, photoIdx: number) => void
+  onAjusterPhoto: (pageIdx: number, photoIdx: number) => void
   onAddPhotoToPage: (pageIdx: number) => void
   onChangeEffet: (pageIdx: number, photoIdx: number, effet: EffetPhoto) => void
   onChangeDescription: (pageIdx: number, photoIdx: number, description: string) => void
@@ -62,6 +63,7 @@ export default function PageGrid({
   couvertureUrl,
   onDeletePhoto,
   onReplacePhoto,
+  onAjusterPhoto,
   onAddPhotoToPage,
   onChangeEffet,
   onChangeDescription,
@@ -188,6 +190,12 @@ export default function PageGrid({
                     </button>
                   )}
                   <span className="flex-1" />
+                  <button
+                    onClick={() => onAjusterPhoto(pageIdx, sel)}
+                    className="rounded-md bg-vert/[0.05] px-2 py-1 text-[11px] font-medium text-vert/70 hover:text-vert"
+                  >
+                    Cadrer
+                  </button>
                   <button
                     onClick={() => onReplacePhoto(pageIdx, sel)}
                     className="rounded-md bg-vert/[0.05] px-2 py-1 text-[11px] font-medium text-vert/70 hover:text-vert"
