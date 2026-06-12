@@ -186,7 +186,7 @@ export default function PageGrid({
                           viewBox="0 0 100 100"
                           preserveAspectRatio="none"
                           aria-hidden="true"
-                          className="pointer-events-none absolute inset-0 h-full w-full opacity-50"
+                          className="pointer-events-none absolute inset-0 h-full w-full opacity-70"
                           style={{ color: accent }}
                           dangerouslySetInnerHTML={{ __html: motifSvg }}
                         />
