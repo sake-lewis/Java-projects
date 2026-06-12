@@ -25,11 +25,17 @@
 *.pem
 
 # Fichiers de cles / secrets locaux (jamais versionnes)
-# Couvre "cle chariow.md", "cle-chariow.txt", "cles_secrets.md", etc.
-cle*chariow*
-cles*chariow*
+# Couvre "cle chariow.md", "cle-chariow.txt", "cles_secrets.md",
+# "Cle cron.txt", "cle-cron.md", etc.
+[Cc]le*chariow*
+[Cc]les*chariow*
+[Cc]le*cron*
+[Cc]les*cron*
 *.secrets.*
 secrets.local.*
+
+# Rendus de test locaux du template PDF (scripts/render-master-test.mjs)
+/public/dev-master-*.html
 
 # Notes de session locales (contiennent des infos perso)
 EVERBLOOM_contexte_reprise.md
