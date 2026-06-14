@@ -1,8 +1,9 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect } from "react"
 import { StyleDef } from "@/lib/styles/catalog"
 import { motifInner } from "@/lib/styles/motifs"
+import { motifImagePath } from "@/lib/styles/motifImages"
 
 /**
  * Aperçu d'un style : mini-couverture d'album pilotée par la palette.
@@ -12,6 +13,10 @@ import { motifInner } from "@/lib/styles/motifs"
 export default function StylePreview({ style }: { style: StyleDef }) {
   const { bg, surface, accent, encre } = style.palette
   const motifSvg = motifInner(style.motif)
+  // PNG aquarelle du style s'il existe, sinon repli sur le motif SVG.
+  const motifImg = motifImagePath(style.id)
+  const [imgOk, setImgOk] = useState(true)
+  useEffect(() => setImgOk(true), [style.id])
 
   return (
     <div
@@ -37,16 +42,33 @@ export default function StylePreview({ style }: { style: StyleDef }) {
         style={{ borderColor: accent, opacity: 0.3 }}
       />
 
-      {/* Motif réel du style, posé en filigrane comme sur les cadres photo */}
-      {motifSvg && (
-        <svg
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-[7px] opacity-70"
-          style={{ color: accent }}
-          dangerouslySetInnerHTML={{ __html: motifSvg }}
-        />
+      {/* Motif réel du style : PNG aquarelle si présent, sinon repli SVG. */}
+      {imgOk ? (
+        <div className="pointer-events-none absolute inset-[7px]" aria-hidden="true">
+          <img
+            src={motifImg}
+            alt=""
+            onError={() => setImgOk(false)}
+            className="absolute left-0 top-0 w-[46%] rotate-180"
+          />
+          <img
+            src={motifImg}
+            alt=""
+            onError={() => setImgOk(false)}
+            className="absolute bottom-0 right-0 w-[46%]"
+          />
+        </div>
+      ) : (
+        motifSvg && (
+          <svg
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-[7px] opacity-70"
+            style={{ color: accent }}
+            dangerouslySetInnerHTML={{ __html: motifSvg }}
+          />
+        )
       )}
 
       {/* Titre — la typographie du style */}

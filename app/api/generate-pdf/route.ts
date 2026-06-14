@@ -186,6 +186,18 @@ export async function POST(req: NextRequest) {
 
     const style = STYLES[styleId];
 
+    // Motif « image » du style : si public/motifs/<id>.png existe, on l'embarque
+    // en base64 (Puppeteer rend via setContent, sans base URL). Sinon le motif
+    // vectoriel du catalogue est utilisé.
+    let motifImage: string | null = null;
+    try {
+      const motifFile = path.join(process.cwd(), 'public', 'motifs', `${styleId}.png`);
+      const motifBuf = await fs.readFile(motifFile);
+      motifImage = `data:image/png;base64,${motifBuf.toString('base64')}`;
+    } catch {
+      motifImage = null;
+    }
+
     // Pour la couverture photo, on garde l'image originale (sans effet) :
     // c'est le visuel d'accueil, on veut sa couleur.
     const photoCouverture =
@@ -232,6 +244,8 @@ export async function POST(req: NextRequest) {
       palette: style.palette,
       // Petit motif du style, posé sur chaque cadre photo (chaîne vide = aucun).
       motif_svg: motifInner(style.motif),
+      // Motif image (PNG aquarelle) si présent ; prioritaire sur le SVG.
+      motif_image: motifImage,
       // Phase 3
       dedicace: dedicaceNormalisee,
       dedicace_presente: dedicacePresente,

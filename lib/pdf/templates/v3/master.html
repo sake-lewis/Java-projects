@@ -156,6 +156,13 @@
     pointer-events: none; opacity: 0.7;
   }
   body.sombre .cell-motif { opacity: 0.7; }
+  /* Variante image (PNG aquarelle) : bouquet de coin réel, posé en deux coins. */
+  .cell-motif-img { position: absolute; inset: 10px; pointer-events: none; }
+  .cell-motif-img img { position: absolute; width: 46%; height: auto; opacity: 0.92; }
+  .cell-motif-img .tl { top: 0; left: 0; transform: rotate(180deg); }
+  .cell-motif-img .br { bottom: 0; right: 0; }
+  .layout-solo-portrait .cell .mat .cell-motif-img,
+  .layout-solo-paysage .cell .mat .cell-motif-img { inset: 14px; }
 
   /* Solo : cadre premium dégradé accent autour du mat blanc */
   .layout-solo-portrait .planche,
@@ -493,14 +500,14 @@
       <figure class="cell">
         <div class="mat">
           <img src="{{this.photos.[0].url}}" alt="" />
-          {{#if ../motif_svg}}<svg class="cell-motif" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">{{{../motif_svg}}}</svg>{{/if}}
+          {{#if ../motif_image}}<div class="cell-motif-img" aria-hidden="true"><img class="tl" src="{{../motif_image}}" alt="" /><img class="br" src="{{../motif_image}}" alt="" /></div>{{else}}{{#if ../motif_svg}}<svg class="cell-motif" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">{{{../motif_svg}}}</svg>{{/if}}{{/if}}
         </div>
       </figure>
       {{else}}
       {{#each this.photos}}
       <figure class="cell">
         <img src="{{this.url}}" alt="" />
-        {{#if ../../motif_svg}}<svg class="cell-motif" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">{{{../../motif_svg}}}</svg>{{/if}}
+        {{#if ../../motif_image}}<div class="cell-motif-img" aria-hidden="true"><img class="tl" src="{{../../motif_image}}" alt="" /><img class="br" src="{{../../motif_image}}" alt="" /></div>{{else}}{{#if ../../motif_svg}}<svg class="cell-motif" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">{{{../../motif_svg}}}</svg>{{/if}}{{/if}}
       </figure>
       {{/each}}
       {{/if}}

@@ -5,6 +5,7 @@ import { PageAlbum, EffetPhoto, PHOTOS_PAR_PAGE_MAX, StyleId } from "@/types"
 import { layoutPage, ordonnerPourLayout, LayoutId } from "@/lib/album/layout"
 import { STYLES } from "@/lib/styles/catalog"
 import { motifInner } from "@/lib/styles/motifs"
+import { motifImagePath } from "@/lib/styles/motifImages"
 
 interface PageGridProps {
   pages: PageAlbum[]
@@ -86,6 +87,11 @@ export default function PageGrid({
   // Motif du style courant, posé en filigrane sur chaque cadre photo.
   const motifSvg = motifInner(STYLES[styleChoisi]?.motif ?? "none")
   const accent = STYLES[styleChoisi]?.palette.accent ?? "#1E4D3A"
+  // Motif image (PNG aquarelle) du style, s'il existe : prioritaire sur le SVG,
+  // avec repli automatique sur le SVG si le fichier est absent.
+  const motifImg = motifImagePath(styleChoisi)
+  const [imgMotifOk, setImgMotifOk] = useState(true)
+  React.useEffect(() => setImgMotifOk(true), [styleChoisi])
 
   function signalerEchec(url: string) {
     setImgErr(e => (e[url] ? e : { ...e, [url]: true }))
@@ -180,16 +186,36 @@ export default function PageGrid({
                         onError={() => signalerEchec(photo.url)}
                         onLoad={() => effacerEchec(photo.url)}
                       />
-                      {/* Motif décoratif du style, posé sur le cadre */}
-                      {motifSvg && !enErreur && (
-                        <svg
-                          viewBox="0 0 100 100"
-                          preserveAspectRatio="none"
-                          aria-hidden="true"
-                          className="pointer-events-none absolute inset-0 h-full w-full opacity-70"
-                          style={{ color: accent }}
-                          dangerouslySetInnerHTML={{ __html: motifSvg }}
-                        />
+                      {/* Motif décoratif du style, posé sur le cadre.
+                          PNG aquarelle si présent, sinon repli sur le SVG. */}
+                      {!enErreur && imgMotifOk ? (
+                        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+                          <img
+                            src={motifImg}
+                            alt=""
+                            onError={() => setImgMotifOk(false)}
+                            className="absolute left-[2%] top-[2%] w-[46%] rotate-180"
+                            style={{ opacity: 0.92 }}
+                          />
+                          <img
+                            src={motifImg}
+                            alt=""
+                            onError={() => setImgMotifOk(false)}
+                            className="absolute bottom-[2%] right-[2%] w-[46%]"
+                            style={{ opacity: 0.92 }}
+                          />
+                        </div>
+                      ) : (
+                        motifSvg && !enErreur && (
+                          <svg
+                            viewBox="0 0 100 100"
+                            preserveAspectRatio="none"
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-0 h-full w-full opacity-70"
+                            style={{ color: accent }}
+                            dangerouslySetInnerHTML={{ __html: motifSvg }}
+                          />
+                        )
                       )}
                       {estCouverture && (
                         <span className="absolute left-1 top-1 flex items-center gap-1 rounded-full bg-or px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.08em] text-white shadow">
