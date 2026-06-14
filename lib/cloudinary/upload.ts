@@ -6,9 +6,13 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Formats raster autorisés. On exclut volontairement le SVG : il peut embarquer
+// du script (XSS stocké si l'URL est ouverte directement dans un navigateur).
+const FORMATS_AUTORISES = /^data:image\/(jpeg|jpg|png|webp|gif|heic|heif|avif);base64,/i;
+
 export async function uploadPhoto(base64Image: string, token: string): Promise<string> {
-  if (!base64Image.startsWith('data:image/')) {
-    throw new Error("Fichier invalide : doit être une image");
+  if (!FORMATS_AUTORISES.test(base64Image)) {
+    throw new Error("Format d'image non supporté");
   }
 
   // Vérification approximative de la taille (base64 est ~33% plus grand que le binaire)

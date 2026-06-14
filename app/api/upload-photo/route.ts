@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   try {
     const { token, image } = await request.json()
 
-    if (!token || !image) {
+    if (!token || typeof image !== "string" || !image) {
       return NextResponse.json({ error: "Données manquantes" }, { status: 400 })
     }
 
@@ -25,11 +25,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Session invalide" }, { status: 403 })
     }
 
-    const url = await uploadPhoto(image, token)
-    return NextResponse.json({ url })
-  } catch (error: any) {
-    console.error("Erreur upload photo:", error)
-    return NextResponse.json({ error: error.message || "Erreur serveur" }, { status: 500 })
+    // Formats raster uniquement (le SVG peut embarquer du script).
+    if (!/^data:image\/(jpeg|jpg|png|webp|gif|heic|heif|avif);base64,/i.test(image)) {
+      return NextResponse.json({ error: "Format d'image non supporté" }, { status: 400 })
+    }
+    // Plafond de taille côté serveur (base64 ~+33 %).
+    if ((image.length * 3) / 4 > 10 * 1024 * 1024) {
+      return NextResponse.json({ error: "Image trop volumineuse (max 10 Mo)" }, { status: 413 })
+    }
+
+    try {
+      const url = await uploadPhoto(image, token)
+      return NextResponse.json({ url })
+    } catch (e) {
+      // On ne renvoie pas le détail de l'erreur Cloudinary au client.
+      console.error("Erreur upload Cloudinary:", e)
+      return NextResponse.json({ error: "Échec de l'envoi de l'image" }, { status: 502 })
+    }
+  } catch {
+    return NextResponse.json({ error: "Requête invalide" }, { status: 400 })
   }
 }
 
@@ -71,8 +85,8 @@ export async function DELETE(request: NextRequest) {
     await cloudinary.uploader.destroy(publicId)
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (error) {
     console.error("Erreur suppression photo:", error)
-    return NextResponse.json({ error: error.message || "Erreur serveur" }, { status: 500 })
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
   }
 }
