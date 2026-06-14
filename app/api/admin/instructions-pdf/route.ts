@@ -13,7 +13,7 @@ const FORFAITS_VALIDES: Forfait[] = ["standard", "pro", "premium"]
 const NUMERO_WHATSAPP = "237675947160"
 
 function lienWhatsApp(forfaitLabel: string): string {
-  const message = `Bonjour, j'ai payé mon forfait ${forfaitLabel}. Voici ma preuve de paiement.`
+  const message = `Bonjour, j'ai payé mon forfait ${forfaitLabel}. Merci de m'envoyer mon lien de création.`
   return `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(message)}`
 }
 
