@@ -286,18 +286,14 @@ const MOTIFS: Record<Exclude<MotifId, "none">, string> = {
   "points": coins(POINT, 1, 0.75),
 }
 
-// Filtre « aquarelle » : bords irréguliers (déplacement par bruit) + très légère
-// diffusion. Embarqué dans chaque motif pour rester auto-suffisant — il rend à
-// l'identique dans l'éditeur, le sélecteur et le PDF, sans dépendance externe.
-const WC_FILTER =
-  `<filter id="ev-wc" x="-25%" y="-25%" width="150%" height="150%">` +
-  `<feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="1" seed="4" result="n"/>` +
-  `<feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G" result="d"/>` +
-  `<feGaussianBlur in="d" stdDeviation="0.35"/>` +
-  `</filter>`
-
-/** Markup SVG interne du motif d'un style, ou chaîne vide si aucun. */
+/** Markup SVG interne du motif d'un style, ou chaîne vide si aucun.
+ *
+ * Le réalisme vient du VOLUME (reflet/corps/ombre dérivés de l'accent via
+ * color-mix) et de touches de couleur naturelle — pas d'un filtre SVG.
+ * Un filtre « aquarelle » par cadre (feTurbulence) ne tient pas à l'échelle :
+ * sur une page d'album de plusieurs photos, le rendu se fige. Le volume, lui,
+ * est gratuit et identique dans l'éditeur, le sélecteur et le PDF. */
 export function motifInner(id: MotifId): string {
   if (id === "none") return ""
-  return `<defs>${WC_FILTER}</defs><g filter="url(#ev-wc)">${MOTIFS[id]}</g>`
+  return MOTIFS[id]
 }
