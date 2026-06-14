@@ -302,6 +302,12 @@
        chaque page (miroirs). Couleurs : variables de la palette du style. --}}
   <svg class="decor-defs" xmlns="http://www.w3.org/2000/svg">
     <defs>
+      {{#if motif_image}}
+      {{!-- Cadre de page : le bouquet du style, posé et miroité aux 4 angles. --}}
+      <g id="coin-theme">
+        <image href="{{{motif_image}}}" x="8" y="8" width="200" height="200" opacity="0.6" preserveAspectRatio="xMidYMid meet"/>
+      </g>
+      {{else}}
       {{#ifEgal theme "nature"}}
       <g id="coin-theme">
         {{!-- branches courbes partant du coin --}}
@@ -428,6 +434,7 @@
         <path d="M 22 156 L 12 166 L 22 176 L 32 166 Z" fill="none" stroke="var(--accent)" stroke-width="0.9" opacity="0.45"/>
       </g>
       {{/ifEgal}}
+      {{/if}}
     </defs>
   </svg>
 
