@@ -52,6 +52,11 @@ export interface Session {
   // choisie comme couverture (Premium uniquement).
   photo_couverture_index?: number | null
   pages: PageAlbum[]
+  // Compteur technique de photos envoyées sur Cloudinary pour cette session
+  // (incrémenté à l'upload, décrémenté à la suppression). Sert de garde-fou
+  // serveur contre un abus de stockage ; sans rapport avec le plafond du forfait
+  // appliqué côté UI et à la génération.
+  photos_count?: number
   pdf_url: string | null
   pdf_hash: string | null
   created_at: number

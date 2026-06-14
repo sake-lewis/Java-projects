@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from "next/server"
 import { verifierToken } from "@/lib/session/manager"
 import { uploadPhoto } from "@/lib/cloudinary/upload"
+import { getAdminDb } from "@/lib/firebase/admin"
+import { FieldValue } from "firebase-admin/firestore"
 import { v2 as cloudinary } from 'cloudinary'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
+
+// Garde-fou serveur contre un abus de stockage : largement au-dessus du plus
+// gros forfait (200) + marge pour les recadrages/remplacements, donc jamais
+// atteint par un usage normal. N'a aucun effet sur le rendu ou les fonctions.
+const PLAFOND_UPLOAD = 260
 
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -33,9 +40,16 @@ export async function POST(request: NextRequest) {
     if ((image.length * 3) / 4 > 10 * 1024 * 1024) {
       return NextResponse.json({ error: "Image trop volumineuse (max 10 Mo)" }, { status: 413 })
     }
+    // Garde-fou stockage : jamais atteint en usage normal.
+    if ((session.photos_count ?? 0) >= PLAFOND_UPLOAD) {
+      return NextResponse.json({ error: "Limite de photos atteinte pour cette session" }, { status: 429 })
+    }
 
     try {
       const url = await uploadPhoto(image, token)
+      // Incrément du compteur (best-effort : un échec ne bloque pas l'upload).
+      await getAdminDb().collection("sessions").doc(token)
+        .update({ photos_count: FieldValue.increment(1) }).catch(() => {})
       return NextResponse.json({ url })
     } catch (e) {
       // On ne renvoie pas le détail de l'erreur Cloudinary au client.
@@ -83,6 +97,10 @@ export async function DELETE(request: NextRequest) {
     const publicIdWithExt = parts.slice(folderIndex).join("/")
     const publicId = publicIdWithExt.split(".")[0]
     await cloudinary.uploader.destroy(publicId)
+
+    // Décrément du compteur (best-effort).
+    await getAdminDb().collection("sessions").doc(token)
+      .update({ photos_count: FieldValue.increment(-1) }).catch(() => {})
 
     return NextResponse.json({ success: true })
   } catch (error) {
