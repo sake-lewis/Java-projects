@@ -190,20 +190,14 @@ export default function PageGrid({
                           PNG aquarelle si présent, sinon repli sur le SVG. */}
                       {!enErreur && imgMotifOk ? (
                         <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-                          <img
-                            src={motifImg}
-                            alt=""
-                            onError={() => setImgMotifOk(false)}
-                            className="absolute left-[2%] top-[2%] w-[46%] rotate-180"
-                            style={{ opacity: 0.92 }}
-                          />
-                          <img
-                            src={motifImg}
-                            alt=""
-                            onError={() => setImgMotifOk(false)}
-                            className="absolute bottom-[2%] right-[2%] w-[46%]"
-                            style={{ opacity: 0.92 }}
-                          />
+                          <img src={motifImg} alt="" onError={() => setImgMotifOk(false)}
+                            className="absolute left-[2%] top-[2%] w-[44%] rotate-180" style={{ opacity: 0.9 }} />
+                          <img src={motifImg} alt="" onError={() => setImgMotifOk(false)}
+                            className="absolute right-[2%] top-[2%] w-[44%] -scale-y-100" style={{ opacity: 0.9 }} />
+                          <img src={motifImg} alt="" onError={() => setImgMotifOk(false)}
+                            className="absolute left-[2%] bottom-[2%] w-[44%] -scale-x-100" style={{ opacity: 0.9 }} />
+                          <img src={motifImg} alt="" onError={() => setImgMotifOk(false)}
+                            className="absolute right-[2%] bottom-[2%] w-[44%]" style={{ opacity: 0.9 }} />
                         </div>
                       ) : (
                         motifSvg && !enErreur && (

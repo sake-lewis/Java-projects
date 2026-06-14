@@ -45,18 +45,10 @@ export default function StylePreview({ style }: { style: StyleDef }) {
       {/* Motif réel du style : PNG aquarelle si présent, sinon repli SVG. */}
       {imgOk ? (
         <div className="pointer-events-none absolute inset-[7px]" aria-hidden="true">
-          <img
-            src={motifImg}
-            alt=""
-            onError={() => setImgOk(false)}
-            className="absolute left-0 top-0 w-[46%] rotate-180"
-          />
-          <img
-            src={motifImg}
-            alt=""
-            onError={() => setImgOk(false)}
-            className="absolute bottom-0 right-0 w-[46%]"
-          />
+          <img src={motifImg} alt="" onError={() => setImgOk(false)} className="absolute left-0 top-0 w-[44%] rotate-180" />
+          <img src={motifImg} alt="" onError={() => setImgOk(false)} className="absolute right-0 top-0 w-[44%] -scale-y-100" />
+          <img src={motifImg} alt="" onError={() => setImgOk(false)} className="absolute left-0 bottom-0 w-[44%] -scale-x-100" />
+          <img src={motifImg} alt="" onError={() => setImgOk(false)} className="absolute right-0 bottom-0 w-[44%]" />
         </div>
       ) : (
         motifSvg && (
