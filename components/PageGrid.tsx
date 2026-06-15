@@ -191,13 +191,13 @@ export default function PageGrid({
                       {!enErreur && imgMotifOk ? (
                         <div className="pointer-events-none absolute inset-0" aria-hidden="true">
                           <img src={motifImg} alt="" onError={() => setImgMotifOk(false)}
-                            className="absolute left-[2%] top-[2%] w-[44%] rotate-180" style={{ opacity: 0.9 }} />
+                            className="absolute left-[2%] top-[2%] w-[36%] rotate-180" style={{ opacity: 0.5 }} />
                           <img src={motifImg} alt="" onError={() => setImgMotifOk(false)}
-                            className="absolute right-[2%] top-[2%] w-[44%] -scale-y-100" style={{ opacity: 0.9 }} />
+                            className="absolute right-[2%] top-[2%] w-[36%] -scale-y-100" style={{ opacity: 0.5 }} />
                           <img src={motifImg} alt="" onError={() => setImgMotifOk(false)}
-                            className="absolute left-[2%] bottom-[2%] w-[44%] -scale-x-100" style={{ opacity: 0.9 }} />
+                            className="absolute left-[2%] bottom-[2%] w-[36%] -scale-x-100" style={{ opacity: 0.5 }} />
                           <img src={motifImg} alt="" onError={() => setImgMotifOk(false)}
-                            className="absolute right-[2%] bottom-[2%] w-[44%]" style={{ opacity: 0.9 }} />
+                            className="absolute right-[2%] bottom-[2%] w-[36%]" style={{ opacity: 0.5 }} />
                         </div>
                       ) : (
                         motifSvg && !enErreur && (
