@@ -7,7 +7,17 @@ const MAX_UPLOAD_BODY = 15 * 1024 * 1024
 // Routes accessibles sans cookie de session (la vérification HMAC complète est
 // faite côté Node dans les layouts / route handlers — le middleware Edge ne
 // fait qu'un pré-tri UX : pas de cookie du tout → login direct).
-const PUBLIC_PATHS = ["/login", "/api/login", "/api/cron/cleanup"]
+// Les fichiers PWA (manifest + icônes) doivent rester publics pour que
+// « Installer l'application » fonctionne dès l'écran de connexion.
+const PUBLIC_PATHS = [
+  "/login",
+  "/api/login",
+  "/api/cron/cleanup",
+  "/manifest.webmanifest",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/apple-touch-icon.png",
+]
 
 const METHODES_MUTANTES = ["POST", "PUT", "PATCH", "DELETE"]
 
