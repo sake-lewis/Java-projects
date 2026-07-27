@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="{{fontsImport}}">
+<style>
+  /* ==== STANDARD — magazine épuré, cadre éditorial aux couleurs du secteur ==== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  @page { size: A4; margin: 0; }
+  html, body { background: {{a.bg}}; }
+  body { font-family: {{{a.fontBody}}}; color: {{a.encre}}; }
+  .page {
+    width: 210mm; height: 297mm;
+    page-break-after: always;
+    position: relative; overflow: hidden;
+    background: {{a.bg}};
+  }
+  .page:last-child { page-break-after: auto; }
+
+  /* Bordure de page magazine, décorée selon l'activité :
+     cadre fin couleur du secteur, interrompu en haut par son libellé. */
+  .cadre-page { position: absolute; inset: 7mm; border: 0.45mm solid {{a.accent}}; }
+  .cadre-label { position: absolute; top: 7mm; left: 50%; transform: translate(-50%, -50%); background: {{a.bg}}; padding: 0 4.5mm; font-size: 8pt; letter-spacing: 0.32em; text-transform: uppercase; color: {{a.accent}}; font-weight: 600; white-space: nowrap; }
+  /* Pastille de la 2e couleur dominante du secteur (duo de marque) */
+  .cadre-label::before { content: ""; display: inline-block; width: 1.8mm; height: 1.8mm; background: {{a.accent2}}; border-radius: 50%; margin-right: 2.6mm; vertical-align: 12%; }
+
+  /* Prix éditorial */
+  .prix { display: flex; align-items: center; gap: 2.5mm; font-weight: 700; color: {{a.accent}}; }
+  .prix::before { content: ""; width: 6mm; height: 0.45mm; background: {{a.accent}}; }
+
+  /* ---------- Couverture ---------- */
+  .cover { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24mm; }
+  .cover .barre { position: absolute; top: 0; left: 0; right: 0; height: 9mm; background: {{a.accent}}; }
+  .cover .barre-b { position: absolute; bottom: 0; left: 0; right: 0; height: 16mm; background: {{a.accent}}; display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-size: 10.5pt; }
+  .cover .barre-b .num { font-weight: 700; margin-left: 2mm; }
+  .cover .sur { font-size: 9.5pt; letter-spacing: 0.4em; text-transform: uppercase; color: {{a.accent}}; font-weight: 600; }
+  .cover h1 { font-family: {{{a.fontDisplay}}}; font-size: 48pt; font-weight: 600; margin: 9mm 0 7mm; line-height: 1.06; }
+  /* Filet bicolore : les deux couleurs dominantes du secteur */
+  .filet { width: 30mm; height: 0.6mm; background: linear-gradient(to right, {{a.accent}} 50%, {{a.accent2}} 50%); margin: 0 auto 7mm; }
+  .cover .secteur { font-size: 11.5pt; letter-spacing: 0.22em; text-transform: uppercase; }
+  .cover .date { margin-top: 3mm; font-size: 9.5pt; color: {{a.encreDouce}}; letter-spacing: 0.08em; }
+
+  /* ---------- Pages produits ---------- */
+  .produits { padding: 15mm 15mm 17mm; }
+  .entete { display: flex; justify-content: space-between; align-items: baseline; }
+  .entete .nom-e { font-family: {{{a.fontDisplay}}}; font-size: 13.5pt; font-weight: 600; }
+  .entete .pg { font-size: 8.5pt; letter-spacing: 0.15em; color: {{a.encreDouce}}; }
+  .grille { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 6mm; height: 234mm; margin-top: 5mm; }
+  .carte { background: {{a.bg}}; display: flex; flex-direction: column; }
+  .photo-wrap { position: relative; display: block; text-decoration: none; }
+  .photo { width: 100%; height: 84mm; object-fit: cover; display: block; background: {{a.surface}}; }
+  .sans-photo { width: 100%; height: 84mm; display: flex; align-items: center; justify-content: center; background: {{a.surface}}; color: {{a.encreDouce}}; font-size: 20pt; }
+  .loupe { position: absolute; bottom: 2.5mm; right: 2.5mm; background: rgba(255,255,255,0.92); color: {{a.encre}}; font-size: 6.8pt; font-weight: 600; letter-spacing: 0.08em; padding: 1.1mm 2.6mm; }
+  .infos { padding-top: 3.2mm; display: flex; flex-direction: column; flex: 1; }
+  .p-nom { font-family: {{{a.fontDisplay}}}; font-size: 13pt; font-weight: 600; line-height: 1.18; }
+  .p-desc { margin-top: 1.4mm; font-size: 8.8pt; line-height: 1.45; color: {{a.encreDouce}}; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .bas-carte { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 3mm; padding-top: 2mm; }
+  .p-prix { font-size: 12.5pt; }
+  .p-wa { display: inline-flex; align-items: center; gap: 2mm; background: #25D366; color: #FFFFFF; padding: 2.2mm 4.6mm; border-radius: 2mm; font-size: 8.8pt; font-weight: 600; text-decoration: none; }
+  .p-wa svg { width: 3.8mm; height: 3.8mm; fill: #FFFFFF; }
+
+  /* ---------- Pages zoom ---------- */
+  .zoom { padding: 15mm; display: flex; flex-direction: column; }
+  .zoom-entete { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5mm; }
+  .zoom-entete .nom-e { font-family: {{{a.fontDisplay}}}; font-size: 13pt; font-weight: 600; }
+  .zoom-entete .retour { font-size: 9pt; color: {{a.accent}}; text-decoration: none; font-weight: 700; }
+  /* `contain` : l'image ENTIÈRE est visible, jamais coupée */
+  .zoom-photo { width: 100%; height: 190mm; object-fit: contain; background: {{a.surface}}; display: block; }
+  .zoom-bas { margin-top: 5mm; }
+  .zoom-nom { font-family: {{{a.fontDisplay}}}; font-size: 17pt; font-weight: 600; }
+  .zoom-desc { margin-top: 1.5mm; font-size: 9.5pt; color: {{a.encreDouce}}; line-height: 1.5; }
+  .zoom-ligne { display: flex; align-items: center; justify-content: space-between; gap: 5mm; margin-top: 3.5mm; }
+  .zoom-prix { font-size: 14pt; white-space: nowrap; }
+  .zoom-wa { display: inline-flex; align-items: center; gap: 2.5mm; background: #25D366; color: #FFFFFF; padding: 3mm 7mm; border-radius: 2mm; font-size: 10.5pt; font-weight: 600; text-decoration: none; }
+  .zoom-wa svg { width: 4.6mm; height: 4.6mm; fill: #FFFFFF; }
+
+  /* ---------- Dernière page ---------- */
+  .fin { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24mm; }
+  .fin h2 { font-family: {{{a.fontDisplay}}}; font-size: 26pt; font-weight: 600; }
+  .fin .sous { margin-top: 3mm; font-size: 10.5pt; color: {{a.encreDouce}}; max-width: 120mm; line-height: 1.7; }
+  .fin .cta { display: inline-flex; align-items: center; gap: 3mm; margin-top: 9mm; background: #25D366; color: #FFFFFF; padding: 5mm 12mm; border-radius: 2mm; font-size: 12.5pt; font-weight: 600; text-decoration: none; }
+  .fin .cta svg { width: 6mm; height: 6mm; fill: #FFFFFF; }
+  .fin .num { margin-top: 4mm; font-size: 12pt; color: {{a.accent}}; font-weight: 700; }
+  .credit { position: absolute; bottom: 11mm; left: 0; right: 0; text-align: center; font-size: 7.5pt; letter-spacing: 0.25em; text-transform: uppercase; color: {{a.encreDouce}}; }
+</style>
+</head>
+<body>
+
+  <!-- Couverture -->
+  <section class="page cover">
+    <div class="barre"></div>
+    <div class="sur">{{tagline}}</div>
+    <h1>{{entreprise}}</h1>
+    <div class="filet"></div>
+    <div class="secteur">{{secteurLabel}}</div>
+    <div class="date">Catalogue · {{dateGeneration}} · {{totalProduits}} produits</div>
+    <div class="barre-b">Commandes WhatsApp <span class="num">{{whatsappAffiche}}</span></div>
+  </section>
+
+  <!-- Produits -->
+  {{#each pages}}
+  <section class="page produits" id="produits-{{numero}}">
+    <div class="cadre-page"></div>
+    <div class="cadre-label">{{../secteurLabel}}</div>
+    <div class="entete">
+      <div class="nom-e">{{../entreprise}}</div>
+      <div class="pg">{{numero}} / {{totalPages}}</div>
+    </div>
+    <div class="grille">
+      {{#each produits}}
+      <div class="carte">
+        {{#if photoUrl}}
+        <a class="photo-wrap" href="#{{ancreZoom}}">
+          <img class="photo" src="{{photoUrl}}" alt="">
+          <span class="loupe">AGRANDIR +</span>
+        </a>
+        {{else}}
+        <div class="photo-wrap"><div class="sans-photo">{{../../a.deco}}</div></div>
+        {{/if}}
+        <div class="infos">
+          <div class="p-nom">{{nom}}</div>
+          {{#if description}}<div class="p-desc">{{description}}</div>{{/if}}
+          <div class="bas-carte">
+            <div class="p-prix prix">{{prixFormate}}</div>
+            <a class="p-wa" href="{{waUrl}}">
+              <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.4 14.1c-.2.6-1.2 1.2-1.7 1.2-.4.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.5-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1.1-1.4-1.1-2.7s.7-1.9.9-2.2c.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.9 2.1c.1.2.1.4 0 .6l-.4.6-.5.5c-.1.2-.3.3-.1.6.1.3.7 1.1 1.5 1.8 1 .9 1.8 1.2 2.1 1.3.3.1.4.1.6-.1l.9-1c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.6.4 0 .1 0 .7-.2 1.3Z"/></svg>
+              Commander
+            </a>
+          </div>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+  </section>
+  {{/each}}
+
+  <!-- Pages zoom -->
+  {{#each zooms}}
+  <section class="page zoom" id="{{ancreZoom}}">
+    <div class="cadre-page"></div>
+    <div class="cadre-label">{{../secteurLabel}}</div>
+    <div class="zoom-entete">
+      <div class="nom-e">{{../entreprise}}</div>
+      <a class="retour" href="#{{ancrePage}}">← Retour au catalogue</a>
+    </div>
+    <img class="zoom-photo" src="{{photoZoom}}" alt="">
+    <div class="zoom-bas">
+      <div class="zoom-nom">{{nom}}</div>
+      {{#if description}}<div class="zoom-desc">{{description}}</div>{{/if}}
+      <div class="zoom-ligne">
+        <div class="zoom-prix prix">{{prixFormate}}</div>
+        <a class="zoom-wa" href="{{waUrl}}">
+          <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.4 14.1c-.2.6-1.2 1.2-1.7 1.2-.4.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.5-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1.1-1.4-1.1-2.7s.7-1.9.9-2.2c.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.9 2.1c.1.2.1.4 0 .6l-.4.6-.5.5c-.1.2-.3.3-.1.6.1.3.7 1.1 1.5 1.8 1 .9 1.8 1.2 2.1 1.3.3.1.4.1.6-.1l.9-1c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.6.4 0 .1 0 .7-.2 1.3Z"/></svg>
+          Commander
+        </a>
+      </div>
+    </div>
+  </section>
+  {{/each}}
+
+  <!-- Contact final -->
+  <section class="page fin">
+    <div class="cadre-page"></div>
+    <div class="cadre-label">{{secteurLabel}}</div>
+    <h2>Une envie ? Commandez.</h2>
+    <div class="sous">Réponse rapide sur WhatsApp — livraison à convenir ensemble.</div>
+    <a class="cta" href="{{waAccueil}}">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.4 14.1c-.2.6-1.2 1.2-1.7 1.2-.4.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.5-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1.1-1.4-1.1-2.7s.7-1.9.9-2.2c.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.9 2.1c.1.2.1.4 0 .6l-.4.6-.5.5c-.1.2-.3.3-.1.6.1.3.7 1.1 1.5 1.8 1 .9 1.8 1.2 2.1 1.3.3.1.4.1.6-.1l.9-1c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.6.4 0 .1 0 .7-.2 1.3Z"/></svg>
+      Écrire sur WhatsApp
+    </a>
+    <div class="num">{{whatsappAffiche}}</div>
+    <div class="credit">Catalogue réalisé par Everbloom</div>
+  </section>
+
+</body>
+</html>
