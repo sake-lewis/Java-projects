@@ -50,6 +50,12 @@ export const catalogues = pgTable("catalogues", {
   // Passe à true quand le cron a purgé les photos Cloudinary
   // (7 jours après la dernière génération).
   photosExpirees: boolean("photos_expirees").notNull().default(false),
+  // Couleurs personnalisées des couvertures (hex "#RRGGBB").
+  // null = couleurs par défaut de l'ambiance du secteur.
+  couvFond: text("couv_fond"), // 1re de couverture : fond
+  couvEncre: text("couv_encre"), // 1re de couverture : texte
+  finFond: text("fin_fond"), // 4e de couverture (page finale) : fond
+  finEncre: text("fin_encre"), // 4e de couverture : texte
   createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
     .notNull()
     .defaultNow(),

@@ -22,8 +22,14 @@
   .prix::before { content: ""; width: 6mm; height: 0.45mm; background: {{a.accent}}; }
 
   /* ---------- Couverture ---------- */
-  .cover { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 22mm; }
+  .cover { background: {{couv.fond}}; color: {{couv.encre}}; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 22mm; }
   .cover .sur { font-size: 9.5pt; letter-spacing: 0.4em; text-transform: uppercase; color: {{a.encreDouce}}; }
+  {{#if couvPerso}}
+  /* Couleurs de couverture personnalisées : les éléments secondaires suivent l'encre choisie */
+  .cover .sur, .cover .date { color: {{couv.encre}}; opacity: 0.65; }
+  .cover .secteur { color: {{couv.encre}}; }
+  .cover .filet { background: {{couv.encre}}; }
+  {{/if}}
   .cover h1 { font-family: {{{a.fontDisplay}}}; font-size: 44pt; font-weight: 600; margin: 9mm 0 7mm; line-height: 1.08; }
   .filet { width: 30mm; height: 0.45mm; background: {{a.accent}}; margin: 0 auto 7mm; }
   .cover .secteur { font-size: 11pt; letter-spacing: 0.2em; text-transform: uppercase; color: {{a.encre}}; }
@@ -39,11 +45,13 @@
   .grille { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 7mm; height: 240mm; margin-top: 7mm; }
   .carte { display: flex; flex-direction: column; }
   .lien-photo { display: block; position: relative; text-decoration: none; }
-  .photo { width: 100%; height: 86mm; object-fit: cover; display: block; background: {{a.surface}}; }
-  .sans-photo { width: 100%; height: 86mm; display: flex; align-items: center; justify-content: center; background: {{a.surface}}; color: {{a.encreDouce}}; font-size: 18pt; }
+  .photo { width: 100%; height: 80mm; object-fit: cover; display: block; background: {{a.surface}}; }
+  .sans-photo { width: 100%; height: 80mm; display: flex; align-items: center; justify-content: center; background: {{a.surface}}; color: {{a.encreDouce}}; font-size: 18pt; }
   .loupe { position: absolute; bottom: 2.5mm; right: 2.5mm; background: rgba(255,255,255,0.92); color: {{a.encre}}; font-size: 6.8pt; font-weight: 600; letter-spacing: 0.08em; padding: 1.1mm 2.6mm; }
   .infos { padding-top: 3.4mm; }
   .p-nom { font-family: {{{a.fontDisplay}}}; font-size: 12.5pt; font-weight: 600; line-height: 1.2; }
+  /* Description facultative : 2 lignes maximum, la fiche reste compacte si elle est vide */
+  .p-desc { margin-top: 1.4mm; font-size: 8.5pt; line-height: 1.42; color: {{a.encreDouce}}; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .p-prix { margin-top: 2mm; font-size: 12pt; }
   .p-wa { display: inline-flex; align-items: center; gap: 1.6mm; margin-top: 2.2mm; font-size: 8.3pt; color: {{a.encreDouce}}; text-decoration: none; }
   .p-wa svg { width: 3.6mm; height: 3.6mm; fill: #25D366; }
@@ -55,14 +63,20 @@
   .zoom-entete .retour { font-size: 9pt; color: {{a.accent}}; text-decoration: none; font-weight: 600; }
   /* `contain` : l'image ENTIÈRE est visible, jamais coupée */
   .zoom-photo { width: 100%; height: 198mm; object-fit: contain; background: {{a.surface}}; display: block; }
-  .zoom-bas { margin-top: 6mm; display: flex; align-items: center; justify-content: space-between; gap: 5mm; }
+  .zoom-bas { margin-top: 6mm; display: flex; align-items: flex-start; justify-content: space-between; gap: 5mm; }
+  .zoom-texte { min-width: 0; }
   .zoom-nom { font-family: {{{a.fontDisplay}}}; font-size: 16pt; font-weight: 600; }
+  .zoom-desc { margin-top: 1.8mm; font-size: 9.2pt; line-height: 1.5; color: {{a.encreDouce}}; }
   .zoom-prix { font-size: 14pt; white-space: nowrap; }
   .zoom-wa { display: inline-flex; align-items: center; justify-content: center; gap: 2.5mm; margin-top: 5mm; background: #25D366; color: #FFFFFF; padding: 3.6mm 0; border-radius: 2mm; font-size: 11pt; font-weight: 600; text-decoration: none; }
   .zoom-wa svg { width: 4.6mm; height: 4.6mm; fill: #FFFFFF; }
 
   /* ---------- Dernière page ---------- */
-  .fin { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 22mm; }
+  .fin { background: {{fin.fond}}; color: {{fin.encre}}; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 22mm; }
+  {{#if finPerso}}
+  .fin .num, .fin .credit { color: {{fin.encre}}; opacity: 0.7; }
+  .fin .filet { background: {{fin.encre}}; }
+  {{/if}}
   .fin h2 { font-family: {{{a.fontDisplay}}}; font-size: 24pt; font-weight: 600; }
   .fin .cta { display: inline-flex; align-items: center; gap: 3mm; margin-top: 9mm; background: #25D366; color: #FFFFFF; padding: 5mm 11mm; border-radius: 2mm; font-size: 12pt; font-weight: 600; text-decoration: none; }
   .fin .cta svg { width: 5.5mm; height: 5.5mm; fill: #FFFFFF; }
@@ -102,6 +116,7 @@
         {{/if}}
         <div class="infos">
           <div class="p-nom">{{nom}}</div>
+          {{#if description}}<div class="p-desc">{{description}}</div>{{/if}}
           <div class="p-prix prix">{{prixFormate}}</div>
           <a class="p-wa" href="{{waUrl}}">
             <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.4 14.1c-.2.6-1.2 1.2-1.7 1.2-.4.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.5-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1.1-1.4-1.1-2.7s.7-1.9.9-2.2c.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4l.9 2.1c.1.2.1.4 0 .6l-.4.6-.5.5c-.1.2-.3.3-.1.6.1.3.7 1.1 1.5 1.8 1 .9 1.8 1.2 2.1 1.3.3.1.4.1.6-.1l.9-1c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.6.4 0 .1 0 .7-.2 1.3Z"/></svg>
@@ -123,7 +138,10 @@
     </div>
     <img class="zoom-photo" src="{{photoZoom}}" alt="">
     <div class="zoom-bas">
-      <div class="zoom-nom">{{nom}}</div>
+      <div class="zoom-texte">
+        <div class="zoom-nom">{{nom}}</div>
+        {{#if description}}<div class="zoom-desc">{{description}}</div>{{/if}}
+      </div>
       <div class="zoom-prix prix">{{prixFormate}}</div>
     </div>
     <a class="zoom-wa" href="{{waUrl}}">

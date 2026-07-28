@@ -42,6 +42,12 @@ export default async function CataloguePage({
         titre: catalogue.titre,
         dejaGenere: catalogue.derniereGenerationAt !== null,
         photosExpirees: catalogue.photosExpirees,
+        couleurs: {
+          couvFond: catalogue.couvFond,
+          couvEncre: catalogue.couvEncre,
+          finFond: catalogue.finFond,
+          finEncre: catalogue.finEncre,
+        },
       }}
       client={{
         id: client.id,

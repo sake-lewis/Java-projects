@@ -53,14 +53,33 @@ async function main() {
   const outDir = path.join(process.cwd(), "scripts", "out")
   await mkdir(outDir, { recursive: true })
 
-  const cas: { forfait: Forfait; secteur: Secteur; n: number; suffixe?: string }[] = [
+  const cas: {
+    forfait: Forfait
+    secteur: Secteur
+    n: number
+    suffixe?: string
+    couleurs?: { couvFond: string; couvEncre: string; finFond: string; finEncre: string }
+  }[] = [
     { forfait: "basic", secteur: "mode", n: 8 },
     { forfait: "standard", secteur: "alimentation", n: 7 },
     { forfait: "premium", secteur: "electronique", n: 5 },
     { forfait: "premium", secteur: "beaute", n: 5, suffixe: "-floral" },
+    // Couleurs de couverture personnalisées (1re bordeaux, 4e bleu nuit)
+    {
+      forfait: "standard",
+      secteur: "mode",
+      n: 6,
+      suffixe: "-couleurs",
+      couleurs: {
+        couvFond: "#5C1F2B",
+        couvEncre: "#F5E7DC",
+        finFond: "#10263D",
+        finEncre: "#EDE7DA",
+      },
+    },
   ]
 
-  for (const { forfait, secteur, n, suffixe } of cas) {
+  for (const { forfait, secteur, n, suffixe, couleurs } of cas) {
     const client: Client = {
       id: 1,
       nomEntreprise: "Boutique Mariama",
@@ -80,6 +99,10 @@ async function main() {
       titre: "Boutique Mariama",
       derniereGenerationAt: null,
       photosExpirees: false,
+      couvFond: couleurs?.couvFond ?? null,
+      couvEncre: couleurs?.couvEncre ?? null,
+      finFond: couleurs?.finFond ?? null,
+      finEncre: couleurs?.finEncre ?? null,
       createdAt: new Date(),
     }
 

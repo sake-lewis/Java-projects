@@ -29,7 +29,7 @@
   .prix::before { content: ""; width: 6mm; height: 0.45mm; background: {{a.accent}}; }
 
   /* ---------- Couverture ---------- */
-  .cover { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24mm; }
+  .cover { background: {{couv.fond}}; color: {{couv.encre}}; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24mm; }
   .cover .barre { position: absolute; top: 0; left: 0; right: 0; height: 9mm; background: {{a.accent}}; }
   .cover .barre-b { position: absolute; bottom: 0; left: 0; right: 0; height: 16mm; background: {{a.accent}}; display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-size: 10.5pt; }
   .cover .barre-b .num { font-weight: 700; margin-left: 2mm; }
@@ -39,6 +39,11 @@
   .filet { width: 30mm; height: 0.6mm; background: linear-gradient(to right, {{a.accent}} 50%, {{a.accent2}} 50%); margin: 0 auto 7mm; }
   .cover .secteur { font-size: 11.5pt; letter-spacing: 0.22em; text-transform: uppercase; }
   .cover .date { margin-top: 3mm; font-size: 9.5pt; color: {{a.encreDouce}}; letter-spacing: 0.08em; }
+  {{#if couvPerso}}
+  /* Couleurs de couverture personnalisées : le texte suit l'encre choisie */
+  .cover .sur { color: {{couv.encre}}; opacity: 0.8; }
+  .cover .date { color: {{couv.encre}}; opacity: 0.65; }
+  {{/if}}
 
   /* ---------- Pages produits ---------- */
   .produits { padding: 15mm 15mm 17mm; }
@@ -75,9 +80,16 @@
   .zoom-wa svg { width: 4.6mm; height: 4.6mm; fill: #FFFFFF; }
 
   /* ---------- Dernière page ---------- */
-  .fin { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24mm; }
+  .fin { background: {{fin.fond}}; color: {{fin.encre}}; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24mm; }
   .fin h2 { font-family: {{{a.fontDisplay}}}; font-size: 26pt; font-weight: 600; }
   .fin .sous { margin-top: 3mm; font-size: 10.5pt; color: {{a.encreDouce}}; max-width: 120mm; line-height: 1.7; }
+  {{#if finPerso}}
+  /* Couleurs de fin de couverture personnalisées : cadre, label et textes adaptés */
+  .fin .cadre-page { border-color: {{fin.encre}}; }
+  .fin .cadre-label { background: {{fin.fond}}; color: {{fin.encre}}; }
+  .fin .sous, .fin .credit { color: {{fin.encre}}; opacity: 0.75; }
+  .fin .num { color: {{fin.encre}}; }
+  {{/if}}
   .fin .cta { display: inline-flex; align-items: center; gap: 3mm; margin-top: 9mm; background: #25D366; color: #FFFFFF; padding: 5mm 12mm; border-radius: 2mm; font-size: 12.5pt; font-weight: 600; text-decoration: none; }
   .fin .cta svg { width: 6mm; height: 6mm; fill: #FFFFFF; }
   .fin .num { margin-top: 4mm; font-size: 12pt; color: {{a.accent}}; font-weight: 700; }

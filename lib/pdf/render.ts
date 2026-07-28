@@ -71,6 +71,20 @@ const ORNEMENTS: Record<Ornement, (c: string) => string> = {
     `<circle cx="23" cy="23" r="1.8" fill="${c}"/>`,
 }
 
+// ------------------------------------------------------------
+// Couleurs de couverture personnalisées (1re et 4e de couverture)
+// ------------------------------------------------------------
+
+/**
+ * Défense en profondeur : une couleur personnalisée n'est injectée dans le
+ * CSS du template que si c'est un hex strict "#RRGGBB". Sinon → null
+ * (retour aux couleurs de l'ambiance).
+ */
+function couleurSure(hex: string | null | undefined): string | null {
+  if (!hex) return null
+  return /^#[0-9a-fA-F]{6}$/.test(hex) ? hex : null
+}
+
 /** Data URI d'un ornement de coin (48×48). */
 function ornementDataUri(type: Ornement, couleur: string): string {
   const svg =
@@ -105,6 +119,32 @@ export async function construireHtmlCatalogue(
   const template = Handlebars.compile(source)
 
   const parPage = PRODUITS_PAR_PAGE[palier]
+
+  // --- Couleurs effectives des couvertures -------------------------------
+  // Par défaut : Basic/Standard ont une couverture claire (fond de page),
+  // Premium une couverture sombre (coverBg/coverEncre de l'ambiance).
+  const defautCouv =
+    palier === "premium"
+      ? { fond: ambiance.coverBg, encre: ambiance.coverEncre }
+      : { fond: ambiance.bg, encre: ambiance.encre }
+
+  const couvFondPerso = couleurSure(catalogue.couvFond)
+  const couvEncrePerso = couleurSure(catalogue.couvEncre)
+  const finFondPerso = couleurSure(catalogue.finFond)
+  const finEncrePerso = couleurSure(catalogue.finEncre)
+
+  const couv = {
+    fond: couvFondPerso ?? defautCouv.fond,
+    encre: couvEncrePerso ?? defautCouv.encre,
+  }
+  const fin = {
+    fond: finFondPerso ?? defautCouv.fond,
+    encre: finEncrePerso ?? defautCouv.encre,
+  }
+  // Les templates Basic/Standard n'adaptent leurs éléments secondaires
+  // (filets, légendes, cadres) que si une couleur personnalisée est active.
+  const couvPerso = couvFondPerso !== null || couvEncrePerso !== null
+  const finPerso = finFondPerso !== null || finEncrePerso !== null
 
   const produitsPrepares = listeProduits.map((p, i) => {
     const prixFormate = formatFCFA(p.prix)
@@ -161,9 +201,16 @@ export async function construireHtmlCatalogue(
     notes: client.notes || "",
     a: ambiance,
     fontsImport: FONTS_IMPORT,
-    // Ornements de coin Premium : version pages claires et version couverture
+    // Ornements de coin Premium : version pages claires et versions
+    // couverture / page finale (suivent la couleur d'encre effective)
     ornementCoin: ornementDataUri(ambiance.ornement, ambiance.accent),
-    ornementCover: ornementDataUri(ambiance.ornement, ambiance.coverEncre),
+    ornementCover: ornementDataUri(ambiance.ornement, couv.encre),
+    ornementFin: ornementDataUri(ambiance.ornement, fin.encre),
+    // Couleurs effectives des couvertures (personnalisées ou ambiance)
+    couv,
+    fin,
+    couvPerso,
+    finPerso,
     pages,
     zooms,
   })

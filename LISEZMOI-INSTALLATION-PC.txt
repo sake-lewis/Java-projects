@@ -1,0 +1,29 @@
+EVERBLOOM CATALOGUES - INSTALLATION SUR UN PC
+=============================================
+
+OPTION A (recommandee) : SANS RIEN INSTALLER
+--------------------------------------------
+L'application est en ligne. Sur n'importe quel PC :
+1. Ouvre Chrome et va sur : https://java-projects-two.vercel.app
+2. Clique sur l'icone "Installer" dans la barre d'adresse
+   (ou menu trois-points -> Installer Everbloom)
+3. C'est tout : icone sur le bureau, l'app s'ouvre en un clic.
+Sur telephone : Chrome -> menu -> Ajouter a l'ecran d'accueil.
+
+OPTION B : VERSION LOCALE (ce dossier)
+--------------------------------------
+1. Double-clique sur  Installer-Everbloom.bat
+   - installe Node.js si absent (une seule fois)
+   - installe les dependances (une seule fois)
+   - cree l'icone "Everbloom" sur le Bureau
+2. Ensuite, un seul clic sur l'icone Everbloom du Bureau lance tout.
+
+IMPORTANT
+---------
+- Le fichier .env.local doit contenir tes valeurs (mot de passe,
+  base Neon, cles Cloudinary). Il est deja pre-rempli en partie.
+- Une connexion Internet reste necessaire (la base de donnees et
+  les photos sont hebergees en ligne).
+- Ne partage jamais ce dossier tel quel : il contient .env.local
+  avec tes secrets. Pour donner l'app a quelqu'un, supprime
+  d'abord .env.local de la copie.

@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import ApercuCatalogue from "@/components/ApercuCatalogue";
+import CouleursCouverture, { type CouleursCatalogue } from "@/components/CouleursCouverture";
 
 // ============================================================
 // Éditeur de catalogue — poste de travail principal de l'opérateur.
@@ -25,6 +27,7 @@ interface Props {
     titre: string;
     dejaGenere: boolean;
     photosExpirees: boolean;
+    couleurs: CouleursCatalogue;
   };
   client: {
     id: number;
@@ -53,6 +56,8 @@ interface LigneRafale {
   photoPublicId: string;
   nom: string;
   prix: string;
+  /** Description facultative — peut rester vide. */
+  description: string;
 }
 
 interface FormulaireProduit {
@@ -121,6 +126,10 @@ export default function EditeurCatalogue({ catalogue, client, produits }: Props)
   const [generationEnCours, setGenerationEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [erreurModal, setErreurModal] = useState<string | null>(null);
+
+  // --- Aperçu : incrémenté après chaque modification → rechargement ---
+  const [versionApercu, setVersionApercu] = useState(0);
+  const rafraichirApercu = () => setVersionApercu((v) => v + 1);
 
   // --- Mode rafale (ajout de produits en masse) ---
   const [rafaleOuvert, setRafaleOuvert] = useState(false);
@@ -235,6 +244,7 @@ export default function EditeurCatalogue({ catalogue, client, produits }: Props)
         return;
       }
       setModalOuvert(false);
+      rafraichirApercu();
       router.refresh();
     } catch {
       setErreurModal("Connexion impossible.");
@@ -256,6 +266,7 @@ export default function EditeurCatalogue({ catalogue, client, produits }: Props)
       setErreur(data.error || "Suppression impossible");
       return;
     }
+    rafraichirApercu();
     router.refresh();
   }
 
@@ -277,6 +288,7 @@ export default function EditeurCatalogue({ catalogue, client, produits }: Props)
         body: JSON.stringify({ ordre: a.ordre }),
       }),
     ]);
+    rafraichirApercu();
     router.refresh();
   }
 
@@ -313,6 +325,7 @@ export default function EditeurCatalogue({ catalogue, client, produits }: Props)
             photoPublicId: data.publicId,
             nom: "",
             prix: "",
+            description: "",
           });
         }
       } catch {
@@ -324,7 +337,11 @@ export default function EditeurCatalogue({ catalogue, client, produits }: Props)
     setRafaleUpload(null);
   }
 
-  function majLigneRafale(index: number, champ: "nom" | "prix", valeur: string) {
+  function majLigneRafale(
+    index: number,
+    champ: "nom" | "prix" | "description",
+    valeur: string
+  ) {
     setRafaleLignes((prev) =>
       prev.map((l, i) => (i === index ? { ...l, [champ]: valeur } : l))
     );
@@ -372,7 +389,8 @@ export default function EditeurCatalogue({ catalogue, client, produits }: Props)
             catalogueId: catalogue.id,
             nom: l.nom.trim(),
             prix: Number(l.prix.replace(/[^\d]/g, "")),
-            description: "",
+            // Facultative : une chaîne vide est enregistrée comme « pas de description »
+            description: l.description.trim(),
             photoUrl: l.photoUrl,
             photoPublicId: l.photoPublicId,
           }),
@@ -387,6 +405,7 @@ export default function EditeurCatalogue({ catalogue, client, produits }: Props)
       }
       setRafaleLignes([]);
       setRafaleOuvert(false);
+      rafraichirApercu();
       router.refresh();
     } finally {
       setRafaleSauvegarde(false);
@@ -416,6 +435,7 @@ export default function EditeurCatalogue({ catalogue, client, produits }: Props)
       lien.click();
       lien.remove();
       URL.revokeObjectURL(url);
+      rafraichirApercu();
       router.refresh();
     } catch {
       setErreur("Connexion impossible pendant la génération.");
@@ -480,6 +500,21 @@ export default function EditeurCatalogue({ catalogue, client, produits }: Props)
       {erreur && (
         <div className="card p-4 text-sm text-[var(--color-erreur)]">{erreur}</div>
       )}
+
+      {/* Espace de travail : édition à gauche, aperçu à droite (grand écran) */}
+      <div className="space-y-5 xl:space-y-0 xl:grid xl:grid-cols-2 xl:gap-6 xl:items-start xl:-mx-52 2xl:-mx-80">
+      <div className="space-y-5">
+
+      {/* Couleurs des couvertures (1re et 4e de couverture) — tous forfaits */}
+      <CouleursCouverture
+        catalogueId={catalogue.id}
+        initiales={catalogue.couleurs}
+        accent={theme.accent}
+        onEnregistre={() => {
+          rafraichirApercu();
+          router.refresh();
+        }}
+      />
 
       {/* Liste des produits */}
       <section className="space-y-3">
@@ -569,6 +604,17 @@ export default function EditeurCatalogue({ catalogue, client, produits }: Props)
           </div>
         )}
       </section>
+      </div>
+
+      {/* Aperçu du catalogue — panneau de l'espace de travail */}
+      <aside className="xl:sticky xl:top-20">
+        <ApercuCatalogue
+          catalogueId={catalogue.id}
+          version={versionApercu}
+          accent={theme.accent}
+        />
+      </aside>
+      </div>
 
       {/* Barre de génération */}
       <div className="fixed bottom-0 left-0 right-0 bg-[var(--color-ivoire)]/95 backdrop-blur border-t border-[rgba(231,225,211,0.1)] p-4">
@@ -598,7 +644,8 @@ export default function EditeurCatalogue({ catalogue, client, produits }: Props)
             <h2 className="display text-2xl">Ajout rapide</h2>
             <p className="text-xs opacity-60 mt-1 mb-4">
               Sélectionne toutes les photos d&apos;un coup (depuis WhatsApp/galerie),
-              puis complète nom et prix pour chacune.
+              puis complète nom et prix pour chacune. La description est
+              facultative — tu peux la laisser vide et l&apos;ajouter plus tard.
             </p>
 
             <label className="btn-secondary w-full cursor-pointer mb-4">
@@ -641,6 +688,13 @@ export default function EditeurCatalogue({ catalogue, client, produits }: Props)
                         inputMode="numeric"
                         value={l.prix}
                         onChange={(e) => majLigneRafale(i, "prix", e.target.value)}
+                      />
+                      <textarea
+                        className="field !py-2 !text-sm min-h-14"
+                        placeholder="Description (facultatif)"
+                        value={l.description}
+                        onChange={(e) => majLigneRafale(i, "description", e.target.value)}
+                        maxLength={220}
                       />
                     </div>
                     <button
@@ -756,7 +810,10 @@ export default function EditeurCatalogue({ catalogue, client, produits }: Props)
               </label>
 
               <label className="block">
-                <span className="text-sm font-medium">Description courte</span>
+                <span className="text-sm font-medium">
+                  Description courte{" "}
+                  <span className="opacity-50 font-normal">(facultatif)</span>
+                </span>
                 <textarea
                   className="field mt-2 min-h-20"
                   value={form.description}

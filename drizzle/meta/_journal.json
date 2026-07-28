@@ -8,6 +8,13 @@
       "when": 1785160959784,
       "tag": "0000_cooing_elektra",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1785220044550,
+      "tag": "0001_ambitious_chimera",
+      "breakpoints": true
     }
   ]
 }

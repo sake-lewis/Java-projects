@@ -33,18 +33,19 @@
   .coin.br { bottom: 10mm; right: 10mm; transform: rotate(180deg); }
   .coin.bl { bottom: 10mm; left: 10mm; transform: rotate(270deg); }
   .coin-c { background-image: url("{{{ornementCover}}}"); }
+  .coin-f { background-image: url("{{{ornementFin}}}"); }
 
   /* Prix éditorial */
   .prix { display: flex; align-items: center; gap: 2.5mm; font-weight: 700; color: {{a.accent}}; }
   .prix::before { content: ""; width: 6mm; height: 0.45mm; background: {{a.accent}}; }
 
   /* ---------- Couverture (sombre, masthead magazine) ---------- */
-  .cover { background: {{a.coverBg}}; color: {{a.coverEncre}}; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 26mm; }
-  .cover .cadre-c { position: absolute; inset: 7mm; border: 0.45mm solid {{a.coverEncre}}; opacity: 0.55; }
-  .cover .cadre-c::after { content: ""; position: absolute; inset: 1.4mm; border: 0.2mm solid {{a.coverEncre}}; opacity: 0.5; }
+  .cover { background: {{couv.fond}}; color: {{couv.encre}}; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 26mm; }
+  .cover .cadre-c { position: absolute; inset: 7mm; border: 0.45mm solid {{couv.encre}}; opacity: 0.55; }
+  .cover .cadre-c::after { content: ""; position: absolute; inset: 1.4mm; border: 0.2mm solid {{couv.encre}}; opacity: 0.5; }
   .cover .sur { font-size: 9.5pt; letter-spacing: 0.45em; text-transform: uppercase; opacity: 0.85; }
   .cover h1 { font-family: {{{a.fontDisplay}}}; font-size: 50pt; font-weight: 600; margin: 9mm 0 7mm; line-height: 1.05; }
-  .filet-c { width: 30mm; height: 0.45mm; background: {{a.coverEncre}}; opacity: 0.7; margin: 0 auto 7mm; }
+  .filet-c { width: 30mm; height: 0.45mm; background: {{couv.encre}}; opacity: 0.7; margin: 0 auto 7mm; }
   .cover .secteur { font-size: 11.5pt; letter-spacing: 0.24em; text-transform: uppercase; opacity: 0.9; }
   .cover .date { margin-top: 3mm; font-size: 9.5pt; opacity: 0.6; letter-spacing: 0.1em; }
   .cover .contact { position: absolute; bottom: 17mm; left: 0; right: 0; text-align: center; font-size: 10.5pt; }
@@ -102,8 +103,8 @@
   .zoom-wa svg { width: 4.6mm; height: 4.6mm; fill: #FFFFFF; }
 
   /* ---------- Dernière page ---------- */
-  .fin { background: {{a.coverBg}}; color: {{a.coverEncre}}; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 26mm; }
-  .fin .cadre-c { position: absolute; inset: 7mm; border: 0.45mm solid {{a.coverEncre}}; opacity: 0.55; }
+  .fin { background: {{fin.fond}}; color: {{fin.encre}}; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 26mm; }
+  .fin .cadre-c { position: absolute; inset: 7mm; border: 0.45mm solid {{fin.encre}}; opacity: 0.55; }
   .fin h2 { font-family: {{{a.fontDisplay}}}; font-size: 28pt; font-weight: 600; }
   .fin .sous { margin-top: 3mm; font-size: 10.5pt; opacity: 0.75; max-width: 120mm; line-height: 1.7; }
   .fin .cta { display: inline-flex; align-items: center; gap: 3mm; margin-top: 10mm; background: #25D366; color: #FFFFFF; padding: 5.5mm 13mm; border-radius: 2mm; font-size: 13pt; font-weight: 600; text-decoration: none; }
@@ -214,7 +215,7 @@
   <!-- Contact final -->
   <section class="page fin">
     <div class="cadre-c"></div>
-    <div class="coin coin-c tl"></div><div class="coin coin-c tr"></div><div class="coin coin-c bl"></div><div class="coin coin-c br"></div>
+    <div class="coin coin-f tl"></div><div class="coin coin-f tr"></div><div class="coin coin-f bl"></div><div class="coin coin-f br"></div>
     <h2>Passez commande dès maintenant</h2>
     <div class="sous">Un article vous a plu ? Écrivez-nous sur WhatsApp, nous vous répondons rapidement et organisons la livraison avec vous.</div>
     <a class="cta" href="{{waAccueil}}">
