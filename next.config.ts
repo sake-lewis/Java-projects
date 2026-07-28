@@ -19,6 +19,10 @@ const nextConfig: NextConfig = {
       "./node_modules/@sparticuz/chromium/bin/**/*",
       "./lib/pdf/templates/**/*",
     ],
+    // L'aperçu utilise le même moteur de rendu Handlebars que le PDF :
+    // sans cette ligne, les templates sont absents du bundle serverless
+    // et l'aperçu échoue en production (alors qu'il marche en local).
+    "/api/catalogues/[id]/preview": ["./lib/pdf/templates/**/*"],
   },
   async headers() {
     return [
